@@ -81,7 +81,7 @@ main()
   int i, j;
   pthread_t t[NUMTHREADS + 1];
 
-  for (j = 1; j <= NUMTHREADS; j++)
+  for (j = 1; j <= NUMTHREADS; ++j)
     {
       printf("Barrier height = %d\n", j);
 
@@ -89,12 +89,12 @@ main()
 
       assert(pthread_barrier_init(&barrier, NULL, j) == 0);
 
-      for (i = 1; i <= j; i++)
+      for (i = 1; i <= j; ++i)
         {
           assert(pthread_create(&t[i], NULL, func, NULL) == 0);
         }
 
-      for (i = 1; i <= j; i++)
+      for (i = 1; i <= j; ++i)
         {
           assert(pthread_join(t[i], NULL) == 0);
         }

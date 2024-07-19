@@ -149,25 +149,25 @@ TIntermTyped* TIntermConstantUnion::fold(TOperator op, const TIntermTyped* right
 
     switch(op) {
     case EOpAdd:
-        for (int i = 0; i < newComps; i++)
+        for (int i = 0; i < newComps; ++i)
             newConstArray[i] = leftUnionArray[i] + rightUnionArray[i];
         break;
     case EOpSub:
-        for (int i = 0; i < newComps; i++)
+        for (int i = 0; i < newComps; ++i)
             newConstArray[i] = leftUnionArray[i] - rightUnionArray[i];
         break;
 
     case EOpMul:
     case EOpVectorTimesScalar:
     case EOpMatrixTimesScalar:
-        for (int i = 0; i < newComps; i++)
+        for (int i = 0; i < newComps; ++i)
             newConstArray[i] = leftUnionArray[i] * rightUnionArray[i];
         break;
     case EOpMatrixTimesMatrix:
         for (int row = 0; row < getMatrixRows(); row++) {
             for (int column = 0; column < rightNode->getMatrixCols(); column++) {
                 double sum = 0.0f;
-                for (int i = 0; i < rightNode->getMatrixRows(); i++)
+                for (int i = 0; i < rightNode->getMatrixRows(); ++i)
                     sum += leftUnionArray[i * getMatrixRows() + row].getDConst() * rightUnionArray[column * rightNode->getMatrixRows() + i].getDConst();
                 newConstArray[column * getMatrixRows() + row].setDConst(sum);
             }
@@ -175,7 +175,7 @@ TIntermTyped* TIntermConstantUnion::fold(TOperator op, const TIntermTyped* right
         returnType.shallowCopy(TType(getType().getBasicType(), EvqConst, 0, rightNode->getMatrixCols(), getMatrixRows()));
         break;
     case EOpDiv:
-        for (int i = 0; i < newComps; i++) {
+        for (int i = 0; i < newComps; ++i) {
             switch (getType().getBasicType()) {
             case EbtDouble:
             case EbtFloat:
@@ -262,9 +262,9 @@ TIntermTyped* TIntermConstantUnion::fold(TOperator op, const TIntermTyped* right
         break;
 
     case EOpMatrixTimesVector:
-        for (int i = 0; i < getMatrixRows(); i++) {
+        for (int i = 0; i < getMatrixRows(); ++i) {
             double sum = 0.0f;
-            for (int j = 0; j < rightNode->getVectorSize(); j++) {
+            for (int j = 0; j < rightNode->getVectorSize(); ++j) {
                 sum += leftUnionArray[j*getMatrixRows() + i].getDConst() * rightUnionArray[j].getDConst();
             }
             newConstArray[i].setDConst(sum);
@@ -274,9 +274,9 @@ TIntermTyped* TIntermConstantUnion::fold(TOperator op, const TIntermTyped* right
         break;
 
     case EOpVectorTimesMatrix:
-        for (int i = 0; i < rightNode->getMatrixCols(); i++) {
+        for (int i = 0; i < rightNode->getMatrixCols(); ++i) {
             double sum = 0.0f;
-            for (int j = 0; j < getVectorSize(); j++)
+            for (int j = 0; j < getVectorSize(); ++j)
                 sum += leftUnionArray[j].getDConst() * rightUnionArray[i*rightNode->getMatrixRows() + j].getDConst();
             newConstArray[i].setDConst(sum);
         }
@@ -285,7 +285,7 @@ TIntermTyped* TIntermConstantUnion::fold(TOperator op, const TIntermTyped* right
         break;
 
     case EOpMod:
-        for (int i = 0; i < newComps; i++) {
+        for (int i = 0; i < newComps; ++i) {
             if (rightUnionArray[i] == 0)
                 newConstArray[i] = leftUnionArray[i];
             else {
@@ -316,40 +316,40 @@ TIntermTyped* TIntermConstantUnion::fold(TOperator op, const TIntermTyped* right
         break;
 
     case EOpRightShift:
-        for (int i = 0; i < newComps; i++)
+        for (int i = 0; i < newComps; ++i)
             newConstArray[i] = leftUnionArray[i] >> rightUnionArray[i];
         break;
 
     case EOpLeftShift:
-        for (int i = 0; i < newComps; i++)
+        for (int i = 0; i < newComps; ++i)
             newConstArray[i] = leftUnionArray[i] << rightUnionArray[i];
         break;
 
     case EOpAnd:
-        for (int i = 0; i < newComps; i++)
+        for (int i = 0; i < newComps; ++i)
             newConstArray[i] = leftUnionArray[i] & rightUnionArray[i];
         break;
     case EOpInclusiveOr:
-        for (int i = 0; i < newComps; i++)
+        for (int i = 0; i < newComps; ++i)
             newConstArray[i] = leftUnionArray[i] | rightUnionArray[i];
         break;
     case EOpExclusiveOr:
-        for (int i = 0; i < newComps; i++)
+        for (int i = 0; i < newComps; ++i)
             newConstArray[i] = leftUnionArray[i] ^ rightUnionArray[i];
         break;
 
     case EOpLogicalAnd: // this code is written for possible future use, will not get executed currently
-        for (int i = 0; i < newComps; i++)
+        for (int i = 0; i < newComps; ++i)
             newConstArray[i] = leftUnionArray[i] && rightUnionArray[i];
         break;
 
     case EOpLogicalOr: // this code is written for possible future use, will not get executed currently
-        for (int i = 0; i < newComps; i++)
+        for (int i = 0; i < newComps; ++i)
             newConstArray[i] = leftUnionArray[i] || rightUnionArray[i];
         break;
 
     case EOpLogicalXor:
-        for (int i = 0; i < newComps; i++) {
+        for (int i = 0; i < newComps; ++i) {
             switch (getType().getBasicType()) {
             case EbtBool: newConstArray[i].setBConst((leftUnionArray[i] == rightUnionArray[i]) ? false : true); break;
             default: assert(false && "Default missing");
@@ -460,13 +460,13 @@ TIntermTyped* TIntermConstantUnion::fold(TOperator op, const TType& returnType) 
     case EOpNormalize:
     {
         double sum = 0;
-        for (int i = 0; i < objectSize; i++)
+        for (int i = 0; i < objectSize; ++i)
             sum += unionArray[i].getDConst() * unionArray[i].getDConst();
         double length = sqrt(sum);
         if (op == EOpLength)
             newConstArray[0].setDConst(length);
         else {
-            for (int i = 0; i < objectSize; i++)
+            for (int i = 0; i < objectSize; ++i)
                 newConstArray[i].setDConst(unionArray[i].getDConst() / length);
         }
         break;
@@ -475,7 +475,7 @@ TIntermTyped* TIntermConstantUnion::fold(TOperator op, const TType& returnType) 
     case EOpAny:
     {
         bool result = false;
-        for (int i = 0; i < objectSize; i++) {
+        for (int i = 0; i < objectSize; ++i) {
             if (unionArray[i].getBConst())
                 result = true;
         }
@@ -485,7 +485,7 @@ TIntermTyped* TIntermConstantUnion::fold(TOperator op, const TType& returnType) 
     case EOpAll:
     {
         bool result = true;
-        for (int i = 0; i < objectSize; i++) {
+        for (int i = 0; i < objectSize; ++i) {
             if (! unionArray[i].getBConst())
                 result = false;
         }
@@ -522,7 +522,7 @@ TIntermTyped* TIntermConstantUnion::fold(TOperator op, const TType& returnType) 
         objectSize = 0;
 
     // Process component-wise operations
-    for (int i = 0; i < objectSize; i++) {
+    for (int i = 0; i < objectSize; ++i) {
         switch (op) {
         case EOpNegative:
             switch (getType().getBasicType()) {
@@ -1412,7 +1412,7 @@ TIntermTyped* TIntermediate::foldSwizzle(TIntermTyped* node, TSwizzleSelectors<T
     const TConstUnionArray& unionArray = node->getAsConstantUnion()->getConstArray();
     TConstUnionArray constArray(selectors.size());
 
-    for (int i = 0; i < selectors.size(); i++)
+    for (int i = 0; i < selectors.size(); ++i)
         constArray[i] = unionArray[selectors[i]];
 
     TIntermTyped* result = addConstantUnion(constArray, node->getType(), loc);

@@ -191,7 +191,7 @@ main()
 
       assert(pthread_mutex_lock(&start_flag) == 0);
 
-      for (i = first; i <= last; i++)
+      for (i = first; i <= last; ++i)
 	{
 	  threadbag[i].started = threadbag[i].finished = 0;
 	  threadbag[i].threadnum = i;
@@ -224,7 +224,7 @@ main()
       /*
        * Standard check that all threads started - and wait for them to finish.
        */
-      for (i = first; i <= last; i++)
+      for (i = first; i <= last; ++i)
 	{ 
 	  failed = !threadbag[i].started;
 

@@ -58,7 +58,7 @@ static int s_xmmchecknext = 0;
 
 void _backupNeededXMM()
 {
-	for (size_t i = 0; i < iREGCNT_XMM; i++)
+	for (size_t i = 0; i < iREGCNT_XMM; ++i)
 	{
 		if (xmmregs[i].inuse)
 		{
@@ -69,7 +69,7 @@ void _backupNeededXMM()
 
 void _restoreNeededXMM()
 {
-	for (size_t i = 0; i < iREGCNT_XMM; i++)
+	for (size_t i = 0; i < iREGCNT_XMM; ++i)
 	{
 		if (xmmregs[i].inuse)
 		{
@@ -80,7 +80,7 @@ void _restoreNeededXMM()
 
 void _backupNeededx86()
 {
-	for (size_t i = 0; i < iREGCNT_GPR; i++)
+	for (size_t i = 0; i < iREGCNT_GPR; ++i)
 	{
 		if (x86regs[i].inuse)
 		{
@@ -95,7 +95,7 @@ void _backupNeededx86()
 
 void _restoreNeededx86()
 {
-	for (size_t i = 0; i < iREGCNT_GPR; i++)
+	for (size_t i = 0; i < iREGCNT_GPR; ++i)
 	{
 		if (x86regs[i].inuse)
 		{
@@ -169,7 +169,7 @@ int _getFreeXMMreg()
 	int i, tempi;
 	u32 bestcount = 0x10000;
 
-	for (i = 0; (uint)i < iREGCNT_XMM; i++)
+	for (i = 0; (uint)i < iREGCNT_XMM; ++i)
 	{
 		if (xmmregs[(i + s_xmmchecknext) % iREGCNT_XMM].inuse == 0)
 		{
@@ -180,7 +180,7 @@ int _getFreeXMMreg()
 	}
 
 	// check for dead regs
-	for (i = 0; (uint)i < iREGCNT_XMM; i++)
+	for (i = 0; (uint)i < iREGCNT_XMM; ++i)
 	{
 		if (xmmregs[i].needed)
 			continue;
@@ -195,7 +195,7 @@ int _getFreeXMMreg()
 	}
 
 	// check for future xmm usage
-	for (i = 0; (uint)i < iREGCNT_XMM; i++)
+	for (i = 0; (uint)i < iREGCNT_XMM; ++i)
 	{
 		if (xmmregs[i].needed)
 			continue;
@@ -211,7 +211,7 @@ int _getFreeXMMreg()
 
 	tempi = -1;
 	bestcount = 0xffff;
-	for (i = 0; (uint)i < iREGCNT_XMM; i++)
+	for (i = 0; (uint)i < iREGCNT_XMM; ++i)
 	{
 		if (xmmregs[i].needed)
 			continue;
@@ -265,7 +265,7 @@ int _allocTempXMMreg(XMMSSEType type, int xmmreg)
 // So basically it is mostly used to set the mode of the register, and load value if we need to read it
 int _checkXMMreg(int type, int reg, int mode)
 {
-	for (size_t i = 0; i < iREGCNT_XMM; i++)
+	for (size_t i = 0; i < iREGCNT_XMM; ++i)
 	{
 		if (xmmregs[i].inuse && (xmmregs[i].type == (type & 0xff)) && (xmmregs[i].reg == reg))
 		{
@@ -304,7 +304,7 @@ int _checkXMMreg(int type, int reg, int mode)
 // Note: FPU are always in XMM register
 int _allocFPtoXMMreg(int xmmreg, int fpreg, int mode)
 {
-	for (size_t i = 0; i < iREGCNT_XMM; i++)
+	for (size_t i = 0; i < iREGCNT_XMM; ++i)
 	{
 		if (xmmregs[i].inuse == 0)
 			continue;
@@ -347,7 +347,7 @@ int _allocFPtoXMMreg(int xmmreg, int fpreg, int mode)
 // due to XMM/MMX/X86 crazyness !
 int _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode)
 {
-	for (size_t i = 0; i < iREGCNT_XMM; i++)
+	for (size_t i = 0; i < iREGCNT_XMM; ++i)
 	{
 		if (xmmregs[i].inuse == 0)
 			continue;
@@ -427,7 +427,7 @@ int _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode)
 // (seriously boy you could have factorized it)
 int _allocFPACCtoXMMreg(int xmmreg, int mode)
 {
-	for (size_t i = 0; i < iREGCNT_XMM; i++)
+	for (size_t i = 0; i < iREGCNT_XMM; ++i)
 	{
 		if (xmmregs[i].inuse == 0)
 			continue;
@@ -470,7 +470,7 @@ int _allocFPACCtoXMMreg(int xmmreg, int mode)
 // You must use _clearNeededXMMregs to clear the flag
 void _addNeededGPRtoXMMreg(int gprreg)
 {
-	for (size_t i = 0; i < iREGCNT_XMM; i++)
+	for (size_t i = 0; i < iREGCNT_XMM; ++i)
 	{
 		if (xmmregs[i].inuse == 0)
 			continue;
@@ -489,7 +489,7 @@ void _addNeededGPRtoXMMreg(int gprreg)
 // You must use _clearNeededXMMregs to clear the flag
 void _addNeededFPtoXMMreg(int fpreg)
 {
-	for (size_t i = 0; i < iREGCNT_XMM; i++)
+	for (size_t i = 0; i < iREGCNT_XMM; ++i)
 	{
 		if (xmmregs[i].inuse == 0)
 			continue;
@@ -508,7 +508,7 @@ void _addNeededFPtoXMMreg(int fpreg)
 // You must use _clearNeededXMMregs to clear the flag
 void _addNeededFPACCtoXMMreg()
 {
-	for (size_t i = 0; i < iREGCNT_XMM; i++)
+	for (size_t i = 0; i < iREGCNT_XMM; ++i)
 	{
 		if (xmmregs[i].inuse == 0)
 			continue;
@@ -525,7 +525,7 @@ void _addNeededFPACCtoXMMreg()
 // Written register will set MODE_READ (aka data is valid, no need to load it)
 void _clearNeededXMMregs()
 {
-	for (size_t i = 0; i < iREGCNT_XMM; i++)
+	for (size_t i = 0; i < iREGCNT_XMM; ++i)
 	{
 
 		if (xmmregs[i].needed)
@@ -550,7 +550,7 @@ void _clearNeededXMMregs()
 // Flush is 3: drop register content
 void _deleteGPRtoXMMreg(int reg, int flush)
 {
-	for (size_t i = 0; i < iREGCNT_XMM; i++)
+	for (size_t i = 0; i < iREGCNT_XMM; ++i)
 	{
 
 		if (xmmregs[i].inuse && xmmregs[i].type == XMMTYPE_GPRREG && xmmregs[i].reg == reg)
@@ -594,7 +594,7 @@ void _deleteGPRtoXMMreg(int reg, int flush)
 // Flush is 2: drop register content
 void _deleteFPtoXMMreg(int reg, int flush)
 {
-	for (size_t i = 0; i < iREGCNT_XMM; i++)
+	for (size_t i = 0; i < iREGCNT_XMM; ++i)
 	{
 		if (xmmregs[i].inuse && xmmregs[i].type == XMMTYPE_FPREG && xmmregs[i].reg == reg)
 		{
@@ -747,7 +747,7 @@ void _freeXMMreg(u32 xmmreg)
 
 void _clearNeededCOP2Regs()
 {
-	for (size_t i = 0; i < iREGCNT_XMM - 1; i++)
+	for (size_t i = 0; i < iREGCNT_XMM - 1; ++i)
 	{
 		if (xmmregs[i].inuse && xmmregs[i].type == XMMTYPE_VFREG)
 		{
@@ -761,7 +761,7 @@ void _clearNeededCOP2Regs()
 u16 _freeXMMregsCOP2()
 {
 	// First check what's already free, it might be enough
-	for (size_t i = 0; i < iREGCNT_XMM - 1; i++)
+	for (size_t i = 0; i < iREGCNT_XMM - 1; ++i)
 	{
 		if (!xmmregs[i].inuse)
 		{
@@ -773,7 +773,7 @@ u16 _freeXMMregsCOP2()
 	}
 
 	// If we still don't have enough, find regs in use but not needed
-	for (size_t i = 0; i < iREGCNT_XMM - 1; i++)
+	for (size_t i = 0; i < iREGCNT_XMM - 1; ++i)
 	{
 		if (xmmregs[i].inuse && xmmregs[i].counter == 0)
 		{
@@ -788,7 +788,7 @@ u16 _freeXMMregsCOP2()
 	int regtoclear = -1;
 	int maxcount = 9999;
 
-	for (size_t i = 0; i < iREGCNT_XMM - 1; i++)
+	for (size_t i = 0; i < iREGCNT_XMM - 1; ++i)
 	{
 		if (xmmregs[i].inuse && xmmregs[i].counter < maxcount)
 		{
@@ -814,7 +814,7 @@ u16 _freeXMMregsCOP2()
 int _getNumXMMwrite()
 {
 	int num = 0;
-	for (size_t i = 0; i < iREGCNT_XMM; i++)
+	for (size_t i = 0; i < iREGCNT_XMM; ++i)
 	{
 		if (xmmregs[i].inuse && (xmmregs[i].mode & MODE_WRITE))
 			++num;
@@ -828,14 +828,14 @@ int _getNumXMMwrite()
 // Step3: check registers that are not useful anymore (EEINST_USED cleared)
 u8 _hasFreeXMMreg()
 {
-	for (size_t i = 0; i < iREGCNT_XMM; i++)
+	for (size_t i = 0; i < iREGCNT_XMM; ++i)
 	{
 		if (!xmmregs[i].inuse)
 			return 1;
 	}
 
 	// check for dead regs
-	for (size_t i = 0; i < iREGCNT_XMM; i++)
+	for (size_t i = 0; i < iREGCNT_XMM; ++i)
 	{
 		if (xmmregs[i].needed)
 			continue;
@@ -849,7 +849,7 @@ u8 _hasFreeXMMreg()
 	}
 
 	// check for dead regs
-	for (size_t i = 0; i < iREGCNT_XMM; i++)
+	for (size_t i = 0; i < iREGCNT_XMM; ++i)
 	{
 		if (xmmregs[i].needed)
 			continue;
@@ -867,7 +867,7 @@ u8 _hasFreeXMMreg()
 // Flush in memory all inuse registers but registers are still valid
 void _flushXMMregs()
 {
-	for (size_t i = 0; i < iREGCNT_XMM; i++)
+	for (size_t i = 0; i < iREGCNT_XMM; ++i)
 	{
 		if (xmmregs[i].inuse == 0)
 			continue;
@@ -885,7 +885,7 @@ void _flushXMMregs()
 // Flush in memory all inuse registers. All registers are invalid
 void _freeXMMregs()
 {
-	for (size_t i = 0; i < iREGCNT_XMM; i++)
+	for (size_t i = 0; i < iREGCNT_XMM; ++i)
 	{
 		if (xmmregs[i].inuse == 0)
 			continue;

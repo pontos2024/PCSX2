@@ -1501,7 +1501,7 @@ static PaWinWdmPin* PinNew(PaWinWdmFilter* parentFilter, unsigned long pinId, Pa
     pin->defaultSampleRate = 0;
     pin->formats = 0;
     PA_DEBUG(("PinNew: Checking %u no of dataranges...\n", pin->dataRangesItem->Count));
-    for( i = 0; i < pin->dataRangesItem->Count; i++)
+    for( i = 0; i < pin->dataRangesItem->Count; ++i)
     {
         PA_DEBUG(("PinNew: DR major format %x\n",*(unsigned long*)(&(dataRange->MajorFormat))));
         /* Check that subformat is WAVEFORMATEX, PCM or WILDCARD */
@@ -5730,7 +5730,7 @@ static PaError PaDoProcessing(PaProcessThreadInfo* pInfo)
 
             PaUtil_SetOutputFrameCount(&pInfo->stream->bufferProcessor, pInfo->stream->render.framesPerBuffer);
 
-            for(i=0;i<pInfo->stream->userOutputChannels;i++)
+            for(i=0;i<pInfo->stream->userOutputChannels;++i)
             {
                 /* Only write the user output channels. Leave the rest blank */
                 PaUtil_SetOutputChannel(&pInfo->stream->bufferProcessor,
@@ -5768,7 +5768,7 @@ static PaError PaDoProcessing(PaProcessThreadInfo* pInfo)
                     break;
 
                 fnSetInputFrameCount[wrapCntr](&pInfo->stream->bufferProcessor, size[wrapCntr]);
-                for(i=0;i<pInfo->stream->userInputChannels;i++)
+                for(i=0;i<pInfo->stream->userInputChannels;++i)
                 {
                     /* Only read as many channels as the user wants */
                     fnSetInputChannel[wrapCntr](&pInfo->stream->bufferProcessor,

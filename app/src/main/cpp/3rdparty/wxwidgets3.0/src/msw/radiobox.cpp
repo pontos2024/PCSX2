@@ -690,7 +690,7 @@ wxRadioBox::PositionAllButtons(int x, int y, int width, int WXUNUSED(height))
     int startY = y_offset;
 
     const unsigned int count = GetCount();
-    for (unsigned int i = 0; i < count; i++)
+    for (unsigned int i = 0; i < count; ++i)
     {
         // the last button in the row may be wider than the other ones as the
         // radiobox may be wider than the sum of the button widths (as it

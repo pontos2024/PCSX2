@@ -168,7 +168,7 @@ void RefreshEnabledDevices(int updateDeviceList)
 		lastXInputState = config.gameApis.xInput;
 	}
 
-	for (int i = 0; i < dm->numDevices; i++)
+	for (int i = 0; i < dm->numDevices; ++i)
 	{
 		Device* dev = dm->devices[i];
 
@@ -223,7 +223,7 @@ void RefreshEnabledDevicesAndDisplay(int updateDeviceList = 0, HWND hWnd = 0, in
 		item.iItem = 0;
 		item.iSubItem = 0;
 		item.mask = LVIF_TEXT | LVIF_PARAM;
-		for (int j = 0; j < dm->numDevices; j++)
+		for (int j = 0; j < dm->numDevices; ++j)
 		{
 			if (dm->devices[j]->enabled && dm->devices[j]->api != IGNORE_KEYBOARD)
 			{
@@ -250,9 +250,9 @@ void RefreshEnabledDevicesAndDisplay(int updateDeviceList = 0, HWND hWnd = 0, in
 	}
 	if (populate)
 	{
-		for (int j = 0; j < numPadTypes; j++)
+		for (int j = 0; j < numPadTypes; ++j)
 		{
-			for (int i = 0; i < 8; i++)
+			for (int i = 0; i < 8; ++i)
 			{
 				Populate(i & 1, i >> 1, j);
 			}
@@ -410,7 +410,7 @@ void SelChanged(int port, int slot)
 			item.iItem = index;
 			item.mask = LVIF_TEXT;
 			item.pszText = temp[3];
-			for (j = 0; j < 3; j++)
+			for (j = 0; j < 3; ++j)
 			{
 				item.iSubItem = j;
 				item.cchTextMax = sizeof(temp[0]) / sizeof(temp[3][0]);
@@ -513,7 +513,7 @@ void SelChanged(int port, int slot)
 
 	// Input & Special Bindings:
 	SetWindowTextW(GetDlgItem(hWnd, ID_SPECIAL_INPUTS), config.specialInputs[port][slot] ? L"Hide Special Inputs" : L"Show Special Inputs");
-	for (i = IDC_DPAD; i <= ID_SPECIAL_INPUTS; i++)
+	for (i = IDC_DPAD; i <= ID_SPECIAL_INPUTS; ++i)
 	{
 		hWndTemp = GetDlgItem(hWnd, i);
 		if (hWndTemp)
@@ -525,7 +525,7 @@ void SelChanged(int port, int slot)
 		}
 	}
 	// Input configuration:
-	for (i = IDC_SLIDER_SENSITIVITY; i <= IDC_AXIS_SKIP_DEADZONE; i++)
+	for (i = IDC_SLIDER_SENSITIVITY; i <= IDC_AXIS_SKIP_DEADZONE; ++i)
 	{
 		hWndTemp = GetDlgItem(hWnd, i);
 		if (hWndTemp)
@@ -536,7 +536,7 @@ void SelChanged(int port, int slot)
 			ShowWindow(hWndTemp, 0);
 	}
 	// Pad Force Feedback configuration:
-	for (i = ID_TEST; i <= IDC_FF_AXIS8_SCALE; i++)
+	for (i = ID_TEST; i <= IDC_FF_AXIS8_SCALE; ++i)
 	{
 		hWndTemp = GetDlgItem(hWnd, i);
 		if (hWndTemp)
@@ -628,7 +628,7 @@ void SelChanged(int port, int slot)
 					sel = (end[-1] == '+');
 					end -= 2;
 				}
-				for (int i = 0; i < 3; i++)
+				for (int i = 0; i < 3; ++i)
 				{
 					wcscpy(end, endings[i]);
 					SendMessage(hWndCombo, CB_ADDSTRING, 0, (LPARAM)string);
@@ -655,7 +655,7 @@ void SelChanged(int port, int slot)
 
 		hWndTemp = GetDlgItem(hWnd, IDC_FF_EFFECT);
 		SendMessage(hWndTemp, CB_RESETCONTENT, 0, 0);
-		for (i = 0; i < dev->numFFEffectTypes; i++)
+		for (i = 0; i < dev->numFFEffectTypes; ++i)
 		{
 			SendMessage(hWndTemp, CB_INSERTSTRING, i, (LPARAM)dev->ffEffectTypes[i].displayName);
 		}
@@ -680,7 +680,7 @@ int GetItemIndex(int port, int slot, Device* dev, ForceFeedbackBinding* binding)
 	int count = 0;
 	int padtype = config.padConfigs[port][slot].type;
 	int selectedDevice = config.deviceSelect[port][slot];
-	for (int i = 0; i < dm->numDevices; i++)
+	for (int i = 0; i < dm->numDevices; ++i)
 	{
 		Device* dev2 = dm->devices[i];
 		if (!dev2->enabled || selectedDevice >= 0 && dm->devices[selectedDevice] != dev2)
@@ -699,7 +699,7 @@ int GetItemIndex(int port, int slot, Device* dev, Binding* binding)
 	int count = 0;
 	int padtype = config.padConfigs[port][slot].type;
 	int selectedDevice = config.deviceSelect[port][slot];
-	for (int i = 0; i < dm->numDevices; i++)
+	for (int i = 0; i < dm->numDevices; ++i)
 	{
 		Device* dev2 = dm->devices[i];
 		if (!dev2->enabled || selectedDevice >= 0 && dm->devices[selectedDevice] != dev2)
@@ -875,16 +875,16 @@ void Populate(int port, int slot, int padtype)
 	int multipleBinding = config.multipleBinding;
 	config.multipleBinding = 1;
 	int selectedDevice = config.deviceSelect[port][slot];
-	for (int j = 0; j < dm->numDevices; j++)
+	for (int j = 0; j < dm->numDevices; ++j)
 	{
 		Device* dev = dm->devices[j];
 		if (!dev->enabled || selectedDevice >= 0 && dm->devices[selectedDevice] != dev)
 			continue;
-		for (int i = 0; i < dev->pads[port][slot][padtype].numBindings; i++)
+		for (int i = 0; i < dev->pads[port][slot][padtype].numBindings; ++i)
 		{
 			ListBoundCommand(port, slot, dev, dev->pads[port][slot][padtype].bindings + i);
 		}
-		for (int i = 0; i < dev->pads[port][slot][padtype].numFFBindings; i++)
+		for (int i = 0; i < dev->pads[port][slot][padtype].numFFBindings; ++i)
 		{
 			ListBoundEffect(port, slot, dev, dev->pads[port][slot][padtype].ffBindings + i);
 		}
@@ -895,7 +895,7 @@ void Populate(int port, int slot, int padtype)
 	SendMessage(hWnd, CB_RESETCONTENT, 0, 0);
 	int added = 0;
 	bool enable = false;
-	for (int i = 0; i < dm->numDevices; i++)
+	for (int i = 0; i < dm->numDevices; ++i)
 	{
 		Device* dev = dm->devices[i];
 		if (dev->enabled && dev->numFFAxes && dev->numFFEffectTypes)
@@ -953,7 +953,7 @@ int SaveSettings(wchar_t* file = 0)
 	// config path.
 	int noError = 1;
 
-	for (int i = 0; i < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); i++)
+	for (int i = 0; i < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); ++i)
 	{
 		noError &= WritePrivateProfileInt(L"General Settings", BoolOptionsInfo[i].name, config.bools[i], file);
 	}
@@ -973,7 +973,7 @@ int SaveSettings(wchar_t* file = 0)
 		}
 	}
 
-	for (int i = 0; i < dm->numDevices; i++)
+	for (int i = 0; i < dm->numDevices; ++i)
 	{
 		wchar_t id[50];
 		wchar_t temp[50], temp2[1000];
@@ -1005,7 +1005,7 @@ int SaveSettings(wchar_t* file = 0)
 			{
 				for (int padtype = 0; padtype < numPadTypes; padtype++)
 				{
-					for (int j = 0; j < dev->pads[port][slot][padtype].numBindings; j++)
+					for (int j = 0; j < dev->pads[port][slot][padtype].numBindings; ++j)
 					{
 						Binding* b = dev->pads[port][slot][padtype].bindings + j;
 						VirtualControl* c = &dev->virtualControls[b->controlIndex];
@@ -1013,7 +1013,7 @@ int SaveSettings(wchar_t* file = 0)
 						wsprintfW(temp2, L"0x%08X, %i, %i, %i, %i, %i, %i, %i, %i", c->uid, port, b->command, b->sensitivity, b->rapidFire, slot, b->deadZone, b->skipDeadZone, padtype);
 						noError &= WritePrivateProfileStringW(id, temp, temp2, file);
 					}
-					for (int j = 0; j < dev->pads[port][slot][padtype].numFFBindings; j++)
+					for (int j = 0; j < dev->pads[port][slot][padtype].numFFBindings; ++j)
 					{
 						ForceFeedbackBinding* b = dev->pads[port][slot][padtype].ffBindings + j;
 						ForceFeedbackEffectType* eff = &dev->ffEffectTypes[b->effectIndex];
@@ -1079,7 +1079,7 @@ int LoadSettings(int force, wchar_t* file)
 		}
 	}
 
-	for (int i = 0; i < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); i++)
+	for (int i = 0; i < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); ++i)
 	{
 		config.bools[i] = GetPrivateProfileBool(L"General Settings", BoolOptionsInfo[i].name, BoolOptionsInfo[i].defaultValue, file);
 	}
@@ -1115,7 +1115,7 @@ int LoadSettings(int force, wchar_t* file)
 	{
 		wchar_t id[50];
 		wchar_t temp[50], temp2[1000], temp3[1000], temp4[1000];
-		wsprintfW(id, L"Device %i", i++);
+		wsprintfW(id, L"Device %i", ++i);
 		if (!GetPrivateProfileStringW(id, L"Display Name", 0, temp2, 1000, file) || !temp2[0] ||
 			!GetPrivateProfileStringW(id, L"Instance ID", 0, temp3, 1000, file) || !temp3[0])
 		{
@@ -1139,7 +1139,7 @@ int LoadSettings(int force, wchar_t* file)
 		int last = 0;
 		while (1)
 		{
-			wsprintfW(temp, L"Binding %i", j++);
+			wsprintfW(temp, L"Binding %i", ++j);
 			if (!GetPrivateProfileStringW(id, temp, 0, temp2, 1000, file))
 			{
 				if (j >= 100)
@@ -1193,7 +1193,7 @@ int LoadSettings(int force, wchar_t* file)
 		j = 0;
 		while (1)
 		{
-			wsprintfW(temp, L"FF Binding %i", j++);
+			wsprintfW(temp, L"FF Binding %i", ++j);
 			if (!GetPrivateProfileStringW(id, temp, 0, temp2, 1000, file))
 			{
 				if (j >= 10)
@@ -1266,7 +1266,7 @@ int LoadSettings(int force, wchar_t* file)
 						s++;
 						int force = atoi(s);
 						int i;
-						for (i = 0; i < dev->numFFAxes; i++)
+						for (i = 0; i < dev->numFFAxes; ++i)
 						{
 							if (axisID == dev->ffAxes[i].id)
 								break;
@@ -1295,9 +1295,9 @@ inline int GetPort(HWND hWnd, int* slot)
 {
 	if (sizeof(hWnds) / sizeof(hWnds[0][0][0]) != (2 * 4 * numPadTypes))
 		MessageBoxA(hWndProp, "The number of detected configurations does not equal the expected number of configurations.", "Pad configurations error", MB_OK | MB_ICONERROR);
-	for (int j = 0; j < numPadTypes; j++)
+	for (int j = 0; j < numPadTypes; ++j)
 	{
-		for (int i = 0; i < 8; i++)
+		for (int i = 0; i < 8; ++i)
 		{
 			if (hWnds[i & 1][i >> 1][j] == hWnd)
 			{
@@ -1393,7 +1393,7 @@ int GetBinding(int port, int slot, int index, Device*& dev, Binding*& b, ForceFe
 	b = 0;
 	int padtype = config.padConfigs[port][slot].type;
 	int selectedDevice = config.deviceSelect[port][slot];
-	for (int i = 0; i < dm->numDevices; i++)
+	for (int i = 0; i < dm->numDevices; ++i)
 	{
 		dev = dm->devices[i];
 		if (!dev->enabled || selectedDevice >= 0 && dm->devices[selectedDevice] != dev)
@@ -1648,7 +1648,7 @@ int BindCommand(Device* dev, unsigned int uid, unsigned int port, unsigned int s
 					continue;
 				int padtype2 = config.padConfigs[port2][slot2].type;
 				PadBindings* p = dev->pads[port2][slot2] + padtype2;
-				for (int i = 0; i < p->numBindings; i++)
+				for (int i = 0; i < p->numBindings; ++i)
 				{
 					Binding* b = p->bindings + i;
 					int uid2 = dev->virtualControls[b->controlIndex].uid;
@@ -1762,7 +1762,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
 			SendMessage(hWndDS, CB_INSERTSTRING, added, (LPARAM)L"Allow All Devices");
 			SendMessage(hWndDS, CB_SETITEMDATA, added, -1);
 			added++;
-			for (int i = 0; i < dm->numDevices; i++)
+			for (int i = 0; i < dm->numDevices; ++i)
 			{
 				Device* dev = dm->devices[i];
 				if (dev->enabled && dev->api != IGNORE_KEYBOARD)
@@ -1818,7 +1818,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
 
 				//Check the bindings for an excluded input, and ignore it if found.
 				PadBindings* p_c = dev->pads[port][slot] + padtype;
-				for (int i = 0; i < p_c->numBindings; i++)
+				for (int i = 0; i < p_c->numBindings; ++i)
 				{
 					Binding* b2 = p_c->bindings + i;
 					int uid2 = dev->virtualControls[b2->controlIndex].uid;
@@ -1870,7 +1870,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
 							wsprintfW(temp, L"Please enter an input for %ws", GetCommandStringW(selected, port, slot));
 							SetWindowTextW(GetDlgItem(hWnd, IDC_QUICK_SETUP_TEXT), temp);
 							Sleep(80);
-							for (int i = 0; i < dm->numDevices; i++)
+							for (int i = 0; i < dm->numDevices; ++i)
 							{
 								if (dm->devices[i]->active && (dm->devices[i]->api != WM || dm->devices[i]->api != RAW))
 									dm->devices[i]->Deactivate();
@@ -2037,7 +2037,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
 				RefreshEnabledDevicesAndDisplay(1, hWndGeneral, 1);
 				if (selectedDev > 0)
 				{
-					for (int i = 0; i < dm->numDevices; i++)
+					for (int i = 0; i < dm->numDevices; ++i)
 					{
 						Device* dev = dm->devices[config.deviceSelect[port][slot]];
 						if (dm->devices[i] != dev)
@@ -2120,7 +2120,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
 								{
 									int bigIndex = 0, littleIndex = 0;
 									int j;
-									for (j = 0; j < dev->numFFAxes; j++)
+									for (j = 0; j < dev->numFFAxes; ++j)
 									{
 										// DI object instance.  0 is x-axis, 1 is y-axis.
 										int instance = (dev->ffAxes[j].id >> 8) & 0xFFFF;
@@ -2147,7 +2147,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
 								}
 								if (needSet)
 								{
-									for (int j = 0; j < 2 && j < dev->numFFAxes; j++)
+									for (int j = 0; j < 2 && j < dev->numFFAxes; ++j)
 									{
 										b->axes[j].force = BASE_SENSITIVITY;
 									}
@@ -2182,7 +2182,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
 							selected = 0xFF;
 							hWndButtonProc.SetWndHandle(GetDlgItem(hWnd, cmd));
 							InitInfo info = {0, 1, hWndProp, &hWndButtonProc};
-							for (int i = 0; i < dm->numDevices; i++)
+							for (int i = 0; i < dm->numDevices; ++i)
 							{
 								if (dm->devices[i] != dev)
 								{
@@ -2211,7 +2211,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
 					int selectedDev = SendMessage(GetDlgItem(hWnd, IDC_DEVICE_SELECT), CB_GETCURSEL, 0, 0);
 					if (selectedDev > 0)
 					{
-						for (int i = 0; i < dm->numDevices; i++)
+						for (int i = 0; i < dm->numDevices; ++i)
 						{
 							Device* dev = dm->devices[config.deviceSelect[port][slot]];
 							if (dm->devices[i] != dev)
@@ -2309,7 +2309,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
 							if (b)
 							{
 								VirtualControl* control = &dev->virtualControls[b->controlIndex];
-								for (int i = IDC_SLIDER_SENSITIVITY; i <= IDC_SLIDER_SKIP_DEADZONE; i++)
+								for (int i = IDC_SLIDER_SENSITIVITY; i <= IDC_SLIDER_SKIP_DEADZONE; ++i)
 								{
 									if (i == IDC_SLIDER_SENSITIVITY)
 									{
@@ -2418,7 +2418,7 @@ bool ProfilesBindingCheck(unsigned int port, unsigned int slot, unsigned int pad
 {
 	bool showWarning = true;
 	int count = 0;
-	for (int i = 0; i < dm->numDevices; i++)
+	for (int i = 0; i < dm->numDevices; ++i)
 	{
 		for (int portCheck = 0; portCheck < 2; portCheck++)
 		{
@@ -2434,7 +2434,7 @@ bool ProfilesBindingCheck(unsigned int port, unsigned int slot, unsigned int pad
 				int padtypeCheck = config.padConfigs[portCheck][slotCheck].type;
 				PadBindings* pCheck = dm->devices[i]->pads[portCheck][slotCheck] + padtypeCheck;
 				PadBindings* pActive = dm->devices[i]->pads[port][slot] + padtype;
-				for (int j = 0; j < pCheck->numBindings; j++)
+				for (int j = 0; j < pCheck->numBindings; ++j)
 				{
 					for (int k = 0; k < pActive->numBindings; k++)
 					{
@@ -2521,7 +2521,7 @@ void UpdatePadPages()
 	{
 		PropSheet_RemovePage(hWndProp, 1, 0);
 	}
-	for (int i = 0; i < count; i++)
+	for (int i = 0; i < count; ++i)
 	{
 		PropSheet_AddPage(hWndProp, pages[i]);
 	}
@@ -2594,7 +2594,7 @@ void UpdatePadList(HWND hWnd)
 			item.iSubItem = 2;
 			int count = 0;
 			int selectedDevice = config.deviceSelect[port][slot];
-			for (int i = 0; i < dm->numDevices; i++)
+			for (int i = 0; i < dm->numDevices; ++i)
 			{
 				Device* dev = dm->devices[i];
 				if (!dev->enabled)
@@ -2651,7 +2651,7 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
 				selected = 0;
 				ListView_SetExtendedListViewStyleEx(hWndList, LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER, LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
 				SendMessage(hWndList, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, LVS_EX_FULLROWSELECT);
-				for (int i = 0; i < numPadTypes; i++)
+				for (int i = 0; i < numPadTypes; ++i)
 					SendMessage(hWndCombo, CB_ADDSTRING, 0, (LPARAM)padTypes[i]);
 			}
 		}
@@ -2666,7 +2666,7 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
 				EnableWindow(GetDlgItem(hWnd, IDC_G_DS3), 0);
 			}
 
-			for (int j = 0; j < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); j++)
+			for (int j = 0; j < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); ++j)
 			{
 				CheckDlgButton(hWnd, BoolOptionsInfo[j].ControlId, BST_CHECKED * config.bools[j]);
 			}
@@ -2782,12 +2782,12 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
 
 				int mtap = config.multitap[0] + 2 * config.multitap[1];
 
-				for (int j = 0; j < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); j++)
+				for (int j = 0; j < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); ++j)
 				{
 					config.bools[j] = (IsDlgButtonChecked(hWnd, BoolOptionsInfo[j].ControlId) == BST_CHECKED);
 				}
 
-				for (int i = 0; i < 4; i++)
+				for (int i = 0; i < 4; ++i)
 				{
 					if (i && IsDlgButtonChecked(hWnd, IDC_KB_DISABLE + i) == BST_CHECKED)
 					{
@@ -2993,7 +2993,7 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
 							config.padConfigs[port2][slot2].type = config.padConfigs[port1][slot1].type;
 							config.padConfigs[port1][slot1].type = padCfgTemp.type;
 						}
-						for (int i = 0; i < dm->numDevices; i++)
+						for (int i = 0; i < dm->numDevices; ++i)
 						{
 							if (dm->devices[i]->type == IGNORE)
 								continue;
@@ -3020,14 +3020,14 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
 						{
 							swapIndividualPadtypes = true;
 						}
-						for (int i = 0; i < dm->numDevices; i++)
+						for (int i = 0; i < dm->numDevices; ++i)
 						{
 							if (dm->devices[i]->type == IGNORE)
 								continue;
 							if (swapIndividualPadtypes)
 							{
 								free(dm->devices[i]->pads[port1][slot1][padtype1].bindings);
-								for (int j = 0; j < dm->devices[i]->pads[port1][slot1][padtype1].numFFBindings; j++)
+								for (int j = 0; j < dm->devices[i]->pads[port1][slot1][padtype1].numFFBindings; ++j)
 								{
 									free(dm->devices[i]->pads[port1][slot1][padtype1].ffBindings[j].axes);
 								}
@@ -3039,7 +3039,7 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
 								for (int padtype = 0; padtype < numPadTypes; padtype++)
 								{
 									free(dm->devices[i]->pads[port1][slot1][padtype].bindings);
-									for (int j = 0; j < dm->devices[i]->pads[port1][slot1][padtype].numFFBindings; j++)
+									for (int j = 0; j < dm->devices[i]->pads[port1][slot1][padtype].numFFBindings; ++j)
 									{
 										free(dm->devices[i]->pads[port1][slot1][padtype].ffBindings[j].axes);
 									}

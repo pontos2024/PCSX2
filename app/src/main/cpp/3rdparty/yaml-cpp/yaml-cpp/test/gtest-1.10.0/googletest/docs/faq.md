@@ -559,7 +559,7 @@ TEST(MyDeathTest, ComplexExpression) {
 // particular, they can be inside a loop.
 TEST(MyDeathTest, InsideLoop) {
   // Verifies that Foo(0), Foo(1), ..., and Foo(4) all die.
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 5; ++i) {
     EXPECT_DEATH_M(Foo(i), "Foo has \\d+ errors",
                    ::testing::Message() << "where i is " << i);
   }
@@ -570,7 +570,7 @@ TEST(MyDeathTest, CompoundStatement) {
   // Verifies that at lease one of Bar(0), Bar(1), ..., and
   // Bar(4) dies.
   ASSERT_DEATH({
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 5; ++i) {
       Bar(i);
     }
   },

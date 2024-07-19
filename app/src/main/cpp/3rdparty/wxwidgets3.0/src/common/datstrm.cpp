@@ -395,7 +395,7 @@ void wxDataInputStream::Read32(wxUint32 *buffer, size_t size)
 
     if (m_be_order)
     {
-        for (wxUint32 i=0; i<size; i++)
+        for (wxUint32 i=0; i<size; ++i)
         {
             wxUint32 v = wxUINT32_SWAP_ON_LE(*buffer);
             *(buffer++) = v;
@@ -403,7 +403,7 @@ void wxDataInputStream::Read32(wxUint32 *buffer, size_t size)
     }
     else
     {
-        for (wxUint32 i=0; i<size; i++)
+        for (wxUint32 i=0; i<size; ++i)
         {
             wxUint32 v = wxUINT32_SWAP_ON_BE(*buffer);
             *(buffer++) = v;
@@ -417,7 +417,7 @@ void wxDataInputStream::Read16(wxUint16 *buffer, size_t size)
 
   if (m_be_order)
   {
-    for (wxUint32 i=0; i<size; i++)
+    for (wxUint32 i=0; i<size; ++i)
     {
       wxUint16 v = wxUINT16_SWAP_ON_LE(*buffer);
       *(buffer++) = v;
@@ -425,7 +425,7 @@ void wxDataInputStream::Read16(wxUint16 *buffer, size_t size)
   }
   else
   {
-    for (wxUint32 i=0; i<size; i++)
+    for (wxUint32 i=0; i<size; ++i)
     {
       wxUint16 v = wxUINT16_SWAP_ON_BE(*buffer);
       *(buffer++) = v;
@@ -440,7 +440,7 @@ void wxDataInputStream::Read8(wxUint8 *buffer, size_t size)
 
 void wxDataInputStream::ReadDouble(double *buffer, size_t size)
 {
-  for (wxUint32 i=0; i<size; i++)
+  for (wxUint32 i=0; i<size; ++i)
   {
     *(buffer++) = ReadDouble();
   }
@@ -448,7 +448,7 @@ void wxDataInputStream::ReadDouble(double *buffer, size_t size)
 
 void wxDataInputStream::ReadFloat(float *buffer, size_t size)
 {
-  for (wxUint32 i=0; i<size; i++)
+  for (wxUint32 i=0; i<size; ++i)
   {
     *(buffer++) = ReadFloat();
   }
@@ -704,7 +704,7 @@ void wxDataOutputStream::Write32(const wxUint32 *buffer, size_t size)
 {
   if (m_be_order)
   {
-    for (wxUint32 i=0; i<size ;i++)
+    for (wxUint32 i=0; i<size ;++i)
     {
       wxUint32 i32 = wxUINT32_SWAP_ON_LE(*buffer);
       buffer++;
@@ -713,7 +713,7 @@ void wxDataOutputStream::Write32(const wxUint32 *buffer, size_t size)
   }
   else
   {
-    for (wxUint32 i=0; i<size ;i++)
+    for (wxUint32 i=0; i<size ;++i)
     {
       wxUint32 i32 = wxUINT32_SWAP_ON_BE(*buffer);
       buffer++;
@@ -726,7 +726,7 @@ void wxDataOutputStream::Write16(const wxUint16 *buffer, size_t size)
 {
   if (m_be_order)
   {
-    for (wxUint32 i=0; i<size ;i++)
+    for (wxUint32 i=0; i<size ;++i)
     {
       wxUint16 i16 = wxUINT16_SWAP_ON_LE(*buffer);
       buffer++;
@@ -735,7 +735,7 @@ void wxDataOutputStream::Write16(const wxUint16 *buffer, size_t size)
   }
   else
   {
-    for (wxUint32 i=0; i<size ;i++)
+    for (wxUint32 i=0; i<size ;++i)
     {
       wxUint16 i16 = wxUINT16_SWAP_ON_BE(*buffer);
       buffer++;
@@ -751,7 +751,7 @@ void wxDataOutputStream::Write8(const wxUint8 *buffer, size_t size)
 
 void wxDataOutputStream::WriteDouble(const double *buffer, size_t size)
 {
-  for (wxUint32 i=0; i<size; i++)
+  for (wxUint32 i=0; i<size; ++i)
   {
     WriteDouble(*(buffer++));
   }
@@ -759,7 +759,7 @@ void wxDataOutputStream::WriteDouble(const double *buffer, size_t size)
 
 void wxDataOutputStream::WriteFloat(const float *buffer, size_t size)
 {
-  for (wxUint32 i=0; i<size; i++)
+  for (wxUint32 i=0; i<size; ++i)
   {
     WriteFloat(*(buffer++));
   }

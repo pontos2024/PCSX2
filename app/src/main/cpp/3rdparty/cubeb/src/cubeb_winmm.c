@@ -201,13 +201,13 @@ winmm_refill_stream(cubeb_stream * stm)
     if (stm->params.format == CUBEB_SAMPLE_FLOAT32NE) {
       float * b = (float *) hdr->lpData;
       uint32_t i;
-      for (i = 0; i < got * stm->params.channels; i++) {
+      for (i = 0; i < got * stm->params.channels; ++i) {
         b[i] *= stm->soft_volume;
       }
     } else {
       short * b = (short *) hdr->lpData;
       uint32_t i;
-      for (i = 0; i < got * stm->params.channels; i++) {
+      for (i = 0; i < got * stm->params.channels; ++i) {
         b[i] = (short) (b[i] * stm->soft_volume);
       }
     }
@@ -987,7 +987,7 @@ winmm_enumerate_devices(cubeb * context, cubeb_device_type type,
     ZeroMemory(&woc, sizeof(woc));
     ZeroMemory(&woc2, sizeof(woc2));
 
-    for (i = 0; i < outcount; i++) {
+    for (i = 0; i < outcount; ++i) {
       dev = &devices[collection->count];
       if (waveOutGetDevCapsA(i, (LPWAVEOUTCAPSA)&woc2, sizeof(woc2)) == MMSYSERR_NOERROR) {
         winmm_create_device_from_outcaps2(dev, &woc2, i);
@@ -1006,7 +1006,7 @@ winmm_enumerate_devices(cubeb * context, cubeb_device_type type,
     ZeroMemory(&wic, sizeof(wic));
     ZeroMemory(&wic2, sizeof(wic2));
 
-    for (i = 0; i < incount; i++) {
+    for (i = 0; i < incount; ++i) {
       dev = &devices[collection->count];
       if (waveInGetDevCapsA(i, (LPWAVEINCAPSA)&wic2, sizeof(wic2)) == MMSYSERR_NOERROR) {
         winmm_create_device_from_incaps2(dev, &wic2, i);
@@ -1032,7 +1032,7 @@ winmm_device_collection_destroy(cubeb * ctx,
 
   (void) ctx;
 
-  for (i = 0; i < collection->count; i++) {
+  for (i = 0; i < collection->count; ++i) {
     free((void *) collection->device[i].device_id);
     free((void *) collection->device[i].friendly_name);
     free((void *) collection->device[i].group_id);

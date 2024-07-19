@@ -41,8 +41,10 @@ void ATA::HDD_FlushCache() //Can't when DRQ set
 {
 	if (!PreCmd())
 		return;
-	DevCon.WriteLn("DEV9: HDD_FlushCache");
 
+#ifdef PCSX2_DEBUG
+	DevCon.WriteLn("DEV9: HDD_FlushCache");
+#endif
 	awaitFlush = true;
 	Async(-1);
 }
@@ -50,8 +52,9 @@ void ATA::HDD_FlushCache() //Can't when DRQ set
 void ATA::HDD_InitDevParameters()
 {
 	PreCmd(); //Ignore DRDY bit
+#ifdef PCSX2_DEBUG
 	DevCon.WriteLn("DEV9: HDD_InitDevParameters");
-
+#endif
 	curSectors = regNsector;
 	curHeads = (u8)((regSelect & 0x7) + 1);
 	PostCmdNoData();
@@ -148,14 +151,18 @@ void ATA::HDD_SetFeatures()
 					udmaMode = mode;
 					break;
 				default:
+#ifdef PCSX2_DEBUG
 					Console.Error("DEV9: ATA: Unknown transfer mode");
+#endif
 					CmdNoDataAbort();
 					break;
 			}
 		}
 		break;
 		default:
+#ifdef PCSX2_DEBUG
 			Console.Error("DEV9: ATA: Unknown feature mode");
+#endif
 			break;
 	}
 	PostCmdNoData();

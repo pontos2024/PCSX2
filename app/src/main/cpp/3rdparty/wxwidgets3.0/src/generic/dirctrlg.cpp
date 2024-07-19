@@ -124,7 +124,7 @@ size_t wxGetAvailableDrives(wxArrayString &paths, wxArrayString &names, wxArrayI
     //       but unfortunately wxFSVolumeBase is not implemented everywhere
     const wxArrayString as = wxFSVolumeBase::GetVolumes();
 
-    for (size_t i = 0; i < as.GetCount(); i++)
+    for (size_t i = 0; i < as.GetCount(); ++i)
     {
         wxString path = as[i];
         wxFSVolume vol(path);
@@ -879,7 +879,7 @@ void wxGenericDirCtrl::PopulateNode(wxTreeItemId parentId)
 
     // Add the sorted dirs
     size_t i;
-    for (i = 0; i < dirs.GetCount(); i++)
+    for (i = 0; i < dirs.GetCount(); ++i)
     {
         eachFilename = dirs[i];
         path = dirName;
@@ -904,7 +904,7 @@ void wxGenericDirCtrl::PopulateNode(wxTreeItemId parentId)
     // Add the sorted filenames
     if (!HasFlag(wxDIRCTRL_DIR_ONLY))
     {
-        for (i = 0; i < filenames.GetCount(); i++)
+        for (i = 0; i < filenames.GetCount(); ++i)
         {
             eachFilename = filenames[i];
             path = dirName;
@@ -1407,7 +1407,7 @@ void wxDirFilterListCtrl::OnSelFilter(wxCommandEvent& WXUNUSED(event))
         m_dirCtrl->ReCreateTree();
 
         // Expand and select the previously selected paths
-        for (unsigned int i = 0; i < paths.GetCount(); i++)
+        for (unsigned int i = 0; i < paths.GetCount(); ++i)
         {
             m_dirCtrl->ExpandPath(paths.Item(i));
         }
@@ -1432,7 +1432,7 @@ void wxDirFilterListCtrl::FillFilterList(const wxString& filter, int defaultFilt
 
     if (n > 0 && defaultFilter < (int) n)
     {
-        for (size_t i = 0; i < n; i++)
+        for (size_t i = 0; i < n; ++i)
             Append(descriptions[i]);
         SetSelection(defaultFilter);
     }
@@ -1646,9 +1646,9 @@ static wxBitmap CreateAntialiasedBitmap(const wxImage& img)
     p1 = img.GetData(), p2 = img.GetData() + 3 * size*2, ps = smallimg.GetData();
     smallimg.SetMaskColour(mr, mr, mr);
 
-    for (y = 0; y < size; y++)
+    for (y = 0; y < size; ++y)
     {
-        for (x = 0; x < size; x++)
+        for (x = 0; x < size; ++x)
         {
             sr = sg = sb = smask = 0;
             if (p1[0] != mr || p1[1] != mg || p1[2] != mb)

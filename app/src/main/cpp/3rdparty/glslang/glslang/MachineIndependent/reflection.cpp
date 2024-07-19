@@ -234,7 +234,7 @@ public:
 
         int ret = 0;
 
-        for (size_t i = 0; i < memberList.size(); i++)
+        for (size_t i = 0; i < memberList.size(); ++i)
         {
             const TType &memberType = *memberList[i].type;
             int numMembers = countAggregateMembers(memberType);

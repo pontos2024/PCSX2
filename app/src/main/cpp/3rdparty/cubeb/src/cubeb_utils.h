@@ -54,7 +54,7 @@ namespace {
 template<typename T, typename Trait>
 void Copy(T * destination, const T * source, size_t count, Trait)
 {
-  for (size_t i = 0; i < count; i++) {
+  for (size_t i = 0; i < count; ++i) {
     destination[i] = source[i];
   }
 }
@@ -82,7 +82,7 @@ namespace {
 template<typename T, typename Trait>
 void ConstructDefault(T * destination, size_t count, Trait)
 {
-  for (size_t i = 0; i < count; i++) {
+  for (size_t i = 0; i < count; ++i) {
     destination[i] = T();
   }
 }

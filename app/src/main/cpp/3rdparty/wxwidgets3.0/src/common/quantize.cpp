@@ -690,7 +690,7 @@ select_colors (j_decompress_ptr cinfo, int desired_colors)
   /* Perform median-cut to produce final box list */
   numboxes = median_cut(cinfo, boxlist, numboxes, desired_colors);
   /* Compute the representative color for each box, fill colormap */
-  for (i = 0; i < numboxes; i++)
+  for (i = 0; i < numboxes; ++i)
     compute_color(cinfo, & boxlist[i], i);
   cinfo->actual_number_of_colors = numboxes;
 
@@ -816,7 +816,7 @@ find_nearby_colors (j_decompress_ptr cinfo, int minc0, int minc1, int minc2,
    */
   minmaxdist = 0x7FFFFFFFL;
 
-  for (i = 0; i < numcolors; i++) {
+  for (i = 0; i < numcolors; ++i) {
     /* We compute the squared-c0-distance term, then add in the other two. */
     x = GETJSAMPLE(cinfo->colormap[0][i]);
     if (x < minc0) {
@@ -895,7 +895,7 @@ find_nearby_colors (j_decompress_ptr cinfo, int minc0, int minc1, int minc2,
    * within minmaxdist of some part of the box need be considered.
    */
   ncolors = 0;
-  for (i = 0; i < numcolors; i++) {
+  for (i = 0; i < numcolors; ++i) {
     if (mindist[i] <= minmaxdist)
       colorlist[ncolors++] = (JSAMPLE) i;
   }
@@ -940,7 +940,7 @@ find_best_colors (j_decompress_ptr cinfo, int minc0, int minc1, int minc2,
 #define STEP_C1  ((1 << C1_SHIFT) * C1_SCALE)
 #define STEP_C2  ((1 << C2_SHIFT) * C2_SCALE)
 
-  for (i = 0; i < numcolors; i++) {
+  for (i = 0; i < numcolors; ++i) {
     icolor = GETJSAMPLE(colorlist[i]);
     /* Compute (square of) distance from minc0/c1/c2 to this color */
     inc0 = (minc0 - GETJSAMPLE(cinfo->colormap[0][icolor])) * C0_SCALE;
@@ -1327,7 +1327,7 @@ start_pass_2_quant (j_decompress_ptr cinfo, bool is_pre_scan)
   }
   /* Zero the histogram or inverse color map, if necessary */
   if (cquantize->needs_zeroed) {
-    for (int i = 0; i < HIST_C0_ELEMS; i++) {
+    for (int i = 0; i < HIST_C0_ELEMS; ++i) {
       memset((void  *) histogram[i], 0,
         HIST_C1_ELEMS*HIST_C2_ELEMS * sizeof(histcell));
     }
@@ -1370,7 +1370,7 @@ jinit_2pass_quantizer (j_decompress_ptr cinfo)
 
   /* Allocate the histogram/inverse colormap storage */
   cquantize->histogram = (hist3d) malloc(HIST_C0_ELEMS * sizeof(hist2d));
-  for (i = 0; i < HIST_C0_ELEMS; i++) {
+  for (i = 0; i < HIST_C0_ELEMS; ++i) {
     cquantize->histogram[i] = (hist2d) malloc(HIST_C1_ELEMS*HIST_C2_ELEMS * sizeof(histcell));
   }
   cquantize->needs_zeroed = true; /* histogram is garbage now */
@@ -1427,11 +1427,11 @@ prepare_range_limit_table (j_decompress_ptr cinfo)
   /* First segment of "simple" table: limit[x] = 0 for x < 0 */
   memset(table - (MAXJSAMPLE+1), 0, (MAXJSAMPLE+1) * sizeof(JSAMPLE));
   /* Main part of "simple" table: limit[x] = x */
-  for (i = 0; i <= MAXJSAMPLE; i++)
+  for (i = 0; i <= MAXJSAMPLE; ++i)
     table[i] = (JSAMPLE) i;
   table += CENTERJSAMPLE;   /* Point to where post-IDCT table starts */
   /* End of simple table, rest of first half of post-IDCT table */
-  for (i = CENTERJSAMPLE; i < 2*(MAXJSAMPLE+1); i++)
+  for (i = CENTERJSAMPLE; i < 2*(MAXJSAMPLE+1); ++i)
     table[i] = MAXJSAMPLE;
   /* Second half of post-IDCT table */
   memset(table + (2 * (MAXJSAMPLE+1)), 0,
@@ -1471,7 +1471,7 @@ void wxQuantize::DoQuantize(unsigned w, unsigned h, unsigned char **in_rows, uns
     cquantize->pub.finish_pass(&dec);
 
 
-    for (int i = 0; i < dec.desired_number_of_colors; i++) {
+    for (int i = 0; i < dec.desired_number_of_colors; ++i) {
         palette[3 * i + 0] = dec.colormap[0][i];
         palette[3 * i + 1] = dec.colormap[1][i];
         palette[3 * i + 2] = dec.colormap[2][i];
@@ -1524,7 +1524,7 @@ bool wxQuantize::Quantize(const wxImage& src, wxImage& dest,
     int w = src.GetWidth();
     unsigned char **rows = new unsigned char *[h];
     unsigned char *imgdt = src.GetData();
-    for (i = 0; i < h; i++)
+    for (i = 0; i < h; ++i)
         rows[i] = imgdt + 3/*RGB*/ * w * i;
 
     unsigned char palette[3*256];
@@ -1532,7 +1532,7 @@ bool wxQuantize::Quantize(const wxImage& src, wxImage& dest,
     // This is the image as represented by palette indexes.
     unsigned char *data8bit = new unsigned char[w * h];
     unsigned char **outrows = new unsigned char *[h];
-    for (i = 0; i < h; i++)
+    for (i = 0; i < h; ++i)
         outrows[i] = data8bit + w * i;
 
     //RGB->palette
@@ -1549,7 +1549,7 @@ bool wxQuantize::Quantize(const wxImage& src, wxImage& dest,
             dest.Create(w, h);
 
         imgdt = dest.GetData();
-        for (i = 0; i < w * h; i++)
+        for (i = 0; i < w * h; ++i)
         {
             unsigned char c = data8bit[i];
             imgdt[3 * i + 0/*R*/] = palette[3 * c + 0];
@@ -1565,7 +1565,7 @@ bool wxQuantize::Quantize(const wxImage& src, wxImage& dest,
         {
             // We need to shift the palette entries up
             // to make room for the Windows system colours.
-            for (i = 0; i < w * h; i++)
+            for (i = 0; i < w * h; ++i)
                 data8bit[i] = (unsigned char)(data8bit[i] + paletteShift);
         }
 #endif
@@ -1591,7 +1591,7 @@ bool wxQuantize::Quantize(const wxImage& src, wxImage& dest,
             ::GetSystemPaletteEntries(hDC, 0, windowsSystemColourCount, entries);
             ::ReleaseDC(NULL, hDC);
 
-            for (i = 0; i < windowsSystemColourCount; i++)
+            for (i = 0; i < windowsSystemColourCount; ++i)
             {
                 r[i] = entries[i].peRed;
                 g[i] = entries[i].peGreen;
@@ -1601,7 +1601,7 @@ bool wxQuantize::Quantize(const wxImage& src, wxImage& dest,
         }
 #endif
 
-        for (i = 0; i < desiredNoColours; i++)
+        for (i = 0; i < desiredNoColours; ++i)
         {
             r[i+paletteShift] = palette[i*3 + 0];
             g[i+paletteShift] = palette[i*3 + 1];
@@ -1609,7 +1609,7 @@ bool wxQuantize::Quantize(const wxImage& src, wxImage& dest,
         }
 
         // Blank out any remaining palette entries
-        for (i = desiredNoColours+paletteShift; i < 256; i++)
+        for (i = desiredNoColours+paletteShift; i < 256; ++i)
         {
             r[i] = 0;
             g[i] = 0;

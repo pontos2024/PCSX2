@@ -746,7 +746,7 @@ namespace jpgd {
 
 			count = 0;
 
-			for (i = 1; i <= 16; i++)
+			for (i = 1; i <= 16; ++i)
 			{
 				huff_num[i] = static_cast<uint8>(get_bits(8));
 				count += huff_num[i];
@@ -758,7 +758,7 @@ namespace jpgd {
 			bool symbol_present[256];
 			memset(symbol_present, 0, sizeof(symbol_present));
 
-			for (i = 0; i < count; i++)
+			for (i = 0; i < count; ++i)
 			{
 				const int s = get_bits(8);
 
@@ -824,7 +824,7 @@ namespace jpgd {
 				m_quant[n] = (jpgd_quant_t*)alloc(64 * sizeof(jpgd_quant_t));
 
 			// read quantization entries, in zag order
-			for (i = 0; i < 64; i++)
+			for (i = 0; i < 64; ++i)
 			{
 				temp = get_bits(8);
 
@@ -876,7 +876,7 @@ namespace jpgd {
 		if (num_left != (uint)(m_comps_in_frame * 3 + 8))
 			stop_decoding(JPGD_BAD_SOF_LENGTH);
 
-		for (i = 0; i < m_comps_in_frame; i++)
+		for (i = 0; i < m_comps_in_frame; ++i)
 		{
 			m_comp_ident[i] = get_bits(8);
 			m_comp_h_samp[i] = get_bits(4);
@@ -936,7 +936,7 @@ namespace jpgd {
 		if ((num_left != (uint)(n * 2 + 3)) || (n < 1) || (n > JPGD_MAX_COMPS_IN_SCAN))
 			stop_decoding(JPGD_BAD_SOS_LENGTH);
 
-		for (i = 0; i < n; i++)
+		for (i = 0; i < n; ++i)
 		{
 			cc = get_bits(8);
 			c = get_bits(8);
@@ -1279,7 +1279,7 @@ namespace jpgd {
 		get_bits(16);
 		get_bits(16);
 
-		for (int i = 0; i < JPGD_MAX_BLOCKS_PER_MCU; i++)
+		for (int i = 0; i < JPGD_MAX_BLOCKS_PER_MCU; ++i)
 			m_mcu_block_max_zag[i] = 64;
 
 		m_has_sse2 = false;
@@ -1303,7 +1303,7 @@ namespace jpgd {
 	// Create a few tables that allow us to quickly convert YCbCr to RGB.
 	void jpeg_decoder::create_look_ups()
 	{
-		for (int i = 0; i <= 255; i++)
+		for (int i = 0; i <= 255; ++i)
 		{
 			int k = i - 128;
 			m_crr[i] = (FIX(1.40200f) * k + ONE_HALF) >> SCALEBITS;
@@ -1600,7 +1600,7 @@ namespace jpgd {
 
 		for (int i = m_max_mcus_per_row; i > 0; i--)
 		{
-			for (int j = 0; j < 8; j++)
+			for (int j = 0; j < 8; ++j)
 			{
 				int y = s[j];
 				int cb = s[64 + j];
@@ -1630,7 +1630,7 @@ namespace jpgd {
 		{
 			for (int l = 0; l < 2; l++)
 			{
-				for (int j = 0; j < 4; j++)
+				for (int j = 0; j < 4; ++j)
 				{
 					int cb = c[0];
 					int cr = c[64];
@@ -1673,7 +1673,7 @@ namespace jpgd {
 		const int half_image_x_size = (m_image_x_size >> 1) - 1;
 		const int row_x8 = row * 8;
 
-		for (int x = 0; x < m_image_x_size; x++)
+		for (int x = 0; x < m_image_x_size; ++x)
 		{
 			int y = m_pSample_buf[check_sample_buf_ofs((x >> 4) * BLOCKS_PER_MCU * 64 + ((x & 8) ? 64 : 0) + (x & 7) + row_x8)];
 
@@ -1726,7 +1726,7 @@ namespace jpgd {
 
 		for (int i = m_max_mcus_per_row; i > 0; i--)
 		{
-			for (int j = 0; j < 8; j++)
+			for (int j = 0; j < 8; ++j)
 			{
 				int cb = c[0 + j];
 				int cr = c[64 + j];
@@ -1790,7 +1790,7 @@ namespace jpgd {
 		const int y0_base = (c_y0 & 7) * 8 + 128;
 		const int y1_base = (c_y1 & 7) * 8 + 128;
 
-		for (int x = 0; x < m_image_x_size; x++)
+		for (int x = 0; x < m_image_x_size; ++x)
 		{
 			const int base_ofs = (x >> 3) * BLOCKS_PER_MCU * 64 + (x & 7);
 
@@ -1935,7 +1935,7 @@ namespace jpgd {
 			uint8* d1 = m_pScan_line_1;
 			const int y_sample_base_ofs1 = (((row + 1) & 8) ? 128 : 0) + ((row + 1) & 7) * 8;
 
-			for (int x = 0; x < m_image_x_size; x++)
+			for (int x = 0; x < m_image_x_size; ++x)
 			{
 				int k = (x >> 4) * BLOCKS_PER_MCU * 64 + ((x & 8) ? 64 : 0) + (x & 7);
 				int y_sample0 = p_YSamples[check_sample_buf_ofs(k + y_sample_base_ofs)];
@@ -2044,7 +2044,7 @@ namespace jpgd {
 		}
 		else
 		{
-			for (int x = 0; x < m_image_x_size; x++)
+			for (int x = 0; x < m_image_x_size; ++x)
 			{
 				int y_sample = p_YSamples[check_sample_buf_ofs((x >> 4) * BLOCKS_PER_MCU * 64 + ((x & 8) ? 64 : 0) + (x & 7) + y_sample_base_ofs)];
 
@@ -2289,7 +2289,7 @@ namespace jpgd {
 
 		for (l = 1; l <= 16; l++)
 		{
-			for (i = 1; i <= m_huff_num[index][l]; i++)
+			for (i = 1; i <= m_huff_num[index][l]; ++i)
 			{
 				if (p >= 257)
 					stop_decoding(JPGD_DECODE_ERROR);
@@ -2436,7 +2436,7 @@ namespace jpgd {
 	// Verifies the quantization tables needed for this scan are available.
 	void jpeg_decoder::check_quant_tables()
 	{
-		for (int i = 0; i < m_comps_in_scan; i++)
+		for (int i = 0; i < m_comps_in_scan; ++i)
 			if (m_quant[m_comp_quant[m_comp_list[i]]] == nullptr)
 				stop_decoding(JPGD_UNDEFINED_QUANT_TABLE);
 	}
@@ -2444,7 +2444,7 @@ namespace jpgd {
 	// Verifies that all the Huffman tables needed for this scan are available.
 	void jpeg_decoder::check_huff_tables()
 	{
-		for (int i = 0; i < m_comps_in_scan; i++)
+		for (int i = 0; i < m_comps_in_scan; ++i)
 		{
 			if ((m_spectral_start == 0) && (m_huff_num[m_comp_dc_tab[m_comp_list[i]]] == nullptr))
 				stop_decoding(JPGD_UNDEFINED_HUFF_TABLE);
@@ -2453,7 +2453,7 @@ namespace jpgd {
 				stop_decoding(JPGD_UNDEFINED_HUFF_TABLE);
 		}
 
-		for (int i = 0; i < JPGD_MAX_HUFF_TABLES; i++)
+		for (int i = 0; i < JPGD_MAX_HUFF_TABLES; ++i)
 			if (m_huff_num[i])
 			{
 				if (!m_pHuff_tabs[i])
@@ -2644,7 +2644,7 @@ namespace jpgd {
 		// Allocate the coefficient buffer, enough for one MCU
 		m_pMCU_coefficients = (jpgd_block_coeff_t *)alloc_aligned(m_max_blocks_per_mcu * 64 * sizeof(jpgd_block_coeff_t));
 				
-		for (i = 0; i < m_max_blocks_per_mcu; i++)
+		for (i = 0; i < m_max_blocks_per_mcu; ++i)
 			m_mcu_block_max_zag[i] = 64;
 
 		m_pSample_buf = (uint8*)alloc_aligned(m_max_blocks_per_row * 64);
@@ -2947,7 +2947,7 @@ namespace jpgd {
 			stop_decoding(JPGD_UNSUPPORTED_COLORSPACE);
 
 		// Allocate the coefficient buffers.
-		for (i = 0; i < m_comps_in_frame; i++)
+		for (i = 0; i < m_comps_in_frame; ++i)
 		{
 			m_dc_coeffs[i] = coeff_buf_open(m_max_mcus_per_row * m_comp_h_samp[i], m_max_mcus_per_col * m_comp_v_samp[i], 1, 1);
 			m_ac_coeffs[i] = coeff_buf_open(m_max_mcus_per_row * m_comp_h_samp[i], m_max_mcus_per_col * m_comp_v_samp[i], 8, 8);
@@ -3010,7 +3010,7 @@ namespace jpgd {
 
 		m_comps_in_scan = m_comps_in_frame;
 
-		for (i = 0; i < m_comps_in_frame; i++)
+		for (i = 0; i < m_comps_in_frame; ++i)
 			m_comp_list[i] = i;
 
 		if (!calc_mcu_block_order())
@@ -3198,7 +3198,7 @@ namespace jpgd {
 		if (!pImage_data)
 			return nullptr;
 
-		for (int y = 0; y < image_height; y++)
+		for (int y = 0; y < image_height; ++y)
 		{
 			const uint8* pScan_line;
 			uint scan_line_len;
@@ -3216,7 +3216,7 @@ namespace jpgd {
 			{
 				if (req_comps == 3)
 				{
-					for (int x = 0; x < image_width; x++)
+					for (int x = 0; x < image_width; ++x)
 					{
 						uint8 luma = pScan_line[x];
 						pDst[0] = luma;
@@ -3227,7 +3227,7 @@ namespace jpgd {
 				}
 				else
 				{
-					for (int x = 0; x < image_width; x++)
+					for (int x = 0; x < image_width; ++x)
 					{
 						uint8 luma = pScan_line[x];
 						pDst[0] = luma;
@@ -3243,7 +3243,7 @@ namespace jpgd {
 				if (req_comps == 1)
 				{
 					const int YR = 19595, YG = 38470, YB = 7471;
-					for (int x = 0; x < image_width; x++)
+					for (int x = 0; x < image_width; ++x)
 					{
 						int r = pScan_line[x * 4 + 0];
 						int g = pScan_line[x * 4 + 1];
@@ -3253,7 +3253,7 @@ namespace jpgd {
 				}
 				else
 				{
-					for (int x = 0; x < image_width; x++)
+					for (int x = 0; x < image_width; ++x)
 					{
 						pDst[0] = pScan_line[x * 4 + 0];
 						pDst[1] = pScan_line[x * 4 + 1];

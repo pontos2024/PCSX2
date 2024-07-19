@@ -24,7 +24,7 @@ void CPUINFO_ABI cpuinfo_mock_get_cpuid(uint32_t eax, uint32_t regs[4]) {
 	if (cpuinfo_mock_cpuid_data != NULL && cpuinfo_mock_cpuid_entries != 0) {
 		if (eax == 4) {
 			uint32_t skip_entries = cpuinfo_mock_cpuid_leaf4_iteration;
-			for (uint32_t i = 0; i < cpuinfo_mock_cpuid_entries; i++) {
+			for (uint32_t i = 0; i < cpuinfo_mock_cpuid_entries; ++i) {
 				if (eax == cpuinfo_mock_cpuid_data[i].input_eax) {
 					if (skip_entries-- == 0) {
 						regs[0] = cpuinfo_mock_cpuid_data[i].eax;
@@ -37,7 +37,7 @@ void CPUINFO_ABI cpuinfo_mock_get_cpuid(uint32_t eax, uint32_t regs[4]) {
 				}
 			}
 		} else {
-			for (uint32_t i = 0; i < cpuinfo_mock_cpuid_entries; i++) {
+			for (uint32_t i = 0; i < cpuinfo_mock_cpuid_entries; ++i) {
 				if (eax == cpuinfo_mock_cpuid_data[i].input_eax) {
 					regs[0] = cpuinfo_mock_cpuid_data[i].eax;
 					regs[1] = cpuinfo_mock_cpuid_data[i].ebx;
@@ -54,7 +54,7 @@ void CPUINFO_ABI cpuinfo_mock_get_cpuid(uint32_t eax, uint32_t regs[4]) {
 void CPUINFO_ABI cpuinfo_mock_get_cpuidex(uint32_t eax, uint32_t ecx, uint32_t regs[4]) {
 	cpuinfo_mock_cpuid_leaf4_iteration = 0;
 	if (cpuinfo_mock_cpuid_data != NULL && cpuinfo_mock_cpuid_entries != 0) {
-		for (uint32_t i = 0; i < cpuinfo_mock_cpuid_entries; i++) {
+		for (uint32_t i = 0; i < cpuinfo_mock_cpuid_entries; ++i) {
 			if (eax == cpuinfo_mock_cpuid_data[i].input_eax &&
 				ecx == cpuinfo_mock_cpuid_data[i].input_ecx)
 			{

@@ -53,10 +53,10 @@ namespace usb_pad
 
 			WCHAR sec[1024] = {0}, bind[32] = {0};
 			int v = 0;
-			for (int j = 0; j < 25; j++)
+			for (int j = 0; j < 25; ++j)
 			{
 				std::wstring hid, tmp;
-				//swprintf_s(sec, TEXT("%S RAW DEVICE %d"), dev_type, j++);
+				//swprintf_s(sec, TEXT("%S RAW DEVICE %d"), dev_type, ++j);
 
 				if (LoadSetting(dev_type, j, "RAW DEVICE", TEXT("HID"), hid) && !hid.empty() && !MapExists(maps, hid))
 				{
@@ -76,21 +76,21 @@ namespace usb_pad
 					ptr.data[0].hatswitch = 0x8; //memset to 0xFF already or set to -1
 					ptr.data[1].hatswitch = 0x8;
 
-					for (int i = 0; i < MAX_BUTTONS; i++)
+					for (int i = 0; i < MAX_BUTTONS; ++i)
 					{
 						swprintf_s(bind, L"Button %d", i);
 						if (LoadSetting(dev_type, j, "RAW DEVICE", bind, tmp))
 							swscanf_s(tmp.c_str(), L"%08X", &(ptr.btnMap[i]));
 					}
 
-					for (int i = 0; i < MAX_AXES; i++)
+					for (int i = 0; i < MAX_AXES; ++i)
 					{
 						swprintf_s(bind, L"Axis %d", i);
 						if (LoadSetting(dev_type, j, "RAW DEVICE", bind, tmp))
 							swscanf_s(tmp.c_str(), L"%08X", &(ptr.axisMap[i]));
 					}
 
-					for (int i = 0; i < 4 /*PAD_HAT_COUNT*/; i++)
+					for (int i = 0; i < 4 /*PAD_HAT_COUNT*/; ++i)
 					{
 						swprintf_s(bind, L"Hat %d", i);
 						if (LoadSetting(dev_type, j, "RAW DEVICE", bind, tmp))
@@ -111,21 +111,21 @@ namespace usb_pad
 				SaveSetting<std::wstring>(dev_type, numDevice, "RAW DEVICE", TEXT("HID"), it.hidPath);
 
 				//writing everything separately, then string lengths are more predictable
-				for (int i = 0; i < MAX_BUTTONS; i++)
+				for (int i = 0; i < MAX_BUTTONS; ++i)
 				{
 					swprintf_s(bind, L"Button %d", i);
 					swprintf_s(tmp, L"%08X", it.btnMap[i]);
 					SaveSetting<std::wstring>(dev_type, numDevice, "RAW DEVICE", bind, tmp);
 				}
 
-				for (int i = 0; i < MAX_AXES; i++)
+				for (int i = 0; i < MAX_AXES; ++i)
 				{
 					swprintf_s(bind, L"Axis %d", i);
 					swprintf_s(tmp, L"%08X", it.axisMap[i]);
 					SaveSetting<std::wstring>(dev_type, numDevice, "RAW DEVICE", bind, tmp);
 				}
 
-				for (int i = 0; i < 4 /*PAD_HAT_COUNT*/; i++)
+				for (int i = 0; i < 4 /*PAD_HAT_COUNT*/; ++i)
 				{
 					swprintf_s(bind, L"Hat %d", i);
 					swprintf_s(tmp, L"%08X", it.hatMap[i]);
@@ -381,7 +381,7 @@ namespace usb_pad
 					m[2] = 4;
 				}
 
-				for (int i = 0; i < m[0]; i++)
+				for (int i = 0; i < m[0]; ++i)
 				{
 					//if((*it).btnMap[i] >= PAD_BUTTON_COUNT)
 					//	continue;
@@ -403,7 +403,7 @@ namespace usb_pad
 					}
 				}
 
-				for (int i = 0; i < m[1]; i++)
+				for (int i = 0; i < m[1]; ++i)
 				{
 					//if(it.axisMap[i] >= PAD_AXIS_COUNT)
 					//	continue;
@@ -426,7 +426,7 @@ namespace usb_pad
 					}
 				}
 
-				for (int i = 0; i < m[2]; i++)
+				for (int i = 0; i < m[2]; ++i)
 				{
 					int hat = it.hatMap[i];
 					int val = PLY_GET_VALUE(plyCapturing, hat);
@@ -588,7 +588,7 @@ namespace usb_pad
 					capsLength = Caps.NumberInputValueCaps;
 					CHECK(HidP_GetValueCaps(HidP_Input, pValueCaps, &capsLength, pPreparsedData) == HIDP_STATUS_SUCCESS);
 
-					for (i = 0; i < Caps.NumberInputValueCaps && axisCapturing < PAD_AXIS_COUNT; i++)
+					for (i = 0; i < Caps.NumberInputValueCaps && axisCapturing < PAD_AXIS_COUNT; ++i)
 					{
 						CHECK(
 							HidP_GetUsageValue(

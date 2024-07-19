@@ -150,7 +150,7 @@ private:
 			m_buffer = std::make_unique<s16[]>(m_nBuffers * m_BufferSize);
 
 			// Start some buffers.
-			for (size_t i = 0; i < m_nBuffers; i++)
+			for (size_t i = 0; i < m_nBuffers; ++i)
 			{
 				XAUDIO2_BUFFER buf{};
 				buf.AudioBytes = m_BufferSizeBytes;
@@ -203,7 +203,7 @@ private:
 		{
 			T* qb = static_cast<T*>(context);
 
-			for (size_t p = 0; p < PacketsPerBuffer; p++, qb += SndOutPacketSize)
+			for (size_t p = 0; p < PacketsPerBuffer; ++p, qb += SndOutPacketSize)
 				SndBuffer::ReadSamples(qb);
 
 			XAUDIO2_BUFFER buf{};

@@ -47,10 +47,13 @@ void ATA::WritePaddedString(u8* data, int* index, std::string value, u32 len)
 void ATA::CreateHDDinfo(int sizeMb)
 {
 	const u16 sectorSize = 512;
+#ifdef PCSX2_DEBUG
 	DevCon.WriteLn("DEV9: HddSize : %i", config.HddSize);
+#endif
 	const u64 nbSectors = ((u64)(sizeMb / sectorSize) * 1024 * 1024);
+#ifdef PCSX2_DEBUG
 	DevCon.WriteLn("DEV9: nbSectors : %i", nbSectors);
-
+#endif
 	memset(&identifyData, 0, sizeof(identifyData));
 	//Defualt CHS translation
 	const u16 defHeads = 16;
@@ -99,7 +102,7 @@ void ATA::CreateHDDinfo(int sizeMb)
 	WriteUInt16(identifyData, &index, sectorSize); //word 5
 	//Default Number of sectors per track (Retired)
 	WriteUInt16(identifyData, &index, defSectors); //word 6
-	//Reserved for assignment by the CompactFlash™ Association
+	//Reserved for assignment by the CompactFlashï¿½ Association
 	index += 2 * 2; //word 7-8
 	//Retired
 	index += 1 * 2; //word 9
@@ -182,7 +185,7 @@ void ATA::CreateHDDinfo(int sizeMb)
 	WriteUInt16(identifyData, &index, 0x1F); //word 64 (pio3,4 supported) selection not reported here
 	//Minimum Multiword DMA transfer cycle time per word
 	WriteUInt16(identifyData, &index, 80); //word 65
-	//Manufacturer’s recommended Multiword DMA transfer cycle time
+	//Manufacturerï¿½s recommended Multiword DMA transfer cycle time
 	WriteUInt16(identifyData, &index, 80); //word 66
 	//Minimum PIO transfer cycle time without flow control
 	WriteUInt16(identifyData, &index, 120); //word 67
@@ -307,7 +310,7 @@ void ATA::CreateHDDinfo(int sizeMb)
 	 */
 	index = 93 * 2;
 	WriteUInt16(identifyData, &index, (u16)(1 | (1 << 14) | 0x2000)); //word 93
-	//Vendor’s recommended acoustic management value.
+	//Vendorï¿½s recommended acoustic management value.
 	//94
 	//Stream Minimum Request Size
 	//95
@@ -376,9 +379,10 @@ void ATA::CreateHDDinfo(int sizeMb)
 }
 void ATA::CreateHDDinfoCsum() //Is this correct?
 {
+	int i, nTotal = 512 - 1;
 	u8 counter = 0;
 
-	for (int i = 0; i < (512 - 1); i++)
+	for (i = 0; i < nTotal; ++i)
 		counter += identifyData[i];
 
 	counter += 0xA5;
@@ -387,8 +391,11 @@ void ATA::CreateHDDinfoCsum() //Is this correct?
 	identifyData[511] = (u8)(255 - counter + 1);
 	counter = 0;
 
-	for (int i = 0; i < (512); i++)
+	nTotal = 512;
+	for (i = 0; i < nTotal; ++i)
 		counter += identifyData[i];
 
+#ifdef PCSX2_DEBUG
 	DevCon.WriteLn("DEV9: %i", counter);
+#endif
 }

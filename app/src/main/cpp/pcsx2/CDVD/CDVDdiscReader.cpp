@@ -447,7 +447,7 @@ s32 CALLBACK DISCgetTOC(void* toc)
 
 		fprintf(stderr, "Track 0: %u mins %u secs %u frames\n", min, sec, frm);
 
-		for (i = diskInfo.strack; i <= diskInfo.etrack; i++)
+		for (i = diskInfo.strack; i <= diskInfo.etrack; ++i)
 		{
 			err = DISCgetTD(i, &trackInfo);
 			lba_to_msf(trackInfo.lsn, &min, &sec, &frm);

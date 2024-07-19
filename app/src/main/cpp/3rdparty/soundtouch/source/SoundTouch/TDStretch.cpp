@@ -424,7 +424,7 @@ int TDStretch::seekBestOverlapPositionQuick(const SAMPLETYPE *refPos)
 
     // Scans surroundings of the found best match with small stepping
     int end = _MIN(bestOffs + SCANWIND + 1, seekLength);
-    for (i = bestOffs - SCANWIND; i < end; i++)
+    for (i = bestOffs - SCANWIND; i < end; ++i)
     {
         if (i == bestOffs) continue;    // this offset already calculated, thus skip
 
@@ -445,7 +445,7 @@ int TDStretch::seekBestOverlapPositionQuick(const SAMPLETYPE *refPos)
 
     // Scans surroundings of the 2nd best match with small stepping
     end = _MIN(bestOffs2 + SCANWIND + 1, seekLength);
-    for (i = bestOffs2 - SCANWIND; i < end; i++)
+    for (i = bestOffs2 - SCANWIND; i < end; ++i)
     {
         if (i == bestOffs2) continue;    // this offset already calculated, thus skip
 

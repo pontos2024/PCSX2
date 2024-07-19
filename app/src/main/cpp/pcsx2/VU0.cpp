@@ -49,7 +49,9 @@ void COP2_SPECIAL2() {
 
 void COP2_Unknown()
 {
+#ifdef PCSX2_DEBUG
 	CPU_LOG("Unknown COP2 opcode called");
+#endif
 }
 
 //****************************************************************************

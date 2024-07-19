@@ -483,7 +483,7 @@ static int usb_hub_handle_data(USBDevice* dev, int pid,
 					return USB_RET_BABBLE;
 				}
 				status = 0;
-				for (i = 0; i < s->nb_ports; i++)
+				for (i = 0; i < s->nb_ports; ++i)
 				{
 					port = &s->ports[i];
 					if (port->wPortChange)
@@ -491,7 +491,7 @@ static int usb_hub_handle_data(USBDevice* dev, int pid,
 				}
 				if (status != 0)
 				{
-					for (i = 0; i < n; i++)
+					for (i = 0; i < n; ++i)
 					{
 						data[i] = status >> (8 * i);
 					}
@@ -524,7 +524,7 @@ static int usb_hub_broadcast_packet(USBHubState* s, int pid,
 	USBDevice* dev;
 	int i, ret;
 
-	for (i = 0; i < s->nb_ports; i++)
+	for (i = 0; i < s->nb_ports; ++i)
 	{
 		port = &s->ports[i];
 		dev = port->port.dev;
@@ -591,7 +591,7 @@ USBDevice* usb_hub_init(int nb_ports)
 	strncpy(s->dev.devname, "QEMU USB Hub", sizeof(s->dev.devname));
 
 	s->nb_ports = nb_ports;
-	for (i = 0; i < s->nb_ports; i++)
+	for (i = 0; i < s->nb_ports; ++i)
 	{
 		port = &s->ports[i];
 		port->port.opaque = s;

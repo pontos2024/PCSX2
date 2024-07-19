@@ -43,7 +43,7 @@ png_do_pack(png_row_infop row_info, png_bytep row, png_uint_32 bit_depth)
             mask = 0x80;
             v = 0;
 
-            for (i = 0; i < row_width; i++)
+            for (i = 0; i < row_width; ++i)
             {
                if (*sp != 0)
                   v |= mask;
@@ -80,7 +80,7 @@ png_do_pack(png_row_infop row_info, png_bytep row, png_uint_32 bit_depth)
             shift = 6;
             v = 0;
 
-            for (i = 0; i < row_width; i++)
+            for (i = 0; i < row_width; ++i)
             {
                png_byte value;
 
@@ -119,7 +119,7 @@ png_do_pack(png_row_infop row_info, png_bytep row, png_uint_32 bit_depth)
             shift = 4;
             v = 0;
 
-            for (i = 0; i < row_width; i++)
+            for (i = 0; i < row_width; ++i)
             {
                png_byte value;
 
@@ -279,7 +279,7 @@ png_do_shift(png_row_infop row_info, png_bytep row,
          png_uint_32 i;
          png_uint_32 istop = channels * row_info->width;
 
-         for (bp = row, i = 0; i < istop; i++)
+         for (bp = row, i = 0; i < istop; ++i)
          {
             const unsigned int c = i%channels;
             int j;
@@ -320,7 +320,7 @@ png_do_write_swap_alpha(png_row_infop row_info, png_bytep row)
             png_uint_32 i;
             png_uint_32 row_width = row_info->width;
 
-            for (i = 0, sp = dp = row; i < row_width; i++)
+            for (i = 0, sp = dp = row; i < row_width; ++i)
             {
                png_byte save = *(sp++);
                *(dp++) = *(sp++);
@@ -338,7 +338,7 @@ png_do_write_swap_alpha(png_row_infop row_info, png_bytep row)
             png_uint_32 i;
             png_uint_32 row_width = row_info->width;
 
-            for (i = 0, sp = dp = row; i < row_width; i++)
+            for (i = 0, sp = dp = row; i < row_width; ++i)
             {
                png_byte save[2];
                save[0] = *(sp++);
@@ -365,7 +365,7 @@ png_do_write_swap_alpha(png_row_infop row_info, png_bytep row)
             png_uint_32 i;
             png_uint_32 row_width = row_info->width;
 
-            for (i = 0, sp = dp = row; i < row_width; i++)
+            for (i = 0, sp = dp = row; i < row_width; ++i)
             {
                png_byte save = *(sp++);
                *(dp++) = *(sp++);
@@ -381,7 +381,7 @@ png_do_write_swap_alpha(png_row_infop row_info, png_bytep row)
             png_uint_32 i;
             png_uint_32 row_width = row_info->width;
 
-            for (i = 0, sp = dp = row; i < row_width; i++)
+            for (i = 0, sp = dp = row; i < row_width; ++i)
             {
                png_byte save[2];
                save[0] = *(sp++);
@@ -414,7 +414,7 @@ png_do_write_invert_alpha(png_row_infop row_info, png_bytep row)
             png_uint_32 i;
             png_uint_32 row_width = row_info->width;
 
-            for (i = 0, sp = dp = row; i < row_width; i++)
+            for (i = 0, sp = dp = row; i < row_width; ++i)
             {
                /* Does nothing
                *(dp++) = *(sp++);
@@ -434,7 +434,7 @@ png_do_write_invert_alpha(png_row_infop row_info, png_bytep row)
             png_uint_32 i;
             png_uint_32 row_width = row_info->width;
 
-            for (i = 0, sp = dp = row; i < row_width; i++)
+            for (i = 0, sp = dp = row; i < row_width; ++i)
             {
                /* Does nothing
                *(dp++) = *(sp++);
@@ -461,7 +461,7 @@ png_do_write_invert_alpha(png_row_infop row_info, png_bytep row)
             png_uint_32 i;
             png_uint_32 row_width = row_info->width;
 
-            for (i = 0, sp = dp = row; i < row_width; i++)
+            for (i = 0, sp = dp = row; i < row_width; ++i)
             {
                *(dp++) = *(sp++);
                *(dp++) = (png_byte)(255 - *(sp++));
@@ -476,7 +476,7 @@ png_do_write_invert_alpha(png_row_infop row_info, png_bytep row)
             png_uint_32 i;
             png_uint_32 row_width = row_info->width;
 
-            for (i = 0, sp = dp = row; i < row_width; i++)
+            for (i = 0, sp = dp = row; i < row_width; ++i)
             {
                /* Does nothing
                *(dp++) = *(sp++);

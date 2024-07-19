@@ -848,7 +848,7 @@ namespace usb_pad
 				g_pDI->EnumDevices(DI8DEVCLASS_GAMECTRL, EnumJoysticksCallback, NULL, DIEDFL_ATTACHEDONLY);
 
 				//loop through all attached joysticks
-				for (size_t i = 0; i < g_pJoysticks.size(); i++)
+				for (size_t i = 0; i < g_pJoysticks.size(); ++i)
 				{
 					auto joy = g_pJoysticks[i];
 					auto device = joy->GetDevice();

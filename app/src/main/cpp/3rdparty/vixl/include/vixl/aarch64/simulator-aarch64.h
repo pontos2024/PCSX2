@@ -196,10 +196,10 @@ class LogicVRegister {
   inline LogicVRegister(
       SimVRegister& other)  // NOLINT(runtime/references)(runtime/explicit)
       : register_(other) {
-    for (size_t i = 0; i < ArrayLength(saturated_); i++) {
+    for (size_t i = 0; i < ArrayLength(saturated_); ++i) {
       saturated_[i] = kNotSaturated;
     }
-    for (size_t i = 0; i < ArrayLength(round_); i++) {
+    for (size_t i = 0; i < ArrayLength(round_); ++i) {
       round_[i] = 0;
     }
   }
@@ -281,7 +281,7 @@ class LogicVRegister {
 
   void SetIntArray(VectorFormat vform, const int64_t* src) const {
     ClearForWrite(vform);
-    for (int i = 0; i < LaneCountFromFormat(vform); i++) {
+    for (int i = 0; i < LaneCountFromFormat(vform); ++i) {
       SetInt(vform, i, src[i]);
     }
   }
@@ -308,7 +308,7 @@ class LogicVRegister {
 
   void SetUintArray(VectorFormat vform, const uint64_t* src) const {
     ClearForWrite(vform);
-    for (int i = 0; i < LaneCountFromFormat(vform); i++) {
+    for (int i = 0; i < LaneCountFromFormat(vform); ++i) {
       SetUint(vform, i, src[i]);
     }
   }
@@ -365,7 +365,7 @@ class LogicVRegister {
   // the Q register must be cleared.
   void ClearForWrite(VectorFormat vform) const {
     unsigned size = RegisterSizeInBytesFromFormat(vform);
-    for (unsigned i = size; i < kQRegSizeInBytes; i++) {
+    for (unsigned i = size; i < kQRegSizeInBytes; ++i) {
       SetUint(kFormat16B, i, 0);
     }
   }
@@ -411,7 +411,7 @@ class LogicVRegister {
 
   // Saturate lanes of a vector based on saturation state.
   LogicVRegister& SignedSaturate(VectorFormat vform) {
-    for (int i = 0; i < LaneCountFromFormat(vform); i++) {
+    for (int i = 0; i < LaneCountFromFormat(vform); ++i) {
       Saturation sat = GetSignedSaturation(i);
       if (sat == kSignedSatPositive) {
         SetInt(vform, i, MaxIntFromFormat(vform));
@@ -423,7 +423,7 @@ class LogicVRegister {
   }
 
   LogicVRegister& UnsignedSaturate(VectorFormat vform) {
-    for (int i = 0; i < LaneCountFromFormat(vform); i++) {
+    for (int i = 0; i < LaneCountFromFormat(vform); ++i) {
       Saturation sat = GetUnsignedSaturation(i);
       if (sat == kUnsignedSatPositive) {
         SetUint(vform, i, MaxUintFromFormat(vform));
@@ -442,7 +442,7 @@ class LogicVRegister {
 
   // Round lanes of a vector based on rounding state.
   LogicVRegister& Round(VectorFormat vform) {
-    for (int i = 0; i < LaneCountFromFormat(vform); i++) {
+    for (int i = 0; i < LaneCountFromFormat(vform); ++i) {
       SetUint(vform, i, Uint(vform, i) + (GetRounding(i) ? 1 : 0));
     }
     return *this;
@@ -451,7 +451,7 @@ class LogicVRegister {
   // Unsigned halve lanes of a vector, and use the saturation state to set the
   // top bit.
   LogicVRegister& Uhalve(VectorFormat vform) {
-    for (int i = 0; i < LaneCountFromFormat(vform); i++) {
+    for (int i = 0; i < LaneCountFromFormat(vform); ++i) {
       uint64_t val = Uint(vform, i);
       SetRounding(i, (val & 1) == 1);
       val >>= 1;
@@ -467,7 +467,7 @@ class LogicVRegister {
 
   // Signed halve lanes of a vector, and use the carry state to set the top bit.
   LogicVRegister& Halve(VectorFormat vform) {
-    for (int i = 0; i < LaneCountFromFormat(vform); i++) {
+    for (int i = 0; i < LaneCountFromFormat(vform); ++i) {
       int64_t val = Int(vform, i);
       SetRounding(i, (val & 1) == 1);
       val >>= 1;

@@ -21,12 +21,18 @@ GSTextureNull::GSTextureNull()
 	memset(&m_desc, 0, sizeof(m_desc));
 }
 
-GSTextureNull::GSTextureNull(int type, int w, int h, int format)
+GSTextureNull::GSTextureNull(Type type, int w, int h, GSTexture::Format format)
 {
 	m_desc.type = type;
 	m_desc.w = w;
 	m_desc.h = h;
 	m_desc.format = format;
+}
+
+void GSTextureNull::Swap(GSTexture* tex)
+{
+	GSTexture::Swap(tex);
+	std::swap(m_desc, static_cast<GSTextureNull*>(tex)->m_desc);
 }
 
 void* GSTextureNull::GetNativeHandle() const

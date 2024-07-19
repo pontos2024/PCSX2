@@ -68,9 +68,9 @@ mem32_t __fastcall _hwRead32(u32 mem)
 			// of reproducible behavior.  Candidate for real hardware testing.
 			
 			// Current assumption: Reads 128 bits and discards the unused portion.
-
+#ifdef PCSX2_DEBUG
 			DevCon.WriteLn( Color_Cyan, "Reading 32-bit FIFO data" );
-
+#endif
 			r128 out128 = _hwRead128<page>(mem & ~0x0f);
 			return reinterpret_cast<u32*>(&out128)[(mem >> 2) & 0x3];
 		}
@@ -291,15 +291,18 @@ static RETURNS_R64 _hwRead64(u32 mem)
 			// Current assumption: Reads 128 bits and discards the unused portion.
 
 			uint wordpart = (mem >> 3) & 0x1;
+#ifdef PCSX2_DEBUG
 			DevCon.WriteLn( Color_Cyan, "Reading 64-bit FIFO data (%s 64 bits discarded)", wordpart ? "upper" : "lower" );
-
+#endif
 			r128 full = _hwRead128<page>(mem & ~0x0f);
 			return r64_load(reinterpret_cast<u64*>(&full) + wordpart);
 		}
 		case 0x0F:
 			if ((mem & 0xffffff00) == 0x1000f300)
 			{
+#ifdef PCSX2_DEBUG
 				DevCon.Warning("64bit read from %x wibble", mem);
+#endif
 				if (mem == 0x1000f3E0)
 				{
 
@@ -366,7 +369,9 @@ RETURNS_R128 _hwRead128(u32 mem)
 			// It requires investigation of what to do.
 			if ((mem & 0xffffff00) == 0x1000f300)
 			{
+#ifdef PCSX2_DEBUG
 				DevCon.Warning("128bit read from %x wibble", mem);
+#endif
 				if (mem == 0x1000f3E0)
 				{
 					

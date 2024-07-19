@@ -64,7 +64,7 @@ void cpuinfo_x86_mach_init(void) {
 	const uint32_t threads_per_core = mach_topology.threads / mach_topology.cores;
 	const uint32_t threads_per_package = mach_topology.threads / mach_topology.packages;
 	const uint32_t cores_per_package = mach_topology.cores / mach_topology.packages;
-	for (uint32_t i = 0; i < mach_topology.packages; i++) {
+	for (uint32_t i = 0; i < mach_topology.packages; ++i) {
 		clusters[i] = (struct cpuinfo_cluster) {
 			.processor_start = i * threads_per_package,
 			.processor_count = threads_per_package,
@@ -84,7 +84,7 @@ void cpuinfo_x86_mach_init(void) {
 		packages[i].cluster_count = 1;
 		cpuinfo_x86_format_package_name(x86_processor.vendor, brand_string, packages[i].name);
 	}
-	for (uint32_t i = 0; i < mach_topology.cores; i++) {
+	for (uint32_t i = 0; i < mach_topology.cores; ++i) {
 		cores[i] = (struct cpuinfo_core) {
 			.processor_start = i * threads_per_core,
 			.processor_count = threads_per_core,
@@ -96,7 +96,7 @@ void cpuinfo_x86_mach_init(void) {
 			.cpuid = x86_processor.cpuid,
 		};
 	}
-	for (uint32_t i = 0; i < mach_topology.threads; i++) {
+	for (uint32_t i = 0; i < mach_topology.threads; ++i) {
 		const uint32_t smt_id = i % threads_per_core;
 		const uint32_t core_id = i / threads_per_core;
 		const uint32_t package_id = i / threads_per_package;

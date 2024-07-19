@@ -261,7 +261,7 @@ public:
       LOGV("underrun during resampling: got %u frames, expected %zu", (unsigned)out_len, output_frame_count);
       // silence the rightmost part
       T* data = resampling_out_buffer.data();
-      for (uint32_t i = frames_to_samples(out_len); i < frames_to_samples(output_frame_count); i++) {
+      for (uint32_t i = frames_to_samples(out_len); i < frames_to_samples(output_frame_count); ++i) {
         data[i] = 0;
       }
     }

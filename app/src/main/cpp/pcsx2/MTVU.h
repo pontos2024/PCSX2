@@ -19,8 +19,8 @@
 #include "Vif_Dma.h"
 #include "VUmicro.h"
 
-#define MTVU_LOG(...) do{} while(0)
-//#define MTVU_LOG DevCon.WriteLn
+//#define MTVU_LOG(...) do{} while(0)
+#define MTVU_LOG DevCon.WriteLn
 
 // Notes:
 // - This class should only be accessed from the EE thread...

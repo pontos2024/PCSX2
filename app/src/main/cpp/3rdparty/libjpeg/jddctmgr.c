@@ -277,7 +277,7 @@ start_pass (j_decompress_ptr cinfo)
 	 * coefficients, but are stored as ints to ensure access efficiency.
 	 */
 	ISLOW_MULT_TYPE * ismtbl = (ISLOW_MULT_TYPE *) compptr->dct_table;
-	for (i = 0; i < DCTSIZE2; i++) {
+	for (i = 0; i < DCTSIZE2; ++i) {
 	  ismtbl[i] = (ISLOW_MULT_TYPE) qtbl->quantval[i];
 	}
       }
@@ -308,7 +308,7 @@ start_pass (j_decompress_ptr cinfo)
 	};
 	SHIFT_TEMPS
 
-	for (i = 0; i < DCTSIZE2; i++) {
+	for (i = 0; i < DCTSIZE2; ++i) {
 	  ifmtbl[i] = (IFAST_MULT_TYPE)
 	    DESCALE(MULTIPLY16V16((INT32) qtbl->quantval[i],
 				  (INT32) aanscales[i]),

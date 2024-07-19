@@ -122,7 +122,7 @@ namespace InternalServers
 
 		//Columns are as follows (first-line header):
 		//Iface  Destination  Gateway  Flags  RefCnt  Use  Metric  Mask  MTU  Window  IRTT
-		for (size_t i = 1; i < routeLines.size(); i++)
+		for (size_t i = 1; i < routeLines.size(); ++i)
 		{
 			std::string line = routeLines[i];
 			if (line.rfind(interfaceName, 0) == 0)
@@ -167,7 +167,7 @@ namespace InternalServers
 		servers.close();
 
 		const IP_Address systemdDNS{127, 0, 0, 53};
-		for (size_t i = 1; i < serversLines.size(); i++)
+		for (size_t i = 1; i < serversLines.size(); ++i)
 		{
 			std::string line = serversLines[i];
 			if (line.rfind("nameserver", 0) == 0)
@@ -312,7 +312,7 @@ namespace InternalServers
 	{
 		if (parNetmask.integer != 0)
 		{
-			for (int i = 0; i < 4; i++)
+			for (int i = 0; i < 4; ++i)
 				broadcastIP.bytes[i] = ((parPS2IP.bytes[i]) | (~parNetmask.bytes[i]));
 		}
 	}
@@ -343,7 +343,7 @@ namespace InternalServers
 
 		uint leaseTime = 86400;
 
-		for (size_t i = 0; i < dhcp.options.size(); i++)
+		for (size_t i = 0; i < dhcp.options.size(); ++i)
 		{
 			switch (dhcp.options[i]->GetCode())
 			{
@@ -426,7 +426,7 @@ namespace InternalServers
 			if (msg == 3)
 				retPay->options.push_back(new DHCPopMSG(5));
 
-			for (size_t i = 0; i < reqList.size(); i++)
+			for (size_t i = 0; i < reqList.size(); ++i)
 			{
 				switch (reqList[i])
 				{

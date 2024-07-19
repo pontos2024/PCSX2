@@ -406,7 +406,7 @@ int wxMemStruct::ValidateNode ()
 
 /*
     int i;
-    for (i = 0; i < wxDebugContext::TotSize (requestSize ()); i++)
+    for (i = 0; i < wxDebugContext::TotSize (requestSize ()); ++i)
       cout << startPointer [i];
     cout << endl;
 */

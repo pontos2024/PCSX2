@@ -131,7 +131,7 @@ main()
 
   assert((t[0] = pthread_self()).p != NULL);
 
-  for (i = 1; i <= NUMTHREADS; i++)
+  for (i = 1; i <= NUMTHREADS; ++i)
     {
       threadbag[i].started = 0;
       threadbag[i].threadnum = i;
@@ -150,7 +150,7 @@ main()
   /*
    * Standard check that all threads started.
    */
-  for (i = 1; i <= NUMTHREADS; i++)
+  for (i = 1; i <= NUMTHREADS; ++i)
     { 
       failed = !threadbag[i].started;
 
@@ -165,7 +165,7 @@ main()
   /*
    * Check any results here. Set "failed" and only print ouput on failure.
    */
-  for (i = 1; i <= NUMTHREADS; i++)
+  for (i = 1; i <= NUMTHREADS; ++i)
     { 
       /* ... */
     }

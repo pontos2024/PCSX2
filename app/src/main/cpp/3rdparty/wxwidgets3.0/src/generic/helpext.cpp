@@ -427,7 +427,7 @@ bool wxExtHelpController::KeywordSearch(const wxString& k,
                 //if (choices[idx].empty()) // didn't contain the ';'
                 //   choices[idx] = (**i).doc;
                 choices[idx] = wxEmptyString;
-                for (int j=0; ; j++)
+                for (int j=0; ; ++j)
                 {
                     wxChar targetChar = entry->doc.c_str()[j];
                     if ((targetChar == 0) || (targetChar == WXEXTHELP_COMMENTCHAR))

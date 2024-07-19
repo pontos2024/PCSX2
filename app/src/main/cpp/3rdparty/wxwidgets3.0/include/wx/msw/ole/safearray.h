@@ -201,7 +201,7 @@ public:
 
         VARIANT* data = static_cast<VARIANT*>(m_array->pvData);
 
-        for ( size_t i = 0; i < variant.GetCount(); i++)
+        for ( size_t i = 0; i < variant.GetCount(); ++i)
         {
             if ( !Convertor::ToArray(variant[i], data[i]) )
                 return false;

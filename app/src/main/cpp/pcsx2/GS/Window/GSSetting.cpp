@@ -44,7 +44,7 @@ const char* dialog_message(int ID, bool* updateText)
 		case IDC_TRI_FILTER:
 			return cvtString("Control the texture tri-filtering of the emulation.\n\n"
 				"None:\nNo extra trilinear filtering.\n\n"
-				"Trilinear:\nUse OpenGL trilinear interpolation when PS2 uses mipmaps.\n\n"
+				"Trilinear:\nUse OpenGL/Vulkan trilinear interpolation when PS2 uses mipmaps.\n\n"
 				"Trilinear Forced:\nAlways enable full trilinear interpolation. Warning Slow!\n\n");
 		case IDC_CRC_LEVEL:
 			return cvtString("Control the number of Auto-CRC fixes and hacks applied to games.\n\n"
@@ -55,9 +55,9 @@ const char* dialog_message(int ID, bool* updateText)
 				"Aggressive:\nUse more aggressive CRC hacks.\n"
 				"Removes effects in some games which make the image appear sharper/clearer.\n"
 				"Affected games: AC4, BleachBB, Bully, DBZBT 2 & 3, DeathByDegrees, Evangelion, FF games, FightingBeautyWulong, GOW 1 & 2, Kunoichi, IkkiTousen, Okami, Oneechanbara2, OnimushaDoD, RDRevolver, Simple2000Vol114, SoTC, SteambotChronicles, Tekken5, Ultraman, XenosagaE3, Yakuza 1 & 2.\n");
-		case IDC_SKIPDRAWHACK:
+		case IDC_SKIPDRAWEND:
 		case IDC_SKIPDRAWHACKEDIT:
-		case IDC_SKIPDRAWOFFSET:
+		case IDC_SKIPDRAWSTART:
 		case IDC_SKIPDRAWOFFSETEDIT:
 			return cvtString("Completely skips drawing surfaces from the surface in the left box up to the surface specified in the box on the right.\n\n"
 				"Use it, for example, to try and get rid of bad post processing effects.\n"
@@ -89,23 +89,37 @@ const char* dialog_message(int ID, bool* updateText)
 			return cvtString("Enabled: GPU converts colormap-textures.\n"
 				"Disabled: CPU converts colormap-textures.\n\n"
 				"It is a trade-off between GPU and CPU.");
+		case IDC_PCRTC_OFFSETS:
+			return cvtString("Enable: Takes in to account offsets in the analogue circuits.\n"
+				"This will use the intended aspect ratios and screen offsets, may cause odd black borders.\n"
+				"Used for screen positioning and screen shake in Wipeout Fusion.");
+		case IDC_PCRTC_OVERSCAN:
+			return cvtString("Shows more overscan area for some games which expect there to be some.\n"
+				"Used for games like Need for Speed Underground (PAL),Crash Nitro Kart (PAL) \n"
+				"and Espgaluda (When using certain Tate modes)");
+		case IDC_PCRTC_ANTIBLUR:
+			return cvtString("Enable: Adds internal anti-blur hacks on the merge ciruit.\n"
+				"This will likely make a lot of games look crisper but is less accurate to the PS2.");
+		case IDC_DISABLE_INTERLACE_OFFSETS:
+			return cvtString("Enable: Removes the offset for interlacing when upscaling.\n"
+				"Can reduce blurring in some games, where the opposite is true most of the time.\n"
+				"Used for ICO to reduce blur.");
 		case IDC_ACCURATE_DATE:
 			return cvtString("Implement a more accurate algorithm to compute GS destination alpha testing.\n"
 				"It improves shadow and transparency rendering.\n\n"
 				"Note: Direct3D 11 is less accurate.");
 		case IDC_ACCURATE_BLEND_UNIT:
 			return cvtString("Control the accuracy level of the GS blending unit emulation.\n\n"
-				"None:\nFast but introduces various rendering issues.\n"
-				"It is intended for slow computer.\n\n"
+				"Minimum:\nFast but introduces various rendering issues.\n"
+				"It is intended for slow computers.\n\n"
 				"Basic:\nEmulate correctly most of the effects with a limited speed penalty.\n"
 				"This is the recommended setting.\n\n"
 				"Medium:\nExtend it to all sprites. Performance impact remains reasonable in 3D game.\n\n"
 				"High:\nExtend it to destination alpha blending and color wrapping (helps shadow and fog effects).\n"
-				"A good GPU is required.\n\n"
-				"Full:\nExcept few cases, the blending unit will be fully emulated by the shader. It is ultra slow!\n"
-				"It is intended for debug.\n\n"
-				"Ultra:\nThe blending unit will be completely emulated by the shader. It is ultra slow!\n"
-				"It is intended for debug.");
+				"A good CPU is required.\n\n"
+				"Full:\nExcept few cases, the blending unit will be fully emulated by the shader. It is slow!\n\n"
+				"Maximum:\nThe blending unit will be completely emulated by the shader. It is very slow!\n\n"
+				"Note: Direct3D11's blending is capped at High and is reduced in capability compared to OpenGL/Vulkan");
 		case IDC_TC_DEPTH:
 			return cvtString("Disable the support of Depth buffer in the texture cache.\n"
 				"It can help to increase speed but it will likely create various glitches.");
@@ -136,7 +150,7 @@ const char* dialog_message(int ID, bool* updateText)
 			return cvtString("Force a primitive flush when a framebuffer is also an input texture.\n"
 				"Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA.\n"
 				"Warning: It's very costly on the performance.\n\n"
-				"Note: OpenGL HW renderer is able to handle Jak shadows at full speed without this option.");
+				"Note: OpenGL/Vulkan HW renderer is able to handle Jak shadows at full speed without this option.");
 		case IDC_AUTO_FLUSH_SW:
 			return cvtString("Force a primitive flush when a framebuffer is also an input texture.\n"
 				"Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA.");
@@ -145,9 +159,7 @@ const char* dialog_message(int ID, bool* updateText)
 				"Disables accurate Unscale Point and Line rendering.\n"
 				"It can help Xenosaga games.\n\n"
 				"Disables accurate GS Memory Clearing to be done on the CPU, and let only the GPU handle it.\n"
-				"It can help Kingdom Hearts games.\n\n"
-				"Disables special Nvidia hack.\n"
-				"It can help SOTC, Fatal Frame games and possibly others too.");
+				"It can help Kingdom Hearts games.");
 		case IDC_MEMORY_WRAPPING:
 			return cvtString("Emulates GS memory wrapping accurately. This fixes issues where part of the image is cut-off by block shaped sections such as the FMVs in Wallace & Gromit: The Curse of the Were-Rabbit and Thrillville.\n\n"
 				"Note: This hack can have a small impact on performance.");
@@ -178,7 +190,7 @@ const char* dialog_message(int ID, bool* updateText)
 				"Off:\nMipmapping emulation is disabled.\n\n"
 				"Basic (Fast):\nPartially emulates mipmapping, performance impact is negligible in most cases.\n\n"
 				"Full (Slow):\nCompletely emulates the mipmapping function of the GS, might significantly impact performance.");
-		case IDC_FAST_TC_INV:
+		case IDC_DISABLE_PARTIAL_TC_INV:
 			return cvtString("By default, the texture cache handles partial invalidations. Unfortunately it is very costly to compute CPU wise."
 				   "\n\nThis hack replaces the partial invalidation with a complete deletion of the texture to reduce the CPU load.\n\nIt helps snowblind engine games.");
 		case IDC_CONSERVATIVE_FB:
@@ -194,20 +206,12 @@ const char* dialog_message(int ID, bool* updateText)
 				   "Off:\nDisables any dithering.\n\n"
 				   "Unscaled:\nNative Dithering / Lowest dithering effect does not increase size of squares when upscaling.\n\n"
 				   "Scaled:\nUpscaling-aware / Highest dithering effect.");
-			// Windows only options.
-#ifdef _WIN32
-		case IDC_ACCURATE_BLEND_UNIT_D3D11:
-			return L"Control the accuracy level of the GS blending unit emulation.\n\n"
-				"None:\nFast but introduces various rendering issues.\n"
-				"It is intended for slow computer.\n\n"
-				"Basic:\nEmulate correctly some of the effects with a limited speed penalty.\n"
-				"This is the recommended setting.\n\n"
-				"Medium:\nExtend it to color shuffling. Performance impact remains reasonable.\n"
-				"It is intended for debug.\n\n"
-				"High:\nExtend it to triangle based primitives. It is ultra slow!\n"
-				"It is intended for debug.\n\n"
-				"Note: Direct3D 11 and OpenGL blending options aren't the same, even High blending on Direct3D 11 is like 1/3 of Basic blending on OpenGL.";
-#endif
+		case IDC_PRELOAD_TEXTURES:
+			return cvtString("Uploads entire textures at once instead of small pieces, avoiding redundant uploads when possible.\n"
+				   "Improves performance in most games, but can make a small selection slower.");
+		case IDC_TEX_IN_RT:
+			return cvtString("Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer.\n"
+				"In some selected games this is enabled by default regardless of this setting.");
 		default:
 			if (updateText)
 				*updateText = false;

@@ -524,7 +524,7 @@ static void recLogicalOp_constv(LogicalOp op, int info, int creg, u32 vreg)
 		xMOV(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], rax);
 	}
 #else
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 2; ++i)
 	{
 		if (hasFixed && cval.SL[i] == (s32)fixedInput)
 		{
@@ -590,7 +590,7 @@ static void recLogicalOp(LogicalOp op, int info)
 		xMOV(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], rax);
 	}
 #else
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 2; ++i)
 	{
 		if (op == LogicalOp::XOR && rs == rt)
 		{

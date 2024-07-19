@@ -73,7 +73,7 @@ int32_t RampLinear::onProcess(int32_t numFrames) {
 
     // Process any frames after the ramp.
     int32_t samplesLeft = framesLeft * channelCount;
-    for (int i = 0; i < samplesLeft; i++) {
+    for (int i = 0; i < samplesLeft; ++i) {
         *outputBuffer++ = *inputBuffer++ * mLevelTo;
     }
 

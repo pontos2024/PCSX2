@@ -57,7 +57,7 @@ class OnTheFlyPrimeTable : public PrimeTable {
   bool IsPrime(int n) const override {
     if (n <= 1) return false;
 
-    for (int i = 2; i*i <= n; i++) {
+    for (int i = 2; i*i <= n; ++i) {
       // n is divisible by an integer other than 1 and itself.
       if ((n % i) == 0) return false;
     }

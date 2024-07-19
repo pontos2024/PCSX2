@@ -75,7 +75,7 @@ void name::Add(const T& item, size_t nInsert)                                 \
   size_t nOldSize = size();                                                   \
   if ( pItem != NULL )                                                        \
     base_array::insert(end(), nInsert, pItem);                                \
-  for (size_t i = 1; i < nInsert; i++)                                        \
+  for (size_t i = 1; i < nInsert; ++i)                                        \
     base_array::operator[](nOldSize + i) = new T(item);                       \
 }                                                                             \
                                                                               \
@@ -86,7 +86,7 @@ void name::Insert(const T& item, size_t uiIndex, size_t nInsert)              \
   T* pItem = new T(item);                                                     \
   if ( pItem != NULL )                                                        \
     base_array::insert(begin() + uiIndex, nInsert, pItem);                    \
-  for (size_t i = 1; i < nInsert; i++)                                        \
+  for (size_t i = 1; i < nInsert; ++i)                                        \
     base_array::operator[](uiIndex + i) = new T(item);                        \
 }                                                                             \
                                                                               \

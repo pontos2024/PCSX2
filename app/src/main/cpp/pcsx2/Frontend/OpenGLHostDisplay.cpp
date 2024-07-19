@@ -23,20 +23,16 @@
 #include "common/GL/Program.h"
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
-#include "ImGuiManager.h"
 #include <array>
 #include <tuple>
 
 class OpenGLHostDisplayTexture : public HostDisplayTexture
 {
 public:
-	OpenGLHostDisplayTexture(GLuint texture, u32 width, u32 height, u32 layers, u32 levels, u32 samples)
+	OpenGLHostDisplayTexture(GLuint texture, u32 width, u32 height)
 		: m_texture(texture)
 		, m_width(width)
 		, m_height(height)
-		, m_layers(layers)
-		, m_levels(levels)
-		, m_samples(samples)
 	{
 	}
 	~OpenGLHostDisplayTexture() override = default;
@@ -44,9 +40,6 @@ public:
 	void* GetHandle() const override { return reinterpret_cast<void*>(static_cast<uintptr_t>(m_texture)); }
 	u32 GetWidth() const override { return m_width; }
 	u32 GetHeight() const override { return m_height; }
-	u32 GetLayers() const override { return m_layers; }
-	u32 GetLevels() const override { return m_levels; }
-	u32 GetSamples() const override { return m_samples; }
 
 	GLuint GetGLID() const { return m_texture; }
 
@@ -54,16 +47,17 @@ private:
 	GLuint m_texture;
 	u32 m_width;
 	u32 m_height;
-	u32 m_layers;
-	u32 m_levels;
-	u32 m_samples;
 };
 
 OpenGLHostDisplay::OpenGLHostDisplay() = default;
 
 OpenGLHostDisplay::~OpenGLHostDisplay()
 {
-	pxAssertMsg(!m_gl_context, "Context should have been destroyed by now");
+	if (m_gl_context)
+	{
+		m_gl_context->DoneCurrent();
+		m_gl_context.reset();
+	}
 }
 
 HostDisplay::RenderAPI OpenGLHostDisplay::GetRenderAPI() const
@@ -86,8 +80,7 @@ void* OpenGLHostDisplay::GetRenderSurface() const
 	return nullptr;
 }
 
-std::unique_ptr<HostDisplayTexture> OpenGLHostDisplay::CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, const void* data,
-																	 u32 data_stride, bool dynamic)
+std::unique_ptr<HostDisplayTexture> OpenGLHostDisplay::CreateTexture(u32 width, u32 height, const void* data, u32 data_stride, bool dynamic /* = false */)
 {
 	// clear error
 	glGetError();
@@ -96,10 +89,16 @@ std::unique_ptr<HostDisplayTexture> OpenGLHostDisplay::CreateTexture(u32 width, 
 	glGenTextures(1, &id);
 	glBindTexture(GL_TEXTURE_2D, id);
 
-	if ((GLAD_GL_ARB_texture_storage || GLAD_GL_ES_VERSION_3_0) && !data)
+	if (GLAD_GL_ARB_texture_storage || GLAD_GL_ES_VERSION_3_0)
+	{
 		glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	}
 	else
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	}
 
 	GLenum error = glGetError();
 	if (error != GL_NO_ERROR)
@@ -109,12 +108,12 @@ std::unique_ptr<HostDisplayTexture> OpenGLHostDisplay::CreateTexture(u32 width, 
 		return nullptr;
 	}
 
-	return std::make_unique<OpenGLHostDisplayTexture>(id, width, height, layers, levels, samples);
+	return std::make_unique<OpenGLHostDisplayTexture>(id, width, height);
 }
 
 void OpenGLHostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* texture_data, u32 texture_data_stride)
 {
-	auto* tex = dynamic_cast<OpenGLHostDisplayTexture*>(texture);
+	OpenGLHostDisplayTexture* tex = static_cast<OpenGLHostDisplayTexture*>(texture);
 
 	GLint alignment;
 	if (texture_data_stride & 1)
@@ -199,7 +198,7 @@ bool OpenGLHostDisplay::HasRenderSurface() const
 	return m_window_info.type != WindowInfo::Type::Surfaceless;
 }
 
-bool OpenGLHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool threaded_presentation, bool debug_device)
+bool OpenGLHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, VsyncMode vsync, bool threaded_presentation, bool debug_device)
 {
 	m_gl_context = GL::Context::Create(wi);
 	if (!m_gl_context)
@@ -210,15 +209,21 @@ bool OpenGLHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_vie
 	}
 
 	m_window_info = m_gl_context->GetWindowInfo();
+	m_vsync_mode = vsync;
 	return true;
 }
 
 bool OpenGLHostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device)
 {
-	// Start with vsync off.
-	m_gl_context->SetSwapInterval(0);
+	SetSwapInterval();
 	GL::Program::ResetLastProgram();
 	return true;
+}
+
+void OpenGLHostDisplay::SetSwapInterval()
+{
+	const int interval = ((m_vsync_mode == VsyncMode::Adaptive) ? -1 : ((m_vsync_mode == VsyncMode::On) ? 1 : 0));
+	m_gl_context->SetSwapInterval(interval);
 }
 
 bool OpenGLHostDisplay::MakeRenderContextCurrent()
@@ -229,21 +234,13 @@ bool OpenGLHostDisplay::MakeRenderContextCurrent()
 		return false;
 	}
 
+	SetSwapInterval();
 	return true;
 }
 
 bool OpenGLHostDisplay::DoneRenderContextCurrent()
 {
 	return m_gl_context->DoneCurrent();
-}
-
-void OpenGLHostDisplay::DestroyRenderDevice()
-{
-	if (!m_gl_context)
-		return;
-
-	m_gl_context->DoneCurrent();
-	m_gl_context.reset();
 }
 
 bool OpenGLHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
@@ -258,12 +255,12 @@ bool OpenGLHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
 
 	m_window_info = m_gl_context->GetWindowInfo();
 
-//	if (new_wi.type != WindowInfo::Type::Surfaceless)
-//	{
-//		// reset vsync rate, since it (usually) gets lost
-//		if (m_vsync_mode != VsyncMode::Adaptive || !m_gl_context->SetSwapInterval(-1))
-//			m_gl_context->SetSwapInterval(static_cast<s32>(m_vsync_mode != VsyncMode::Off));
-//	}
+	if (new_wi.type != WindowInfo::Type::Surfaceless)
+	{
+		// reset vsync rate, since it (usually) gets lost
+		if (m_vsync_mode != VsyncMode::Adaptive || !m_gl_context->SetSwapInterval(-1))
+			m_gl_context->SetSwapInterval(static_cast<s32>(m_vsync_mode != VsyncMode::Off));
+	}
 
 	return true;
 }
@@ -318,9 +315,17 @@ void OpenGLHostDisplay::DestroyRenderSurface()
 		return;
 
 	m_window_info = {};
-	if (!m_gl_context->ChangeSurface(m_window_info)) {
-        Console.Error("Failed to switch to surfaceless");
-    }
+	if (!m_gl_context->ChangeSurface(m_window_info))
+		Console.Error("Failed to switch to surfaceless");
+}
+
+std::string OpenGLHostDisplay::GetDriverInfo() const
+{
+	const char* gl_vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+	const char* gl_renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+	const char* gl_version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
+	return StringUtil::StdStringFromFormat(
+		"%s Context:\n%s\n%s %s", m_gl_context->IsGLES() ? "OpenGL ES" : "OpenGL", gl_version, gl_vendor, gl_renderer);
 }
 
 bool OpenGLHostDisplay::CreateImGuiContext()
@@ -342,7 +347,6 @@ void OpenGLHostDisplay::DestroyImGuiContext()
 bool OpenGLHostDisplay::UpdateImGuiFontTexture()
 {
 #ifdef OSD_SHOW
-	ImGui_ImplOpenGL3_DestroyFontsTexture();
 	return ImGui_ImplOpenGL3_CreateFontsTexture();
 #else
     return false;
@@ -372,15 +376,28 @@ void OpenGLHostDisplay::EndPresent()
 {
 	// clear out pipeline bindings, since imgui doesn't use them
 	glBindProgramPipeline(0);
-	glDisable(GL_STENCIL_TEST);
     glEnable(GL_SCISSOR_TEST);
+	glDisable(GL_STENCIL_TEST);
 	glActiveTexture(GL_TEXTURE0);
 
 #ifdef OSD_SHOW
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    GL::Program::ResetLastProgram();
 #endif
-	GL::Program::ResetLastProgram();
 
 	m_gl_context->SwapBuffers();
 }
+
+bool OpenGLHostDisplay::SetGPUTimingEnabled(bool enabled)
+{
+	return false;
+}
+
+float OpenGLHostDisplay::GetAndResetAccumulatedGPUTime()
+{
+	const float value = m_accumulated_gpu_time;
+	m_accumulated_gpu_time = 0.0f;
+	return value;
+}
+

@@ -575,7 +575,7 @@ int ParseArgumentString(u32 arg_block)
 	g_argPtrs[0] = arg_block; // first arg is right here
 	bool wasSpace = false; // status of last char. scanned
 	int args_len = strlen((char *)PSM(arg_block));
-	for (int i = 0; i < args_len; i++)
+	for (int i = 0; i < args_len; ++i)
 	{
 		char curchar = *(char *)PSM(arg_block + i);
 		if (curchar == '\0')

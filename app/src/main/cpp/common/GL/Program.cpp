@@ -166,7 +166,9 @@ bool Program::GetBinary(std::vector<u8>* out_data, u32* out_data_format)
 	}
 
 	*out_data_format = static_cast<u32>(format);
+#ifdef PCSX2_DEBUG
 	DevCon.WriteLn("Program binary retrieved, %zu bytes, format %u", out_data->size(), *out_data_format);
+#endif
 	return true;
 }
 

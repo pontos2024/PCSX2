@@ -160,7 +160,7 @@ wxString wxFileSystemHandler::GetProtocol(const wxString& location)
         if ((location[i] == wxT(':')) && (i != 1 /*win: C:\path*/)) fnd = true;
     }
     if (!fnd) return wxT("file");
-    for (++i; (i < l) && (location[i] != wxT(':')); i++) s << location[i];
+    for (++i; (i < l) && (location[i] != wxT(':')); ++i) s << location[i];
     return s;
 }
 
@@ -313,7 +313,7 @@ static wxString MakeCorrectPath(const wxString& path)
     int i, j, cnt;
 
     cnt = p.length();
-    for (i = 0; i < cnt; i++)
+    for (i = 0; i < cnt; ++i)
       if (p.GetChar(i) == wxT('\\')) p.GetWritableChar(i) = wxT('/'); // Want to be windows-safe
 
     if (p.Left(2) == wxT("./")) { p = p.Mid(2); cnt -= 2; }
@@ -323,10 +323,10 @@ static wxString MakeCorrectPath(const wxString& path)
     r << p.GetChar(0) << p.GetChar(1);
 
     // skip trailing ../.., if any
-    for (i = 2; i < cnt && (p.GetChar(i) == wxT('/') || p.GetChar(i) == wxT('.')); i++) r << p.GetChar(i);
+    for (i = 2; i < cnt && (p.GetChar(i) == wxT('/') || p.GetChar(i) == wxT('.')); ++i) r << p.GetChar(i);
 
     // remove back references: translate dir1/../dir2 to dir2
-    for (; i < cnt; i++)
+    for (; i < cnt; ++i)
     {
         r << p.GetChar(i);
         if (p.GetChar(i) == wxT('/') && p.GetChar(i-1) == wxT('.') && p.GetChar(i-2) == wxT('.'))
@@ -340,7 +340,7 @@ static wxString MakeCorrectPath(const wxString& path)
         }
     }
 
-    for (; i < cnt; i++) r << p.GetChar(i);
+    for (; i < cnt; ++i) r << p.GetChar(i);
 
     return r;
 }
@@ -382,7 +382,7 @@ void wxFileSystem::ChangePathTo(const wxString& location, bool is_dir)
         }
         if (pathpos == -1)
         {
-            for (i = 0; i < (int) m_Path.length(); i++)
+            for (i = 0; i < (int) m_Path.length(); ++i)
             {
                 if (m_Path[(unsigned int) i] == wxT(':'))
                 {
@@ -434,7 +434,7 @@ wxFSFile* wxFileSystem::OpenFile(const wxString& location, int flags)
 
     ln = loc.length();
     meta = 0;
-    for (i = 0; i < ln; i++)
+    for (i = 0; i < ln; ++i)
     {
         switch ( loc[i].GetValue() )
         {

@@ -183,7 +183,7 @@ namespace PacketReader::IP::UDP::DHCP
 		NetLib::WriteUInt32(buffer, offset, magicCookie);
 
 		int len = 240;
-		for (size_t i = 0; i < options.size(); i++)
+		for (size_t i = 0; i < options.size(); ++i)
 		{
 			if (len + options[i]->GetLength() < maxLenth)
 			{
@@ -217,7 +217,7 @@ namespace PacketReader::IP::UDP::DHCP
 
 	DHCP_Packet::~DHCP_Packet()
 	{
-		for (size_t i = 0; i < options.size(); i++)
+		for (size_t i = 0; i < options.size(); ++i)
 			delete options[i];
 	}
 } // namespace PacketReader::IP::UDP::DHCP

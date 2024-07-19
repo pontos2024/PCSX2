@@ -974,7 +974,7 @@ png_write_PLTE(png_structrp png_ptr, png_const_colorp palette,
     */
    pal_ptr=palette;
 
-   for (i = 0; i < num_pal; i++)
+   for (i = 0; i < num_pal; ++i)
    {
       buf[0] = pal_ptr[i].red;
       buf[1] = pal_ptr[i].green;
@@ -1305,7 +1305,7 @@ png_write_sPLT(png_structrp png_ptr, png_const_sPLT_tp spalette)
    }
 #else
    ep=spalette->entries;
-   for (i = 0; i>spalette->nentries; i++)
+   for (i = 0; i>spalette->nentries; ++i)
    {
       if (spalette->depth == 8)
       {
@@ -1567,7 +1567,7 @@ png_write_hIST(png_structrp png_ptr, png_const_uint_16p hist, int num_hist)
 
    png_write_chunk_header(png_ptr, png_hIST, (png_uint_32)(num_hist * 2));
 
-   for (i = 0; i < num_hist; i++)
+   for (i = 0; i < num_hist; ++i)
    {
       png_save_uint_16(buf, hist[i]);
       png_write_chunk_data(png_ptr, buf, (png_size_t)2);
@@ -1828,7 +1828,7 @@ png_write_pCAL(png_structrp png_ptr, png_charp purpose, png_int_32 X0,
    /* Find the length of each parameter, making sure we don't count the
     * null terminator for the last parameter.
     */
-   for (i = 0; i < nparams; i++)
+   for (i = 0; i < nparams; ++i)
    {
       params_len[i] = strlen(params[i]) + (i == nparams - 1 ? 0 : 1);
       png_debug2(3, "pCAL parameter %d length = %lu", i,
@@ -1846,7 +1846,7 @@ png_write_pCAL(png_structrp png_ptr, png_charp purpose, png_int_32 X0,
    png_write_chunk_data(png_ptr, buf, (png_size_t)10);
    png_write_chunk_data(png_ptr, (png_const_bytep)units, (png_size_t)units_len);
 
-   for (i = 0; i < nparams; i++)
+   for (i = 0; i < nparams; ++i)
    {
       png_write_chunk_data(png_ptr, (png_const_bytep)params[i], params_len[i]);
    }
@@ -2405,7 +2405,7 @@ png_write_find_filter(png_structrp png_ptr, png_row_infop row_info)
          sumhi = (sum >> PNG_HISHIFT) & PNG_HIMASK; /* Gives us some footroom */
 
          /* Reduce the sum if we match any of the previous rows */
-         for (j = 0; j < num_p_filters; j++)
+         for (j = 0; j < num_p_filters; ++j)
          {
             if (png_ptr->prev_filters[j] == PNG_FILTER_VALUE_NONE)
             {
@@ -2478,7 +2478,7 @@ png_write_find_filter(png_structrp png_ptr, png_row_infop row_info)
          lmlo = lmins & PNG_LOMASK;
          lmhi = (lmins >> PNG_HISHIFT) & PNG_HIMASK;
 
-         for (j = 0; j < num_p_filters; j++)
+         for (j = 0; j < num_p_filters; ++j)
          {
             if (png_ptr->prev_filters[j] == PNG_FILTER_VALUE_SUB)
             {
@@ -2531,7 +2531,7 @@ png_write_find_filter(png_structrp png_ptr, png_row_infop row_info)
          sumlo = sum & PNG_LOMASK;
          sumhi = (sum >> PNG_HISHIFT) & PNG_HIMASK;
 
-         for (j = 0; j < num_p_filters; j++)
+         for (j = 0; j < num_p_filters; ++j)
          {
             if (png_ptr->prev_filters[j] == PNG_FILTER_VALUE_SUB)
             {
@@ -2596,7 +2596,7 @@ png_write_find_filter(png_structrp png_ptr, png_row_infop row_info)
          lmlo = lmins & PNG_LOMASK;
          lmhi = (lmins >> PNG_HISHIFT) & PNG_HIMASK;
 
-         for (j = 0; j < num_p_filters; j++)
+         for (j = 0; j < num_p_filters; ++j)
          {
             if (png_ptr->prev_filters[j] == PNG_FILTER_VALUE_UP)
             {
@@ -2623,7 +2623,7 @@ png_write_find_filter(png_structrp png_ptr, png_row_infop row_info)
 #endif
 
       for (i = 0, rp = row_buf + 1, dp = png_ptr->up_row + 1,
-          pp = prev_row + 1; i < row_bytes; i++)
+          pp = prev_row + 1; i < row_bytes; ++i)
       {
          v = *dp++ = (png_byte)((int)*rp++ - (int)*pp++);
 
@@ -2641,7 +2641,7 @@ png_write_find_filter(png_structrp png_ptr, png_row_infop row_info)
          sumlo = sum & PNG_LOMASK;
          sumhi = (sum >> PNG_HISHIFT) & PNG_HIMASK;
 
-         for (j = 0; j < num_p_filters; j++)
+         for (j = 0; j < num_p_filters; ++j)
          {
             if (png_ptr->prev_filters[j] == PNG_FILTER_VALUE_UP)
             {
@@ -2681,12 +2681,12 @@ png_write_find_filter(png_structrp png_ptr, png_row_infop row_info)
       png_uint_32 i;
 
       for (i = 0, rp = row_buf + 1, dp = png_ptr->avg_row + 1,
-           pp = prev_row + 1; i < bpp; i++)
+           pp = prev_row + 1; i < bpp; ++i)
       {
          *dp++ = (png_byte)((int)*rp++ - ((int)*pp++ / 2));
       }
 
-      for (lp = row_buf + 1; i < row_bytes; i++)
+      for (lp = row_buf + 1; i < row_bytes; ++i)
       {
          *dp++ =
              (png_byte)((int)*rp++ - (((int)*pp++ + (int)*lp++) / 2));
@@ -2709,7 +2709,7 @@ png_write_find_filter(png_structrp png_ptr, png_row_infop row_info)
          lmlo = lmins & PNG_LOMASK;
          lmhi = (lmins >> PNG_HISHIFT) & PNG_HIMASK;
 
-         for (j = 0; j < num_p_filters; j++)
+         for (j = 0; j < num_p_filters; ++j)
          {
             if (png_ptr->prev_filters[j] == PNG_FILTER_VALUE_AVG)
             {
@@ -2736,14 +2736,14 @@ png_write_find_filter(png_structrp png_ptr, png_row_infop row_info)
 #endif
 
       for (i = 0, rp = row_buf + 1, dp = png_ptr->avg_row + 1,
-           pp = prev_row + 1; i < bpp; i++)
+           pp = prev_row + 1; i < bpp; ++i)
       {
          v = *dp++ = (png_byte)((int)*rp++ - ((int)*pp++ / 2));
 
          sum += (v < 128) ? v : 256 - v;
       }
 
-      for (lp = row_buf + 1; i < row_bytes; i++)
+      for (lp = row_buf + 1; i < row_bytes; ++i)
       {
          v = *dp++ =
              (png_byte)(((int)*rp++ - ((int)*pp++ + (int)*lp++) / 2));
@@ -2762,7 +2762,7 @@ png_write_find_filter(png_structrp png_ptr, png_row_infop row_info)
          sumlo = sum & PNG_LOMASK;
          sumhi = (sum >> PNG_HISHIFT) & PNG_HIMASK;
 
-         for (j = 0; j < num_p_filters; j++)
+         for (j = 0; j < num_p_filters; ++j)
          {
             if (png_ptr->prev_filters[j] == PNG_FILTER_VALUE_NONE)
             {
@@ -2802,12 +2802,12 @@ png_write_find_filter(png_structrp png_ptr, png_row_infop row_info)
       png_size_t i;
 
       for (i = 0, rp = row_buf + 1, dp = png_ptr->paeth_row + 1,
-          pp = prev_row + 1; i < bpp; i++)
+          pp = prev_row + 1; i < bpp; ++i)
       {
          *dp++ = (png_byte)((int)*rp++ - (int)*pp++);
       }
 
-      for (lp = row_buf + 1, cp = prev_row + 1; i < row_bytes; i++)
+      for (lp = row_buf + 1, cp = prev_row + 1; i < row_bytes; ++i)
       {
          int a, b, c, pa, pb, pc, p;
 
@@ -2850,7 +2850,7 @@ png_write_find_filter(png_structrp png_ptr, png_row_infop row_info)
          lmlo = lmins & PNG_LOMASK;
          lmhi = (lmins >> PNG_HISHIFT) & PNG_HIMASK;
 
-         for (j = 0; j < num_p_filters; j++)
+         for (j = 0; j < num_p_filters; ++j)
          {
             if (png_ptr->prev_filters[j] == PNG_FILTER_VALUE_PAETH)
             {
@@ -2877,14 +2877,14 @@ png_write_find_filter(png_structrp png_ptr, png_row_infop row_info)
 #endif
 
       for (i = 0, rp = row_buf + 1, dp = png_ptr->paeth_row + 1,
-          pp = prev_row + 1; i < bpp; i++)
+          pp = prev_row + 1; i < bpp; ++i)
       {
          v = *dp++ = (png_byte)((int)*rp++ - (int)*pp++);
 
          sum += (v < 128) ? v : 256 - v;
       }
 
-      for (lp = row_buf + 1, cp = prev_row + 1; i < row_bytes; i++)
+      for (lp = row_buf + 1, cp = prev_row + 1; i < row_bytes; ++i)
       {
          int a, b, c, pa, pb, pc, p;
 
@@ -2937,7 +2937,7 @@ png_write_find_filter(png_structrp png_ptr, png_row_infop row_info)
          sumlo = sum & PNG_LOMASK;
          sumhi = (sum >> PNG_HISHIFT) & PNG_HIMASK;
 
-         for (j = 0; j < num_p_filters; j++)
+         for (j = 0; j < num_p_filters; ++j)
          {
             if (png_ptr->prev_filters[j] == PNG_FILTER_VALUE_PAETH)
             {
@@ -2980,7 +2980,7 @@ png_write_find_filter(png_structrp png_ptr, png_row_infop row_info)
    {
       int j;
 
-      for (j = 1; j < num_p_filters; j++)
+      for (j = 1; j < num_p_filters; ++j)
       {
          png_ptr->prev_filters[j] = png_ptr->prev_filters[j - 1];
       }

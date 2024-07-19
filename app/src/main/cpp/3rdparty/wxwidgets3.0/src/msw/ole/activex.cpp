@@ -763,7 +763,7 @@ public:
 
         // process the events from the activex method
         m_activeX->ProcessEvent(event);
-        for (DWORD i = 0; i < pDispParams->cArgs; i++)
+        for (DWORD i = 0; i < pDispParams->cArgs; ++i)
         {
             size_t params_index = pDispParams->cArgs - i - 1;
             if (params_index < event.m_params.GetCount()) {
@@ -967,7 +967,7 @@ void wxActiveXContainer::CreateActiveX(REFIID iid, IUnknown* pUnk)
     wxASSERT(ta->typekind == TKIND_COCLASS);
 
     // iterate contained interfaces
-    for (int i = 0; i < ta->cImplTypes; i++)
+    for (int i = 0; i < ta->cImplTypes; ++i)
     {
         HREFTYPE rt = 0;
 

@@ -15,7 +15,7 @@ SRes Lzma86_GetUnpackSize(const Byte *src, SizeT srcLen, UInt64 *unpackSize)
   if (srcLen < LZMA86_HEADER_SIZE)
     return SZ_ERROR_INPUT_EOF;
   *unpackSize = 0;
-  for (i = 0; i < sizeof(UInt64); i++)
+  for (i = 0; i < sizeof(UInt64); ++i)
     *unpackSize += ((UInt64)src[LZMA86_SIZE_OFFSET + i]) << (8 * i);
   return SZ_OK;
 }

@@ -44,7 +44,7 @@ void ostream_wrapper::write(const char* str, std::size_t size) {
     std::copy(str, str + size, m_buffer.begin() + m_pos);
   }
 
-  for (std::size_t i = 0; i < size; i++) {
+  for (std::size_t i = 0; i < size; ++i) {
     update_pos(str[i]);
   }
 }

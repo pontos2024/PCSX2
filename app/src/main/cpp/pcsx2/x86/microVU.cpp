@@ -120,7 +120,7 @@ void mVUreset(microVU& mVU, bool resetReserve)
 	mVU.prog.x86ptr   = z;
 	mVU.prog.x86end   = z + ((mVU.cacheSize - mVUcacheSafeZone) * _1mb);
 
-	for (u32 i = 0; i < (mVU.progSize / 2); i++)
+	for (u32 i = 0; i < (mVU.progSize / 2); ++i)
 	{
 		if (!mVU.prog.prog[i])
 		{
@@ -152,7 +152,7 @@ void mVUclose(microVU& mVU)
 	safe_delete(mVU.cache_reserve);
 
 	// Delete Programs and Block Managers
-	for (u32 i = 0; i < (mVU.progSize / 2); i++)
+	for (u32 i = 0; i < (mVU.progSize / 2); ++i)
 	{
 		if (!mVU.prog.prog[i])
 			continue;
@@ -172,7 +172,7 @@ __fi void mVUclear(mV, u32 addr, u32 size)
 	{
 		mVU.prog.cleared = 1; // Next execution searches/creates a new microprogram
 		memzero(mVU.prog.lpState); // Clear pipeline state
-		for (u32 i = 0; i < (mVU.progSize / 2); i++)
+		for (u32 i = 0; i < (mVU.progSize / 2); ++i)
 		{
 			mVU.prog.quick[i].block = NULL; // Clear current quick-reference block
 			mVU.prog.quick[i].prog = NULL; // Clear current quick-reference prog
@@ -193,7 +193,7 @@ __ri void mVUvsyncUpdate(mV)
 // Deletes a program
 __ri void mVUdeleteProg(microVU& mVU, microProgram*& prog)
 {
-	for (u32 i = 0; i < (mVU.progSize / 2); i++)
+	for (u32 i = 0; i < (mVU.progSize / 2); ++i)
 	{
 		safe_delete(prog->block[i]);
 	}
@@ -245,7 +245,7 @@ u64 mVUrangesHash(microVU& mVU, microProgram& prog)
 		{
 			DevCon.Error("microVU%d: Negative Range![%d][%d]", mVU.index, it[0].start, it[0].end);
 		}
-		for (int i = it[0].start / 4; i < it[0].end / 4; i++)
+		for (int i = it[0].start / 4; i < it[0].end / 4; ++i)
 		{
 			hash.v32[0] -= prog.data[i];
 			hash.v32[1] ^= prog.data[i];
@@ -560,13 +560,13 @@ void DumpVUState(u32 n, u32 pc)
 		fprintf(fp, " CLIP %08X %08X %08X %08X [%08X %08X %08X %08X]", r.micro_clipflags[3], r.micro_clipflags[2], r.micro_clipflags[1], r.micro_clipflags[0], m.clipFlag[3], m.clipFlag[2], m.clipFlag[1], m.clipFlag[0]);
 		fprintf(fp, " STATUS %08X %08X %08X %08X [%08X %08X %08X %08X]", r.micro_statusflags[3], r.micro_statusflags[2], r.micro_statusflags[1], r.micro_statusflags[0], m.statFlag[3], m.statFlag[2], m.statFlag[1], m.statFlag[0]);
 
-		for (u32 i = 0; i < 32; i++)
+		for (u32 i = 0; i < 32; ++i)
 		{
 			const VECTOR& v = r.VF[i];
 			fprintf(fp, " VF%u: %08X%08X%08X%08X (%f,%f,%f,%f)", i, v.UL[3], v.UL[2], v.UL[1], v.UL[0], v.F[3], v.F[2], v.F[1], v.F[0]);
 		}
 
-		for (u32 i = 0; i < 32; i++)
+		for (u32 i = 0; i < 32; ++i)
 		{
 			const REG_VI& v = r.VI[i];
 			fprintf(fp, " VI%u: %08X (%f)", i, v.UL, v.F);

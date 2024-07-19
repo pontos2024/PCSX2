@@ -564,7 +564,7 @@ void read_png(FILE *fp, unsigned int sig_read)  /* File is already open */
    for (pass = 0; pass < number_passes; pass++)
    {
 #ifdef single /* Read the image a single row at a time */
-      for (y = 0; y < height; y++)
+      for (y = 0; y < height; ++y)
       {
          png_read_rows(png_ptr, &row_pointers[y], NULL, 1);
       }
@@ -1012,7 +1012,7 @@ void write_png(char *file_name /* , ... other image information ... */)
       png_write_rows(png_ptr, &row_pointers[first_row], number_of_rows);
 
       /* If you are only writing one row at a time, this works */
-      for (y = 0; y < height; y++)
+      for (y = 0; y < height; ++y)
          png_write_rows(png_ptr, &row_pointers[y], 1);
    }
 #endif no_entire /* Use only one output method */

@@ -36,7 +36,7 @@ wxArrayString::wxArrayString(size_t sz, const char** a)
 #if !wxUSE_STD_CONTAINERS
     Init(false);
 #endif
-    for (size_t i=0; i < sz; i++)
+    for (size_t i=0; i < sz; ++i)
         Add(a[i]);
 }
 
@@ -45,7 +45,7 @@ wxArrayString::wxArrayString(size_t sz, const wchar_t** a)
 #if !wxUSE_STD_CONTAINERS
     Init(false);
 #endif
-    for (size_t i=0; i < sz; i++)
+    for (size_t i=0; i < sz; ++i)
         Add(a[i]);
 }
 
@@ -54,7 +54,7 @@ wxArrayString::wxArrayString(size_t sz, const wxString* a)
 #if !wxUSE_STD_CONTAINERS
     Init(false);
 #endif
-    for (size_t i=0; i < sz; i++)
+    for (size_t i=0; i < sz; ++i)
         Add(a[i]);
 }
 
@@ -301,7 +301,7 @@ size_t wxArrayString::Add(const wxString& str, size_t nInsert)
     // of our own strings.
     wxScopedArray<wxString> oldStrings(Grow(nInsert));
 
-    for (size_t i = 0; i < nInsert; i++)
+    for (size_t i = 0; i < nInsert; ++i)
     {
         // just append
         m_pItems[m_nCount + i] = str;
@@ -324,7 +324,7 @@ void wxArrayString::Insert(const wxString& str, size_t nIndex, size_t nInsert)
   for (int j = m_nCount - nIndex - 1; j >= 0; j--)
       m_pItems[nIndex + nInsert + j] = m_pItems[nIndex + j];
 
-  for (size_t i = 0; i < nInsert; i++)
+  for (size_t i = 0; i < nInsert; ++i)
   {
       m_pItems[nIndex + i] = str;
   }
@@ -380,7 +380,7 @@ void wxArrayString::RemoveAt(size_t nIndex, size_t nRemove)
   wxCHECK_RET( nIndex + nRemove <= m_nCount,
                wxT("removing too many elements in wxArrayString::Remove") );
 
-  for ( size_t j =  0; j < m_nCount - nIndex -nRemove; j++)
+  for ( size_t j =  0; j < m_nCount - nIndex -nRemove; ++j)
       m_pItems[nIndex + j] = m_pItems[nIndex + nRemove + j];
 
   m_nCount -= nRemove;

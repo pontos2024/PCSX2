@@ -677,7 +677,7 @@ you can use an `ExpectationSet` to collect them:
 using ::testing::ExpectationSet;
 ...
 ExpectationSet all_inits;
-for (int i = 0; i < element_count; i++) {
+for (int i = 0; i < element_count; ++i) {
   all_inits += EXPECT_CALL(foo, InitElement(i));
 }
 EXPECT_CALL(foo, Bar())

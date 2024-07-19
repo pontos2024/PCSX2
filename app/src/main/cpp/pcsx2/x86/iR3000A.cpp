@@ -278,7 +278,7 @@ static void iIopDumpBlock(int startpc, u8* ptr)
 		f.Printf("%2d: %2.2x ", i + 1, pcur->info);
 
 		count = 1;
-		for (j = 0; j < ArraySize(s_pInstCache->regs); j++)
+		for (j = 0; j < ArraySize(s_pInstCache->regs); ++j)
 		{
 			if (used[j])
 			{
@@ -753,7 +753,7 @@ void recResetIOP()
 	iopClearRecLUT((BASEBLOCK*)m_recBlockAlloc,
 		(((Ps2MemSize::IopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) / 4)));
 
-	for (int i = 0; i < 0x10000; i++)
+	for (int i = 0; i < 0x10000; ++i)
 		recLUT_SetPage(psxRecLUT, 0, 0, 0, i, 0);
 
 	// IOP knows 64k pages, hence for the 0x10000's
@@ -764,28 +764,28 @@ void recResetIOP()
 	// We're only mapping 20 pages here in 4 places.
 	// 0x80 comes from : (Ps2MemSize::IopRam / 0x10000) * 4
 
-	for (int i = 0; i < 0x80; i++)
+	for (int i = 0; i < 0x80; ++i)
 	{
 		recLUT_SetPage(psxRecLUT, psxhwLUT, recRAM, 0x0000, i, i & 0x1f);
 		recLUT_SetPage(psxRecLUT, psxhwLUT, recRAM, 0x8000, i, i & 0x1f);
 		recLUT_SetPage(psxRecLUT, psxhwLUT, recRAM, 0xa000, i, i & 0x1f);
 	}
 
-	for (int i = 0x1fc0; i < 0x2000; i++)
+	for (int i = 0x1fc0; i < 0x2000; ++i)
 	{
 		recLUT_SetPage(psxRecLUT, psxhwLUT, recROM, 0x0000, i, i - 0x1fc0);
 		recLUT_SetPage(psxRecLUT, psxhwLUT, recROM, 0x8000, i, i - 0x1fc0);
 		recLUT_SetPage(psxRecLUT, psxhwLUT, recROM, 0xa000, i, i - 0x1fc0);
 	}
 
-	for (int i = 0x1e00; i < 0x1e04; i++)
+	for (int i = 0x1e00; i < 0x1e04; ++i)
 	{
 		recLUT_SetPage(psxRecLUT, psxhwLUT, recROM1, 0x0000, i, i - 0x1e00);
 		recLUT_SetPage(psxRecLUT, psxhwLUT, recROM1, 0x8000, i, i - 0x1e00);
 		recLUT_SetPage(psxRecLUT, psxhwLUT, recROM1, 0xa000, i, i - 0x1e00);
 	}
 
-	for (int i = 0x1e40; i < 0x1e48; i++)
+	for (int i = 0x1e40; i < 0x1e48; ++i)
 	{
 		recLUT_SetPage(psxRecLUT, psxhwLUT, recROM2, 0x0000, i, i - 0x1e40);
 		recLUT_SetPage(psxRecLUT, psxhwLUT, recROM2, 0x8000, i, i - 0x1e40);
@@ -817,7 +817,7 @@ static void recShutdown()
 
 static void iopClearRecLUT(BASEBLOCK* base, int count)
 {
-	for (int i = 0; i < count; i++)
+	for (int i = 0; i < count; ++i)
 		base[i].SetFnptr((uptr)iopJITCompile);
 }
 
@@ -1175,7 +1175,7 @@ void psxRecMemcheck(u32 op, u32 bits, bool store)
 	// edx = access address+size
 
 	auto checks = CBreakPoints::GetMemChecks();
-	for (size_t i = 0; i < checks.size(); i++)
+	for (size_t i = 0; i < checks.size(); ++i)
 	{
 		if (checks[i].cpu != BREAKPOINT_IOP)
 			continue;
@@ -1317,7 +1317,7 @@ static void __fastcall PreBlockCheck(u32 blockpc)
 
 #if 0
 			std::fprintf(fp, "%08X (%u; %08X):", psxRegs.pc, psxRegs.cycle, hash);
-			for (int i = 0; i < 34; i++)
+			for (int i = 0; i < 34; ++i)
 			{
 				std::fprintf(fp, " %s: %08X", R3000A::disRNameGPR[i], psxRegs.GPR.r[i]);
 			}

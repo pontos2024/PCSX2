@@ -205,9 +205,9 @@ void iDumpVU1Registers()
 void iDumpBlock(u32 ee_pc, u32 ee_size, uptr x86_pc, u32 x86_size)
 {
 	u32 ee_end = ee_pc + ee_size;
-
+#ifdef PCSX2_DEBUG
 	DbgCon.WriteLn( Color_Gray, "dump block %x:%x (x86:0x%x)", ee_pc, ee_end, x86_pc );
-
+#endif
 	EmuFolders::Logs.Mkdir();
 	wxString dump_filename = Path::Combine(EmuFolders::Logs, wxsFormat(L"R5900dump_%.8X:%.8X.txt", ee_pc, ee_end) );
 	AsciiFile eff( dump_filename, L"w" );
@@ -215,7 +215,7 @@ void iDumpBlock(u32 ee_pc, u32 ee_size, uptr x86_pc, u32 x86_size)
 	// Print register content to detect the memory access type. Warning value are taken
 	// during the call of this function. There aren't the real value of the block.
 	eff.Printf("Dump register data: 0x%x\n", (uptr)&cpuRegs.GPR.r[0].UL[0]);
-	for (int reg = 0; reg < 32; reg++) {
+	for (int reg = 0; reg < 32; ++reg) {
 		// Only lower 32 bits (enough for address)
 		eff.Printf("\t%2s <= 0x%08x_%08x\n", R5900::GPR_REG[reg], cpuRegs.GPR.r[reg].UL[1],cpuRegs.GPR.r[reg].UL[0]);
 	}
@@ -238,7 +238,7 @@ void iDumpBlock(u32 ee_pc, u32 ee_size, uptr x86_pc, u32 x86_size)
 	// Didn't find (search) a better solution
 	eff.Printf( "\nRaw x86 dump (https://www.onlinedisassembler.com/odaweb/):\n");
 	u8* x86 = (u8*)x86_pc;
-	for (u32 i = 0; i < x86_size; i++) {
+	for (u32 i = 0; i < x86_size; ++i) {
 		eff.Printf("%.2X", x86[i]);
 	}
 	eff.Printf("\n\n");
@@ -269,9 +269,9 @@ void iDumpBlock( int startpc, u8 * ptr )
 	u8 used[34];
 	u8 fpuused[33];
 	int numused, fpunumused;
-
+#ifdef PCSX2_DEBUG
 	DbgCon.WriteLn( Color_Gray, "dump1 %x:%x, %x", startpc, pc, cpuRegs.cycle );
-
+#endif
 	EmuFolders::Logs.Mkdir();
 	AsciiFile eff(
 		Path::Combine( EmuFolders::Logs, wxsFormat(L"R5900dump%.8X.txt", startpc) ), L"w"
@@ -343,14 +343,14 @@ void iDumpBlock( int startpc, u8 * ptr )
 		fprintf(f, "%2d: %2.2x ", i+1, pcur->info);
 
 		count = 1;
-		for(uint j = 0; j < ArraySize(s_pInstCache->regs); j++) {
+		for(uint j = 0; j < ArraySize(s_pInstCache->regs); ++j) {
 			if( used[j] ) {
 				fprintf(f, "%2.2x%s", pcur->regs[j], ((count%8)&&count<numused)?"_":" ");
 				++count;
 			}
 		}
 		count = 1;
-		for(uint j = 0; j < ArraySize(s_pInstCache->fpuregs); j++) {
+		for(uint j = 0; j < ArraySize(s_pInstCache->fpuregs); ++j) {
 			if( fpuused[j] ) {
 				fprintf(f, "%2.2x%s", pcur->fpuregs[j], ((count%8)&&count<fpunumused)?"_":" ");
 				++count;

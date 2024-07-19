@@ -5401,7 +5401,7 @@ void wxGrid::DrawGridCellArea( wxDC& dc, const wxGridCellCoordsArray& cells )
             if (!marked)
             {
                 int count = redrawCells.GetCount();
-                for (int j = 0; j < count; j++)
+                for (int j = 0; j < count; ++j)
                 {
                     if ( cell == redrawCells[j] )
                     {
@@ -6420,7 +6420,7 @@ void wxGrid::ShowCellEditControl()
             {
                 GetCellSize( row, col, &cell_rows, &cell_cols );
                 // may have changed earlier
-                for (int i = col + cell_cols; i < m_numCols; i++)
+                for (int i = col + cell_cols; i < m_numCols; ++i)
                 {
                     int c_rows, c_cols;
                     GetCellSize( row, i, &c_rows, &c_cols );
@@ -6714,9 +6714,9 @@ wxRect wxGrid::CellToRect( int row, int col ) const
 
         rect.x = GetColLeft(col);
         rect.y = GetRowTop(row);
-        for (i=col; i < col + cell_cols; i++)
+        for (i=col; i < col + cell_cols; ++i)
             rect.width += GetColWidth(i);
-        for (i=row; i < row + cell_rows; i++)
+        for (i=row; i < row + cell_rows; ++i)
             rect.height += GetRowHeight(i);
 
         // if grid lines are enabled, then the area of the cell is a bit smaller
@@ -7908,9 +7908,9 @@ void wxGrid::SetCellSize( int row, int col, int num_rows, int num_cols )
         if ((cell_rows > 1) || (cell_cols > 1))
         {
             int i, j;
-            for (j=row; j < row + cell_rows; j++)
+            for (j=row; j < row + cell_rows; ++j)
             {
-                for (i=col; i < col + cell_cols; i++)
+                for (i=col; i < col + cell_cols; ++i)
                 {
                     if ((i != col) || (j != row))
                     {
@@ -7927,9 +7927,9 @@ void wxGrid::SetCellSize( int row, int col, int num_rows, int num_cols )
         if (((num_rows > 1) || (num_cols > 1)) && (num_rows >= 1) && (num_cols >= 1))
         {
             int i, j;
-            for (j=row; j < row + num_rows; j++)
+            for (j=row; j < row + num_rows; ++j)
             {
-                for (i=col; i < col + num_cols; i++)
+                for (i=col; i < col + num_cols; ++i)
                 {
                     if ((i != col) || (j != row))
                     {

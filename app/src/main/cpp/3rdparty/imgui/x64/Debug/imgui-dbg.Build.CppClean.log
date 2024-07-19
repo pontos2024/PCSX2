@@ -1,0 +1,14 @@
+h:\pcsx2-1.7.3720\deps\x64\debug\imgui-dbg.lib
+h:\pcsx2-1.7.3720\3rdparty\imgui\x64\debug\imgui_tables.obj
+h:\pcsx2-1.7.3720\3rdparty\imgui\x64\debug\imgui_demo.obj
+h:\pcsx2-1.7.3720\3rdparty\imgui\x64\debug\imgui_stdlib.obj
+h:\pcsx2-1.7.3720\3rdparty\imgui\x64\debug\imgui_widgets.obj
+h:\pcsx2-1.7.3720\3rdparty\imgui\x64\debug\imgui.obj
+h:\pcsx2-1.7.3720\3rdparty\imgui\x64\debug\imgui_draw.obj
+h:\pcsx2-1.7.3720\deps\x64\debug\imgui-dbg.pdb
+h:\pcsx2-1.7.3720\3rdparty\imgui\x64\debug\imgui.tlog\cl.command.1.tlog
+h:\pcsx2-1.7.3720\3rdparty\imgui\x64\debug\imgui.tlog\lib-link.read.1.tlog
+h:\pcsx2-1.7.3720\3rdparty\imgui\x64\debug\imgui.tlog\lib-link.write.1.tlog
+h:\pcsx2-1.7.3720\3rdparty\imgui\x64\debug\imgui.tlog\lib.command.1.tlog
+h:\pcsx2-1.7.3720\3rdparty\imgui\x64\debug\imgui.tlog\microsoft.build.cpptasks.cl.read.1.tlog
+h:\pcsx2-1.7.3720\3rdparty\imgui\x64\debug\imgui.tlog\microsoft.build.cpptasks.cl.write.1.tlog

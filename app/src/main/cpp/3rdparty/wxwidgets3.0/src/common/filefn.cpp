@@ -189,7 +189,7 @@ bool wxPathList::Add(const wxString& path)
 
 void wxPathList::Add(const wxArrayString &arr)
 {
-    for (size_t j=0; j < arr.GetCount(); j++)
+    for (size_t j=0; j < arr.GetCount(); ++j)
         Add(arr[j]);
 }
 
@@ -256,7 +256,7 @@ wxString wxPathList::FindValidPath (const wxString& file) const
     else
         strend = fn.GetFullPath();
 
-    for (size_t i=0; i<GetCount(); i++)
+    for (size_t i=0; i<GetCount(); ++i)
     {
         wxString strstart = Item(i);
         if (!strstart.IsEmpty() && strstart.Last() != wxFileName::GetPathSeparator())
@@ -979,7 +979,7 @@ wxConcatFiles (const wxString& file1, const wxString& file2, const wxString& fil
     ssize_t ofs;
     unsigned char buf[1024];
 
-    for( int i=0; i<2; i++)
+    for( int i=0; i<2; ++i)
     {
         wxFile *in = i==0 ? &in1 : &in2;
         do{

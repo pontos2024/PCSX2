@@ -96,7 +96,7 @@ wxImageFloodFill(wxImage *image,
         //temporary x and y locations
         int xt, yt;
 
-        for (int i=0; i < qSz; i++)
+        for (int i=0; i < qSz; ++i)
             qst[i] = 0;
 
         // start queue
@@ -191,7 +191,7 @@ wxImageFloodFill(wxImage *image,
         //temporary x and y locations
         int xt, yt;
 
-        for (int i=0; i < qSz; i++)
+        for (int i=0; i < qSz; ++i)
             qst[i] = 0;
 
         // start queue

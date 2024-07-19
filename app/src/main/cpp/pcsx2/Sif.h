@@ -51,9 +51,10 @@ struct sifFifo
 	{
 		if (words > 0)
 		{
+#ifdef PCSX2_DEBUG
 			if ((FIFO_SIF_W - size) < words)
 				DevCon.Warning("Not enough space in SIF0 FIFO!\n");
-
+#endif
 			if (size < 4)
 			{
 				u32 amt = std::min(4 - size, words);
@@ -69,15 +70,19 @@ struct sifFifo
 			writePos = (writePos + words) & (FIFO_SIF_W - 1);
 			size += words;
 		}
+#ifdef PCSX2_DEBUG
 		SIF_LOG("  SIF + %d = %d (pos=%d)", words, size, writePos);
+#endif
 	}
 
 	void writeJunk(int words)
 	{
 		if (words > 0)
 		{
+#ifdef PCSX2_DEBUG
 			if ((FIFO_SIF_W - size) < words)
 				DevCon.Warning("Not enough Junk space in SIF0 FIFO!\n");
+#endif
 			const int wP0 = std::min((FIFO_SIF_W - writePos), words);
 			const int wP1 = words - wP0;
 
@@ -87,7 +92,9 @@ struct sifFifo
 			writePos = (writePos + words) & (FIFO_SIF_W - 1);
 			size += words;
 		}
+#ifdef PCSX2_DEBUG
 		SIF_LOG("  SIF + %d = %d (pos=%d)", words, size, writePos);
+#endif
 	}
 
 	void read(u32 *to, int words)
@@ -103,7 +110,9 @@ struct sifFifo
 			readPos = (readPos + words) & (FIFO_SIF_W - 1);
 			size -= words;
 		}
+#ifdef PCSX2_DEBUG
 		SIF_LOG("  SIF - %d = %d (pos=%d)", words, size, readPos);
+#endif
 	}
 	void clear()
 	{

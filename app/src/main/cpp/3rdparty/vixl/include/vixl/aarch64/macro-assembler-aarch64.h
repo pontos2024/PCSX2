@@ -354,7 +354,7 @@ class VeneerPool : public Pool {
 
     size_t GetSize() const {
       size_t res = 0;
-      for (int i = 0; i < kNumberOfTrackedBranchTypes; i++) {
+      for (int i = 0; i < kNumberOfTrackedBranchTypes; ++i) {
         res += typed_set_[i].size();
       }
       return res;
@@ -362,7 +362,7 @@ class VeneerPool : public Pool {
     VIXL_DEPRECATED("GetSize", size_t size() const) { return GetSize(); }
 
     bool IsEmpty() const {
-      for (int i = 0; i < kNumberOfTrackedBranchTypes; i++) {
+      for (int i = 0; i < kNumberOfTrackedBranchTypes; ++i) {
         if (!typed_set_[i].empty()) {
           return false;
         }
@@ -373,7 +373,7 @@ class VeneerPool : public Pool {
 
     ptrdiff_t GetFirstLimit() {
       ptrdiff_t res = kInvalidOffset;
-      for (int i = 0; i < kNumberOfTrackedBranchTypes; i++) {
+      for (int i = 0; i < kNumberOfTrackedBranchTypes; ++i) {
         res = std::min(res, typed_set_[i].GetFirstLimit());
       }
       return res;
@@ -383,7 +383,7 @@ class VeneerPool : public Pool {
     }
 
     void Reset() {
-      for (int i = 0; i < kNumberOfTrackedBranchTypes; i++) {
+      for (int i = 0; i < kNumberOfTrackedBranchTypes; ++i) {
         typed_set_[i].clear();
       }
     }
@@ -431,14 +431,14 @@ class VeneerPool : public Pool {
   class BranchInfoSetIterator {
    public:
     explicit BranchInfoSetIterator(BranchInfoSet* set) : set_(set) {
-      for (int i = 0; i < BranchInfoSet::kNumberOfTrackedBranchTypes; i++) {
+      for (int i = 0; i < BranchInfoSet::kNumberOfTrackedBranchTypes; ++i) {
         new (&sub_iterator_[i])
             BranchInfoTypedSetIterator(&(set_->typed_set_[i]));
       }
     }
 
     VeneerPool::BranchInfo* Current() {
-      for (int i = 0; i < BranchInfoSet::kNumberOfTrackedBranchTypes; i++) {
+      for (int i = 0; i < BranchInfoSet::kNumberOfTrackedBranchTypes; ++i) {
         if (!sub_iterator_[i].Done()) {
           return sub_iterator_[i].Current();
         }
@@ -449,7 +449,7 @@ class VeneerPool : public Pool {
 
     void Advance() {
       VIXL_ASSERT(!Done());
-      for (int i = 0; i < BranchInfoSet::kNumberOfTrackedBranchTypes; i++) {
+      for (int i = 0; i < BranchInfoSet::kNumberOfTrackedBranchTypes; ++i) {
         if (!sub_iterator_[i].Done()) {
           sub_iterator_[i].Advance();
           return;
@@ -459,7 +459,7 @@ class VeneerPool : public Pool {
     }
 
     bool Done() const {
-      for (int i = 0; i < BranchInfoSet::kNumberOfTrackedBranchTypes; i++) {
+      for (int i = 0; i < BranchInfoSet::kNumberOfTrackedBranchTypes; ++i) {
         if (!sub_iterator_[i].Done()) return false;
       }
       return true;
@@ -467,7 +467,7 @@ class VeneerPool : public Pool {
 
     void AdvanceToNextType() {
       VIXL_ASSERT(!Done());
-      for (int i = 0; i < BranchInfoSet::kNumberOfTrackedBranchTypes; i++) {
+      for (int i = 0; i < BranchInfoSet::kNumberOfTrackedBranchTypes; ++i) {
         if (!sub_iterator_[i].Done()) {
           sub_iterator_[i].Finish();
           return;
@@ -477,7 +477,7 @@ class VeneerPool : public Pool {
     }
 
     void DeleteCurrentAndAdvance() {
-      for (int i = 0; i < BranchInfoSet::kNumberOfTrackedBranchTypes; i++) {
+      for (int i = 0; i < BranchInfoSet::kNumberOfTrackedBranchTypes; ++i) {
         if (!sub_iterator_[i].Done()) {
           sub_iterator_[i].DeleteCurrentAndAdvance();
           return;

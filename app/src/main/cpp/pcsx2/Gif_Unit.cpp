@@ -68,7 +68,9 @@ bool Gif_HandlerAD(u8* pMem)
 	{ // SIGNAL
 		if (CSRreg.SIGNAL)
 		{ // Time to ignore all subsequent drawing operations.
+#ifdef PCSX2_DEBUG
 			GUNIT_WARN(Color_Orange, "GIF Handler - Stalling SIGNAL");
+#endif
 			if (!gifUnit.gsSIGNAL.queued)
 			{
 				gifUnit.gsSIGNAL.queued = true;
@@ -79,7 +81,9 @@ bool Gif_HandlerAD(u8* pMem)
 		}
 		else
 		{
+#ifdef PCSX2_DEBUG
 			GUNIT_WARN("GIF Handler - SIGNAL");
+#endif
 			GSSIGLBLID.SIGID = (GSSIGLBLID.SIGID & ~data[1]) | (data[0] & data[1]);
 			if (!GSIMR.SIGMSK)
 				gsIrq();
@@ -88,12 +92,16 @@ bool Gif_HandlerAD(u8* pMem)
 	}
 	else if (reg == 0x61)
 	{ // FINISH
+#ifdef PCSX2_DEBUG
 		GUNIT_WARN("GIF Handler - FINISH");
+#endif
 		CSRreg.FINISH = true;
 	}
 	else if (reg == 0x62)
 	{ // LABEL
+#ifdef PCSX2_DEBUG
 		GUNIT_WARN("GIF Handler - LABEL");
+#endif
 		GSSIGLBLID.LBLID = (GSSIGLBLID.LBLID & ~data[1]) | (data[0] & data[1]);
 	}
 	else if (reg >= 0x63 && reg != 0x7f)
@@ -111,22 +119,34 @@ bool Gif_HandlerAD_MTVU(u8* pMem)
 
 	if (reg == 0x60)
 	{ // SIGNAL
+#ifdef PCSX2_DEBUG
 		GUNIT_WARN("GIF Handler - SIGNAL");
-		if (vu1Thread.mtvuInterrupts.load(std::memory_order_acquire) & VU_Thread::InterruptFlagSignal)
+#endif
+		if (vu1Thread.mtvuInterrupts.load(std::memory_order_acquire) & VU_Thread::InterruptFlagSignal) {
+#ifdef PCSX2_DEBUG
 			Console.Error("GIF Handler MTVU - Double SIGNAL Not Handled");
+#endif
+		}
 		vu1Thread.gsSignal.store(((u64)data[1] << 32) | data[0], std::memory_order_relaxed);
 		vu1Thread.mtvuInterrupts.fetch_or(VU_Thread::InterruptFlagSignal, std::memory_order_release);
 	}
 	else if (reg == 0x61)
 	{ // FINISH
+#ifdef PCSX2_DEBUG
 		GUNIT_WARN("GIF Handler - FINISH");
+#endif
 		u32 old = vu1Thread.mtvuInterrupts.fetch_or(VU_Thread::InterruptFlagFinish, std::memory_order_relaxed);
-		if (old & VU_Thread::InterruptFlagFinish)
+		if (old & VU_Thread::InterruptFlagFinish) {
+#ifdef PCSX2_DEBUG
 			Console.Error("GIF Handler MTVU - Double FINISH Not Handled");
+#endif
+		}
 	}
 	else if (reg == 0x62)
 	{ // LABEL
+#ifdef PCSX2_DEBUG
 		GUNIT_WARN("GIF Handler - LABEL");
+#endif
 		// It's okay to coalesce label updates
 		u32 labelData = data[0];
 		u32 labelMsk = data[1];
@@ -144,7 +164,9 @@ bool Gif_HandlerAD_MTVU(u8* pMem)
 	}
 	else if (reg >= 0x63 && reg != 0x7f)
 	{
+#ifdef PCSX2_DEBUG
 		DevCon.Warning("GIF Handler Debug - Write to unknown register! [reg=%x]", reg);
+#endif
 	}
 	return 0;
 }
@@ -185,7 +207,9 @@ bool Gif_HandlerAD_Debug(u8* pMem)
 	}
 	else if (reg >= 0x63 && reg != 0x7f)
 	{
+#ifdef PCSX2_DEBUG
 		DevCon.Warning("GIF Handler Debug - Write to unknown register! [reg=%x]", reg);
+#endif
 	}
 	return 0;
 }
@@ -278,10 +302,12 @@ void SaveStateBase::gifFreeze()
 	gifPathFreeze(GIF_PATH_3);
 	if (!IsSaving())
 	{
+#ifdef PCSX2_DEBUG
 		if (mtvuMode != THREAD_VU1)
 		{
 			DevCon.Warning("gifUnit: MTVU Mode has switched between save/load state");
 			// ToDo: gifUnit.SwitchMTVU(mtvuMode);
 		}
+#endif
 	}
 }

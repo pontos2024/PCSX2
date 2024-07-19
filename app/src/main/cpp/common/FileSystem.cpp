@@ -96,7 +96,7 @@ void FileSystem::SanitizeFileName(char* Destination, u32 cbDestination, const ch
 
 	if (FileName == Destination)
 	{
-		for (i = 0; i < fileNameLength; i++)
+		for (i = 0; i < fileNameLength; ++i)
 		{
 			if (!FileSystemCharacterIsSane(FileName[i], StripSlashes))
 				Destination[i] = '_';
@@ -104,7 +104,7 @@ void FileSystem::SanitizeFileName(char* Destination, u32 cbDestination, const ch
 	}
 	else
 	{
-		for (i = 0; i < fileNameLength && i < cbDestination; i++)
+		for (i = 0; i < fileNameLength && i < cbDestination; ++i)
 		{
 			if (FileSystemCharacterIsSane(FileName[i], StripSlashes))
 				Destination[i] = FileName[i];
@@ -117,7 +117,7 @@ void FileSystem::SanitizeFileName(char* Destination, u32 cbDestination, const ch
 void FileSystem::SanitizeFileName(std::string& Destination, bool StripSlashes /* = true*/)
 {
 	const std::size_t len = Destination.length();
-	for (std::size_t i = 0; i < len; i++)
+	for (std::size_t i = 0; i < len; ++i)
 	{
 		if (!FileSystemCharacterIsSane(Destination[i], StripSlashes))
 			Destination[i] = '_';
@@ -967,7 +967,7 @@ bool FileSystem::CreateDirectoryPath(const char* Path, bool Recursive)
 		tempPath.reserve(pathLength);
 
 		// create directories along the path
-		for (size_t i = 0; i < pathLength; i++)
+		for (size_t i = 0; i < pathLength; ++i)
 		{
 			if (wpath[i] == L'\\' || wpath[i] == L'/')
 			{
@@ -1418,7 +1418,7 @@ bool FileSystem::CreateDirectoryPath(const char* path, bool recursive)
 		tempPath.reserve(pathLength);
 
 		// create directories along the path
-		for (size_t i = 0; i < pathLength; i++)
+		for (size_t i = 0; i < pathLength; ++i)
 		{
 			if (i > 0 && path[i] == '/')
 			{
@@ -1454,6 +1454,15 @@ bool FileSystem::CreateDirectoryPath(const char* path, bool recursive)
 	}
 }
 
+bool FileSystem::EnsureDirectoryExists(const char* path, bool recursive)
+{
+    if (FileSystem::DirectoryExists(path))
+        return true;
+
+    // if it fails to create, we're not going to be able to use it anyway
+    return FileSystem::CreateDirectoryPath(path, recursive);
+}
+
 bool FileSystem::DeleteFilePath(const char* path)
 {
 	if (path[0] == '\0')
@@ -1473,7 +1482,9 @@ bool FileSystem::RenamePath(const char* old_path, const char* new_path)
 
 	if (rename(old_path, new_path) != 0)
 	{
+#ifdef PCSX2_DEBUG
 		Console.Error("rename('%s', '%s') failed: %d", old_path, new_path, errno);
+#endif
 		return false;
 	}
 

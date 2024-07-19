@@ -25,6 +25,10 @@ static DeclareTls(int) conlog_Indent(0);
 // thread-local console color storage.
 static DeclareTls(ConsoleColors) conlog_Color(DefaultConsoleColor);
 
+#if defined(__ANDROID__)
+#include <android/log.h>
+#endif
+
 #ifdef __POSIX__
 #include <unistd.h>
 
@@ -82,6 +86,10 @@ void MSW_OutputDebugString(const wxString& text)
 
 	fputs(text.utf8_str(), stdout);
 	fflush(stdout);
+#elif defined(__ANDROID__)
+#ifdef PCSX2_DEBUG
+    __android_log_print(ANDROID_LOG_DEBUG, "NDK_PCSX2", text.utf8_str());
+#endif
 #else
 	fputs(text.utf8_str(), stdout_fp);
 	fflush(stdout_fp);

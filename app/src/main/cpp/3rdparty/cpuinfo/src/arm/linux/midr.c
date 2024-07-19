@@ -691,7 +691,7 @@ static void cpuinfo_arm_linux_detect_cluster_midr_by_sequential_scan(
 	struct cpuinfo_arm_linux_processor processors[restrict static processors_count])
 {
 	uint32_t midr = default_midr;
-	for (uint32_t i = 0; i < processors_count; i++) {
+	for (uint32_t i = 0; i < processors_count; ++i) {
 		if (bitmask_all(processors[i].flags, CPUINFO_LINUX_FLAG_VALID)) {
 			if (processors[i].package_leader_id == i) {
 				if (bitmask_all(processors[i].flags, CPUINFO_ARM_LINUX_VALID_MIDR)) {
@@ -731,7 +731,7 @@ uint32_t cpuinfo_arm_linux_detect_cluster_midr(
 	uint32_t last_processor_in_cpuinfo = max_processors;
 	uint32_t last_processor_with_midr = max_processors;
 	uint32_t processors_with_midr_count = 0;
-	for (uint32_t i = 0; i < max_processors; i++) {
+	for (uint32_t i = 0; i < max_processors; ++i) {
 		if (bitmask_all(processors[i].flags, CPUINFO_LINUX_FLAG_VALID)) {
 			if (processors[i].flags & CPUINFO_ARM_LINUX_VALID_PROCESSOR) {
 				last_processor_in_cpuinfo = i;
@@ -816,7 +816,7 @@ uint32_t cpuinfo_arm_linux_detect_cluster_midr(
 		 * for any of the cores. Check if this is the case.
 		 */
 		uint32_t clusters_with_midr_count = 0;
-		for (uint32_t i = 0; i < max_processors; i++) {
+		for (uint32_t i = 0; i < max_processors; ++i) {
 			if (bitmask_all(processors[i].flags, CPUINFO_LINUX_FLAG_VALID | CPUINFO_ARM_LINUX_VALID_MIDR)) {
 				if (processors[i].package_leader_id == i) {
 					clusters_with_midr_count += 1;

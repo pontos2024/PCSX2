@@ -457,7 +457,7 @@ bool wxAnimationCtrl::RebuildBackingStoreUpToFrame(unsigned int frame)
     DisposeToBackground(dc);
 
     // Draw all intermediate frames that haven't been removed from the animation
-    for (unsigned int i = 0; i < frame; i++)
+    for (unsigned int i = 0; i < frame; ++i)
     {
         if (m_animation.GetDisposalMethod(i) == wxANIM_DONOTREMOVE ||
             m_animation.GetDisposalMethod(i) == wxANIM_UNSPECIFIED)

@@ -180,7 +180,7 @@ u8 PadData::BitmaskOrZero(bool pressed, ButtonResolver buttonInfo)
 wxString PadData::RawPadBytesToString(int start, int end)
 {
 	wxString str;
-	for (int i = start; i < end; i++)
+	for (int i = start; i < end; ++i)
 	{
 		str += wxString::Format("%d", PollControllerData(i));
 		if (i != end - 1)

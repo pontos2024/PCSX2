@@ -65,7 +65,7 @@ static const wxUint16* GetEncTable(wxFontEncoding enc)
     }
 #endif
 
-    for (int i = 0; encodings_list[i].table != NULL; i++)
+    for (int i = 0; encodings_list[i].table != NULL; ++i)
     {
         if (encodings_list[i].encoding == enc)
             return encodings_list[i].table;
@@ -91,7 +91,7 @@ static CharsetItem* BuildReverseTable(const wxUint16 *tbl)
 {
     CharsetItem *rev = new CharsetItem[128];
 
-    for (int i = 0; i < 128; i++)
+    for (int i = 0; i < 128; ++i)
         rev[i].c = wxUint8(128 + i), rev[i].u = tbl[i];
 
     qsort(rev, 128, sizeof(CharsetItem), CompareCharsetItems);
@@ -128,16 +128,16 @@ bool wxEncodingConverter::Init(wxFontEncoding input_enc, wxFontEncoding output_e
         if ((out_tbl = GetEncTable(output_enc)) == NULL) return false;
 
         m_Table = new wchar_t[65536];
-        for (i = 0; i < 128; i++)  m_Table[i] = (wchar_t)i; // 7bit ASCII
-        for (i = 128; i < 65536; i++)  m_Table[i] = (wchar_t)0;
+        for (i = 0; i < 128; ++i)  m_Table[i] = (wchar_t)i; // 7bit ASCII
+        for (i = 128; i < 65536; ++i)  m_Table[i] = (wchar_t)0;
 
         if (method == wxCONVERT_SUBSTITUTE)
         {
-            for (i = 0; i < encoding_unicode_fallback_count; i++)
+            for (i = 0; i < encoding_unicode_fallback_count; ++i)
                 m_Table[encoding_unicode_fallback[i].c] = (wchar_t) encoding_unicode_fallback[i].s;
         }
 
-        for (i = 0; i < 128; i++)
+        for (i = 0; i < 128; ++i)
             m_Table[out_tbl[i]] = (wchar_t)(128 + i);
 
         m_UnicodeInput = true;
@@ -151,11 +151,11 @@ bool wxEncodingConverter::Init(wxFontEncoding input_enc, wxFontEncoding output_e
         m_UnicodeInput = false;
 
         m_Table = new wchar_t[256];
-        for (i = 0; i < 128; i++)  m_Table[i] = (wchar_t)i; // 7bit ASCII
+        for (i = 0; i < 128; ++i)  m_Table[i] = (wchar_t)i; // 7bit ASCII
 
         if (output_enc == wxFONTENCODING_UNICODE)
         {
-            for (i = 0; i < 128; i++)  m_Table[128 + i] = (wchar_t)in_tbl[i];
+            for (i = 0; i < 128; ++i)  m_Table[128 + i] = (wchar_t)in_tbl[i];
             return true;
         }
         else // output !Unicode
@@ -164,7 +164,7 @@ bool wxEncodingConverter::Init(wxFontEncoding input_enc, wxFontEncoding output_e
             CharsetItem *item;
             CharsetItem key;
 
-            for (i = 0; i < 128; i++)
+            for (i = 0; i < 128; ++i)
             {
                 key.u = in_tbl[i];
                 item = (CharsetItem*) bsearch(&key, rev, 128, sizeof(CharsetItem), CompareCharsetItems);
@@ -219,7 +219,7 @@ bool wxEncodingConverter::Convert(const char* input, char* output) const
     bool replaced = false;
 
     for (i = input, o = output; *i != 0;)
-        *(o++) = (char)(GetTableValue(m_Table, (wxUint8)*(i++), replaced));
+        *(o++) = (char)(GetTableValue(m_Table, (wxUint8)*(++i), replaced));
     *o = 0;
 
     return !replaced;
@@ -248,7 +248,7 @@ bool wxEncodingConverter::Convert(const char* input, wchar_t* output) const
     bool replaced = false;
 
     for (i = input, o = output; *i != 0;)
-        *(o++) = (wchar_t)(GetTableValue(m_Table, (wxUint8)*(i++), replaced));
+        *(o++) = (wchar_t)(GetTableValue(m_Table, (wxUint8)*(++i), replaced));
     *o = 0;
 
     return !replaced;
@@ -278,7 +278,7 @@ bool wxEncodingConverter::Convert(const wchar_t* input, char* output) const
     bool replaced = false;
 
     for (i = input, o = output; *i != 0;)
-        *(o++) = (char)(GetTableValue(m_Table, (wxUint16)*(i++), replaced));
+        *(o++) = (char)(GetTableValue(m_Table, (wxUint16)*(++i), replaced));
     *o = 0;
 
     return !replaced;
@@ -309,7 +309,7 @@ bool wxEncodingConverter::Convert(const wchar_t* input, wchar_t* output) const
     bool replaced = false;
 
     for (i = input, o = output; *i != 0;)
-        *(o++) = (wchar_t)(GetTableValue(m_Table, (wxUint8)*(i++), replaced));
+        *(o++) = (wchar_t)(GetTableValue(m_Table, (wxUint8)*(++i), replaced));
     *o = 0;
 
     return !replaced;
@@ -328,12 +328,12 @@ wxString wxEncodingConverter::Convert(const wxString& input) const
 
     if (m_UnicodeInput)
     {
-        for (i = input.c_str(); *i != 0; i++)
+        for (i = input.c_str(); *i != 0; ++i)
             s << (wxChar)(m_Table[(wxUint16)*i]);
     }
     else
     {
-        for (i = input.c_str(); *i != 0; i++)
+        for (i = input.c_str(); *i != 0; ++i)
             s << (wxChar)(m_Table[(wxUint8)*i]);
     }
 
@@ -462,7 +462,7 @@ wxFontEncodingArray wxEncodingConverter::GetPlatformEquivalents(wxFontEncoding e
     clas = 0;
     while (EquivalentEncodings[clas][0][0] != STOP)
     {
-        for (i = 0; i < NUM_OF_PLATFORMS; i++)
+        for (i = 0; i < NUM_OF_PLATFORMS; ++i)
             for (e = 0; EquivalentEncodings[clas][i][e] != STOP; e++)
                 if (EquivalentEncodings[clas][i][e] == enc)
                 {
@@ -491,11 +491,11 @@ wxFontEncodingArray wxEncodingConverter::GetAllEquivalents(wxFontEncoding enc)
     clas = 0;
     while (EquivalentEncodings[clas][0][0] != STOP)
     {
-        for (i = 0; i < NUM_OF_PLATFORMS; i++)
+        for (i = 0; i < NUM_OF_PLATFORMS; ++i)
             for (e = 0; EquivalentEncodings[clas][i][e] != STOP; e++)
                 if (EquivalentEncodings[clas][i][e] == enc)
                 {
-                    for (j = 0; j < NUM_OF_PLATFORMS; j++)
+                    for (j = 0; j < NUM_OF_PLATFORMS; ++j)
                         for (f = EquivalentEncodings[clas][j]; *f != STOP; f++)
                             if (!FindEncoding(arr, *f)) arr.push_back(*f);
                     i = NUM_OF_PLATFORMS/*hack*/; break;

@@ -44,7 +44,7 @@ void PolyphaseResampler::readFrame(float *frame) {
     // Multiply input times windowed sinc function.
     float *coefficients = &mCoefficients[mCoefficientCursor];
     float *xFrame = &mX[mCursor * getChannelCount()];
-    for (int i = 0; i < mNumTaps; i++) {
+    for (int i = 0; i < mNumTaps; ++i) {
         float coefficient = *coefficients++;
 //        printf("PolyphaseResampler: coeff = %10.6f, xFrame[0] = %10.6f\n", coefficient, xFrame[0]);
         for (int channel = 0; channel < getChannelCount(); channel++) {

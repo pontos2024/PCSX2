@@ -112,7 +112,7 @@ static void __forceinline IncrementNextA(V_Core& thiscore, uint voiceidx)
 	// Important!  Both cores signal IRQ when an address is read, regardless of
 	// which core actually reads the address.
 
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 2; ++i)
 	{
 		if (Cores[i].IRQEnable && (vc.NextA == Cores[i].IRQA))
 		{
@@ -197,7 +197,7 @@ static __forceinline s32 GetNextDataBuffered(V_Core& thiscore, uint voiceidx)
 
 		// We'll need the loop flags and buffer pointers regardless of cache status:
 
-		for (int i = 0; i < 2; i++)
+		for (int i = 0; i < 2; ++i)
 			if (Cores[i].IRQEnable && Cores[i].IRQA == (vc.NextA & 0xFFFF8))
 				SetIrqCall(i);
 
@@ -271,7 +271,7 @@ static __forceinline void GetNextDataDummy(V_Core& thiscore, uint voiceidx)
 
 	if (vc.SCurrent == 28)
 	{
-		for (int i = 0; i < 2; i++)
+		for (int i = 0; i < 2; ++i)
 			if (Cores[i].IRQEnable && Cores[i].IRQA == (vc.NextA & 0xFFFF8))
 				SetIrqCall(i);
 
@@ -537,7 +537,7 @@ static __forceinline s32 GetNoiseValues(V_Core& thiscore)
 static __forceinline void spu2M_WriteFast(u32 addr, s16 value)
 {
 	// Fixes some of the oldest hangs in pcsx2's history! :p
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 2; ++i)
 	{
 		if (Cores[i].IRQEnable && Cores[i].IRQA == addr)
 		{

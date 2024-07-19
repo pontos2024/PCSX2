@@ -29,7 +29,7 @@ int32_t MonoToMultiConverter::onProcess(int32_t numFrames) {
     const float *inputBuffer = input.getBuffer();
     float *outputBuffer = output.getBuffer();
     int32_t channelCount = output.getSamplesPerFrame();
-    for (int i = 0; i < numFrames; i++) {
+    for (int i = 0; i < numFrames; ++i) {
         // read one, write many
         float sample = *inputBuffer++;
         for (int channel = 0; channel < channelCount; channel++) {

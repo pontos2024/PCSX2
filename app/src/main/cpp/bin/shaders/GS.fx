@@ -1675,7 +1675,7 @@ float4 CelPass(float4 color, float2 uv0)
     float2(0.00, 0.0078125),
     float2(0.0078125, 0.0078125) };
 
-    for (int i = 0; i < NUM; i++)
+    for (int i = 0; i < NUM; ++i)
     {
         col[i] = sample_tex(TextureSampler, uv0 + set[i] * RoundingOffset).rgb;
         col[i] = CelColor(col[i]);
@@ -1759,7 +1759,7 @@ float3 PaintShading(float3 color, float2 texcoord)
     float3	A, B, C, D, E, F, G, H, I, J, shade;
 
     for (k = int(-PaintRadius); k < (int(PaintRadius) + 1); k++){
-    for (j = int(-PaintRadius); j < (int(PaintRadius) + 1); j++){
+    for (j = int(-PaintRadius); j < (int(PaintRadius) + 1); ++j){
 
     tex.x = texcoord.x + pixelSize.x * k;
     tex.y = texcoord.y + pixelSize.y * j;
@@ -2356,7 +2356,7 @@ float4 DebandPass(float4 color, float2 texcoord)
     float3 col0 = color.rgb;
     float4 accu = float4(col0, 1.0);
 
-    for(int i=0; i < int(DebandSampleCount); i++)
+    for(int i=0; i < int(DebandSampleCount); ++i)
     {
         float4 cn = float4(sample_tex(TextureSampler, texcoord + on[i]).rgb, 1.0);
         

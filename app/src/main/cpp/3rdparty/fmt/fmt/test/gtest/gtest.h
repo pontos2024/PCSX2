@@ -7863,7 +7863,7 @@ inline bool ArrayEq(const T(&lhs)[N], const U(&rhs)[N]) {
 // lead to different copies of the template code.
 template <typename T, typename U>
 bool ArrayEq(const T* lhs, size_t size, const U* rhs) {
-  for (size_t i = 0; i != size; i++) {
+  for (size_t i = 0; i != size; ++i) {
     if (!internal::ArrayEq(lhs[i], rhs[i]))
       return false;
   }
@@ -7903,7 +7903,7 @@ inline void CopyArray(const T(&from)[N], U(*to)[N]) {
 // would lead to different copies of the template code.
 template <typename T, typename U>
 void CopyArray(const T* from, size_t size, U* to) {
-  for (size_t i = 0; i != size; i++) {
+  for (size_t i = 0; i != size; ++i) {
     internal::CopyArray(from[i], to + i);
   }
 }
@@ -8522,7 +8522,7 @@ GTEST_API_ bool InDeathTestChild();
 // Examples:
 //
 //   ASSERT_DEATH(server.SendMessage(56, "Hello"), "Invalid port number");
-//   for (int i = 0; i < 5; i++) {
+//   for (int i = 0; i < 5; ++i) {
 //     EXPECT_DEATH(server.ProcessRequest(i),
 //                  "Invalid request .* in ProcessRequest()")
 //                  << "Failed to die on request " << i;
@@ -9641,7 +9641,7 @@ inline void PrintTo(wchar_t* s, ::std::ostream* os) {
 template <typename T>
 void PrintRawArrayTo(const T a[], size_t count, ::std::ostream* os) {
   UniversalPrint(a[0], os);
-  for (size_t i = 1; i != count; i++) {
+  for (size_t i = 1; i != count; ++i) {
     *os << ", ";
     UniversalPrint(a[i], os);
   }

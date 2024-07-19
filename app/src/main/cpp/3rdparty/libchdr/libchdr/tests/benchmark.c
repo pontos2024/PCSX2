@@ -26,7 +26,7 @@ int main(int argc, char** argv)
   header = chd_get_header(file);
   totalbytes = header->hunkbytes * header->totalhunks;
   buffer = malloc(header->hunkbytes);
-  for (i = 0 ; i < header->totalhunks ; i++)
+  for (i = 0 ; i < header->totalhunks ; ++i)
   {
     err = chd_read(file, i, buffer);
     if (err)

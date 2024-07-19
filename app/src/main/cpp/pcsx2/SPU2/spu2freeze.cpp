@@ -126,9 +126,9 @@ s32 __fastcall SPU2Savestate::ThawIt(DataBlock& spud)
 		// Go through the V_Voice structs and recalculate SBuffer pointer from
 		// the NextA setting.
 
-		for (int c = 0; c < 2; c++)
+		for (int c = 0; c < 2; ++c)
 		{
-			for (int v = 0; v < 24; v++)
+			for (int v = 0; v < 24; ++v)
 			{
 				const int cacheIdx = Cores[c].Voices[v].NextA / pcm_WordsPerBlock;
 				Cores[c].Voices[v].SBuffer = pcm_cache_data[cacheIdx].Sampledata;

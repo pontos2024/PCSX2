@@ -904,7 +904,7 @@ SRes LzmaDec_DecodeToDic(CLzmaDec *p, SizeT dicLimit, const Byte *src, SizeT *sr
       SizeT numProbs = LzmaProps_GetNumProbs(&p->prop);
       SizeT i;
       CLzmaProb *probs = p->probs;
-      for (i = 0; i < numProbs; i++)
+      for (i = 0; i < numProbs; ++i)
         probs[i] = kBitModelTotal >> 1;
       p->reps[0] = p->reps[1] = p->reps[2] = p->reps[3] = 1;
       p->state = 0;

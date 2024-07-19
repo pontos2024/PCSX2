@@ -109,7 +109,7 @@ main()
   assert(pthread_attr_init(&attr) == 0);
   assert(pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED) == 0);
 
-  for (i = 0; i < NUMTHREADS; i++)
+  for (i = 0; i < NUMTHREADS; ++i)
     {
       while(pthread_create(&t[i], &attr, func, NULL) != 0)
         Sleep(1);
@@ -124,7 +124,7 @@ main()
    * Analyse reuse by computing min and max number of times pthread_create()
    * returned the same pthread_t value.
    */
-  for (i = 0; i < NUMTHREADS; i++)
+  for (i = 0; i < NUMTHREADS; ++i)
     {
       if (t[i].p != NULL)
         {
@@ -132,7 +132,7 @@ main()
 
           thisMax = t[i].x;
 
-          for (j = i+1; j < NUMTHREADS; j++)
+          for (j = i+1; j < NUMTHREADS; ++j)
             if (t[i].p == t[j].p)
               {
 		if (t[i].x == t[j].x)
@@ -150,7 +150,7 @@ main()
         }
     }
 
-  for (i = 0; i < NUMTHREADS; i++)
+  for (i = 0; i < NUMTHREADS; ++i)
     if (t[i].p != NULL)
       totalHandles++;
 

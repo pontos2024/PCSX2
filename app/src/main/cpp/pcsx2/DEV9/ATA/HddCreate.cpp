@@ -114,9 +114,9 @@ void HddCreate::WriteImage(ghc::filesystem::path hddPath, int reqSizeMiB)
 
 	newImage.seekp(0, std::ios::beg);
 
-	for (int iMiB = 0; iMiB < reqSizeMiB; iMiB++)
+	for (int iMiB = 0; iMiB < reqSizeMiB; ++iMiB)
 	{
-		for (int i4kb = 0; i4kb < 256; i4kb++)
+		for (int i4kb = 0; i4kb < 256; ++i4kb)
 		{
 			newImage.write((char*)buff, buffsize);
 			if (newImage.fail())

@@ -237,7 +237,7 @@ static USBDevice* ohci_find_device(OHCIState* ohci, uint8_t addr)
 {
 	USBDevice* dev;
 
-	for (unsigned int i = 0; i < ohci->num_ports; i++)
+	for (unsigned int i = 0; i < ohci->num_ports; ++i)
 	{
 		if ((ohci->rhport[i].ctrl & OHCI_PORT_PES) == 0)
 		{
@@ -257,13 +257,13 @@ static void ohci_stop_endpoints(OHCIState* ohci)
 {
 	USBDevice* dev;
 
-	for (unsigned int i = 0; i < ohci->num_ports; i++)
+	for (unsigned int i = 0; i < ohci->num_ports; ++i)
 	{
 		dev = ohci->rhport[i].port.dev;
 		if (dev && dev->attached)
 		{
 			usb_device_ep_stopped(dev, &dev->ep_ctl);
-			for (int j = 0; j < USB_MAX_ENDPOINTS; j++)
+			for (int j = 0; j < USB_MAX_ENDPOINTS; ++j)
 			{
 				usb_device_ep_stopped(dev, &dev->ep_in[j]);
 				usb_device_ep_stopped(dev, &dev->ep_out[j]);
@@ -281,7 +281,7 @@ static void ohci_roothub_reset(OHCIState* ohci)
 	ohci->rhdesc_b = 0x0; /* Impl. specific */
 	ohci->rhstatus = 0;
 
-	for (uint32_t i = 0; i < ohci->num_ports; i++)
+	for (uint32_t i = 0; i < ohci->num_ports; ++i)
 	{
 		port = &ohci->rhport[i];
 		port->ctrl = 0;
@@ -344,7 +344,7 @@ static inline int get_dwords(uint32_t addr, uint32_t* buf, int num)
 {
 	int i;
 
-	for (i = 0; i < num; i++, buf++, addr += sizeof(*buf))
+	for (i = 0; i < num; ++i, ++buf, addr += sizeof(*buf))
 	{
 		if (cpu_physical_memory_rw(addr, (uint8_t*)buf, sizeof(*buf), 0))
 			return 0;
@@ -359,7 +359,7 @@ static inline int get_words(uint32_t addr, uint16_t* buf, int num)
 {
 	int i;
 
-	for (i = 0; i < num; i++, buf++, addr += sizeof(*buf))
+	for (i = 0; i < num; ++i, ++buf, addr += sizeof(*buf))
 	{
 		if (cpu_physical_memory_rw(addr, (uint8_t*)buf, sizeof(*buf), 0))
 			return 0;
@@ -374,7 +374,7 @@ static inline int put_dwords(uint32_t addr, uint32_t* buf, int num)
 {
 	int i;
 
-	for (i = 0; i < num; i++, buf++, addr += sizeof(*buf))
+	for (i = 0; i < num; ++i, ++buf, addr += sizeof(*buf))
 	{
 		uint32_t tmp = cpu_to_le32(*buf);
 		if (cpu_physical_memory_rw(addr, (uint8_t*)&tmp, sizeof(tmp), 1))
@@ -389,7 +389,7 @@ static inline int put_words(uint32_t addr, uint16_t* buf, int num)
 {
 	int i;
 
-	for (i = 0; i < num; i++, buf++, addr += sizeof(*buf))
+	for (i = 0; i < num; ++i, ++buf, addr += sizeof(*buf))
 	{
 		uint16_t tmp = cpu_to_le16(*buf);
 		if (cpu_physical_memory_rw(addr, (uint8_t*)&tmp, sizeof(tmp), 1))
@@ -1393,13 +1393,13 @@ static void ohci_set_hub_status(OHCIState* ohci, uint32_t val)
 
 	if (val & OHCI_RHS_LPS)
 	{
-		for (unsigned int i = 0; i < ohci->num_ports; i++)
+		for (unsigned int i = 0; i < ohci->num_ports; ++i)
 			ohci_port_power(ohci, i, 0);
 	}
 
 	if (val & OHCI_RHS_LPSC)
 	{
-		for (unsigned int i = 0; i < ohci->num_ports; i++)
+		for (unsigned int i = 0; i < ohci->num_ports; ++i)
 			ohci_port_power(ohci, i, 1);
 	}
 
@@ -1748,7 +1748,7 @@ OHCIState* ohci_create(uint32_t base, int ports)
 	}
 
 	ohci->num_ports = ports;
-	for (i = 0; i < ports; i++)
+	for (i = 0; i < ports; ++i)
 	{
 		memset(&(ohci->rhport[i].port), 0, sizeof(USBPort));
 		ohci->rhport[i].port.opaque = ohci;

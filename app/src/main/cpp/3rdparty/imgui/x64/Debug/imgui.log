@@ -1,0 +1,7 @@
+﻿  imgui_tables.cpp
+  imgui.cpp
+  imgui_widgets.cpp
+  imgui_draw.cpp
+  imgui_demo.cpp
+  imgui_stdlib.cpp
+  imgui.vcxproj -> H:\pcsx2-1.7.3720\deps\x64\Debug\imgui-dbg.lib

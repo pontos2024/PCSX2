@@ -58,7 +58,7 @@ bool CPURegList::IsValid() const {
   if ((type_ == CPURegister::kRegister) || (type_ == CPURegister::kVRegister)) {
     bool is_valid = true;
     // Try to create a CPURegister for each element in the list.
-    for (int i = 0; i < kRegListSizeInBits; i++) {
+    for (int i = 0; i < kRegListSizeInBits; ++i) {
       if (((list_ >> i) & 1) != 0) {
         is_valid &= CPURegister(i, size_, type_).IsValid();
       }

@@ -783,9 +783,9 @@ bool wxBitmap::CreateFromImage(const wxImage& image, int depth, const wxDC& dc)
     }
 
     int i, j;
-    for (i = 0; i < image.GetWidth(); i++)
+    for (i = 0; i < image.GetWidth(); ++i)
     {
-        for (j = 0; j < image.GetHeight(); j++)
+        for (j = 0; j < image.GetHeight(); ++j)
         {
             unsigned char red = image.GetRed(i, j);
             unsigned char green = image.GetGreen(i, j);
@@ -866,9 +866,9 @@ wxImage wxBitmap::ConvertToImage() const
     HBITMAP hOldBitmap = ::SelectObject(hMemDC, hBitmap);
 
     int i, j;
-    for (i = 0; i < GetWidth(); i++)
+    for (i = 0; i < GetWidth(); ++i)
     {
-        for (j = 0; j < GetHeight(); j++)
+        for (j = 0; j < GetHeight(); ++j)
         {
             COLORREF color = ::GetPixel(hMemDC, i, j);
             unsigned char red = GetRValue(color);

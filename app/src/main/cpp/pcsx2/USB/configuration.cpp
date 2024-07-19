@@ -213,7 +213,7 @@ void LoadConfig()
 
 	auto& instance = RegisterDevice::instance();
 
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 2; ++i)
 	{
 		std::string api;
 #ifdef _WIN32

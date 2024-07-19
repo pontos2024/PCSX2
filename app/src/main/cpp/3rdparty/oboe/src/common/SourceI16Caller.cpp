@@ -38,7 +38,7 @@ int32_t SourceI16Caller::onProcess(int32_t numFrames) {
 #if FLOWGRAPH_ANDROID_INTERNAL
     memcpy_to_float_from_i16(floatData, shortData, numSamples);
 #else
-    for (int i = 0; i < numSamples; i++) {
+    for (int i = 0; i < numSamples; ++i) {
         *floatData++ = *shortData++ * (1.0f / 32768);
     }
 #endif

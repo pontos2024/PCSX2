@@ -1077,7 +1077,7 @@ void WINAPI DbgSetWaitTimeout(DWORD dwTimeout)
 
     char *CGuidNameList::operator [] (const GUID &guid)
     {
-        for (int i = 0; i < g_cGuidNames; i++) {
+        for (int i = 0; i < g_cGuidNames; ++i) {
             if (g_GuidNames[i].guid == guid) {
                 return g_GuidNames[i].szName;
             }

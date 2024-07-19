@@ -53,7 +53,7 @@ void D2_NETMP(const u8 *inbuffer, u8 *outbuffer, char *message){
 		case 0:
 			n=(in->h.length-sizeof(DECI2_NETMP_HEADER)) / sizeof(DECI2_NETMP_CONNECT);
 			sprintf(line, "code=CONNECT");
-			for (i=0; i<n; i++){
+			for (i=0; i<n; ++i){
 				sprintf(p, " %04X/%d", connect[i].protocol, connect[i].priority);
 				strcat(line, p);
 			}
@@ -81,7 +81,7 @@ void D2_NETMP(const u8 *inbuffer, u8 *outbuffer, char *message){
 			node=PROTO_ILOADP;
 			sendDCMP(PROTO_DCMP, 'I', 'H', 2, 1, (char*)&node, sizeof(node));
 
-			for (i=0; i<10; i++){
+			for (i=0; i<10; ++i){
 				node=PROTO_ETTYP+i;
 				sendDCMP(PROTO_DCMP, 'E', 'H', 2, 1, (char*)&node, sizeof(node));
 

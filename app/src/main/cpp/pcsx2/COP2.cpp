@@ -42,7 +42,9 @@ void BC2F()
 {
 	if (CP2COND == 0)
 	{
+#ifdef PCSX2_DEBUG
 		Console.WriteLn("VU0 Macro Branch");
+#endif
 		intDoBranch(_BranchTarget_);
 	}
 }
@@ -50,7 +52,9 @@ void BC2T()
 {
 	if (CP2COND == 1)
 	{
+#ifdef PCSX2_DEBUG
 		Console.WriteLn("VU0 Macro Branch");
+#endif
 		intDoBranch(_BranchTarget_);
 	}
 }
@@ -59,7 +63,9 @@ void BC2FL()
 {
 	if (CP2COND == 0)
 	{
+#ifdef PCSX2_DEBUG
 		Console.WriteLn("VU0 Macro Branch");
+#endif
 		intDoBranch(_BranchTarget_);
 	}
 	else
@@ -71,7 +77,9 @@ void BC2TL()
 {
 	if (CP2COND == 1)
 	{
+#ifdef PCSX2_DEBUG
 		Console.WriteLn("VU0 Macro Branch");
+#endif
 		intDoBranch(_BranchTarget_);
 	}
 	else

@@ -73,7 +73,7 @@ static u32 CalculateECC(u8* buf)
 	u8 line_parity_0 = 0x7F;
 	u8 line_parity_1 = 0x7F;
 
-	for (int i = 0; i < 128; i++)
+	for (int i = 0; i < 128; ++i)
 	{
 		u8 b = buf[i];
 		column_parity ^= column_parity_mask[b];
@@ -101,12 +101,12 @@ static bool ConvertNoECCtoRAW(wxString file_in, wxString file_out)
 			u8 buffer[512];
 			size_t size = fin.Length();
 
-			for (size_t i = 0; i < (size / 512); i++)
+			for (size_t i = 0; i < (size / 512); ++i)
 			{
 				fin.Read(buffer, 512);
 				fout.Write(buffer, 512);
 
-				for (int j = 0; j < 4; j++)
+				for (int j = 0; j < 4; ++j)
 				{
 					u32 checksum = CalculateECC(&buffer[j * 128]);
 					fout.Write(&checksum, 3);
@@ -136,7 +136,7 @@ static bool ConvertRAWtoNoECC(wxString file_in, wxString file_out)
 			u8 buffer[512];
 			size_t size = fin.Length();
 
-			for (size_t i = 0; i < (size / 528); i++)
+			for (size_t i = 0; i < (size / 528); ++i)
 			{
 				fin.Read(buffer, 512);
 				fout.Write(buffer, 512);
@@ -420,7 +420,7 @@ bool FileMemoryCard::Create(const wxString& mcdFile, uint sizeInMB)
 	if (!fp.IsOpened())
 		return false;
 
-	for (uint i = 0; i < (MC2_MBSIZE * sizeInMB) / sizeof(m_effeffs); i++)
+	for (uint i = 0; i < (MC2_MBSIZE * sizeInMB) / sizeof(m_effeffs); ++i)
 	{
 		if (fp.Write(m_effeffs, sizeof(m_effeffs)) == 0)
 			return false;
@@ -458,7 +458,9 @@ s32 FileMemoryCard::Read(uint slot, u8* dest, u32 adr, int size)
 	wxFFile& mcfp(m_file[slot]);
 	if (!mcfp.IsOpened())
 	{
+#ifdef PCSX2_DEBUG
 		DevCon.Error("(FileMcd) Ignoring attempted read from disabled slot.");
+#endif
 		memset(dest, 0, size);
 		return 1;
 	}
@@ -473,14 +475,16 @@ s32 FileMemoryCard::Save(uint slot, const u8* src, u32 adr, int size)
 
 	if (!mcfp.IsOpened())
 	{
+#ifdef PCSX2_DEBUG
 		DevCon.Error("(FileMcd) Ignoring attempted save/write to disabled slot.");
+#endif
 		return 1;
 	}
 
 	if (m_ispsx[slot])
 	{
 		m_currentdata.MakeRoomFor(size);
-		for (int i = 0; i < size; i++)
+		for (int i = 0; i < size; ++i)
 			m_currentdata[i] = src[i];
 	}
 	else
@@ -491,7 +495,7 @@ s32 FileMemoryCard::Save(uint slot, const u8* src, u32 adr, int size)
 		mcfp.Read(m_currentdata.GetPtr(), size);
 
 
-		for (int i = 0; i < size; i++)
+		for (int i = 0; i < size; ++i)
 		{
 			if ((m_currentdata[i] & src[i]) != src[i])
 				Console.Warning("(FileMcd) Warning: writing to uncleared data. (%d) [%08X]", slot, adr);
@@ -506,7 +510,7 @@ s32 FileMemoryCard::Save(uint slot, const u8* src, u32 adr, int size)
 			u64* pdata = (u64*)&m_currentdata[0];
 			u32 loops = size / 8;
 
-			for (u32 i = 0; i < loops; i++)
+			for (u32 i = 0; i < loops; ++i)
 				m_chksum[slot] ^= pdata[i];
 		}
 	}
@@ -540,7 +544,9 @@ s32 FileMemoryCard::EraseBlock(uint slot, u32 adr)
 
 	if (!mcfp.IsOpened())
 	{
+#ifdef PCSX2_DEBUG
 		DevCon.Error("MemoryCard: Ignoring erase for disabled slot.");
+#endif
 		return 1;
 	}
 

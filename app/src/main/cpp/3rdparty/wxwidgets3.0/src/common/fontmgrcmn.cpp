@@ -88,13 +88,13 @@ wxFontInstance *wxFontFaceBase::GetFontInstance(float ptSize, bool aa)
 
 wxFontBundleBase::wxFontBundleBase()
 {
-    for (int i = 0; i < FaceType_Max; i++)
+    for (int i = 0; i < FaceType_Max; ++i)
         m_faces[i] = NULL;
 }
 
 wxFontBundleBase::~wxFontBundleBase()
 {
-    for (int i = 0; i < FaceType_Max; i++)
+    for (int i = 0; i < FaceType_Max; ++i)
         delete m_faces[i];
 }
 
@@ -134,7 +134,7 @@ wxFontBundleBase::GetFaceForFont(const wxFontMgrFontRefData& font) const
     {
         // if we can't get the exact font requested, substitute it with
         // some other variant:
-        for (int i = 0; i < FaceType_Max; i++)
+        for (int i = 0; i < FaceType_Max; ++i)
         {
             if ( HasFace((FaceType)i) )
                 return GetFace((FaceType)i);

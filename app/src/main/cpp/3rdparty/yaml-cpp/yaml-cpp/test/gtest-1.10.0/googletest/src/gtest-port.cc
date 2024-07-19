@@ -207,7 +207,7 @@ size_t GetThreadCount() {
 
   // exclude empty members
   int nthreads = 0;
-  for (int i = 0; i < size / mib[4]; i++) {
+  for (int i = 0; i < size / mib[4]; ++i) {
     if (info[i].p_tid != -1)
       nthreads++;
   }
@@ -830,7 +830,7 @@ bool ValidateRegex(const char* regex) {
 
   // True if and only if ?, *, or + can follow the previous atom.
   bool prev_repeatable = false;
-  for (int i = 0; regex[i]; i++) {
+  for (int i = 0; regex[i]; ++i) {
     if (regex[i] == '\\') {  // An escape sequence
       i++;
       if (regex[i] == '\0') {
@@ -1276,7 +1276,7 @@ static std::string FlagToEnvVar(const char* flag) {
       (Message() << GTEST_FLAG_PREFIX_ << flag).GetString();
 
   Message env_var;
-  for (size_t i = 0; i != full_flag.length(); i++) {
+  for (size_t i = 0; i != full_flag.length(); ++i) {
     env_var << ToUpper(full_flag.c_str()[i]);
   }
 

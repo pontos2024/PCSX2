@@ -103,7 +103,7 @@ bool cdvdCacheFetch(u32 lsn, u8* data)
 void cdvdCacheReset()
 {
 	std::lock_guard<std::mutex> guard(s_cache_lock);
-	for (u32 i = 0; i < CacheSize; i++)
+	for (u32 i = 0; i < CacheSize; ++i)
 	{
 		Cache[i].lsn = std::numeric_limits<u32>::max();
 	}

@@ -493,7 +493,7 @@ long wxFileListCtrl::Add( wxFileData *fd, wxListItem &item )
     if (my_style & wxLC_REPORT)
     {
         ret = InsertItem( item );
-        for (int i = 1; i < wxFileData::FileList_Max; i++)
+        for (int i = 1; i < wxFileData::FileList_Max; ++i)
             SetItem( item.m_itemId, i, fd->GetEntry((wxFileData::fileListFieldType)i) );
     }
     else if ((my_style & wxLC_LIST) || (my_style & wxLC_SMALL_ICON))
@@ -515,7 +515,7 @@ void wxFileListCtrl::UpdateItem(const wxListItem &item)
 
     if (GetWindowStyleFlag() & wxLC_REPORT)
     {
-        for (int i = 1; i < wxFileData::FileList_Max; i++)
+        for (int i = 1; i < wxFileData::FileList_Max; ++i)
             SetItem( item.m_itemId, i, fd->GetEntry((wxFileData::fileListFieldType)i) );
     }
 }

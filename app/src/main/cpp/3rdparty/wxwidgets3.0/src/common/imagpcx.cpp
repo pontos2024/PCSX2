@@ -111,7 +111,7 @@ void RLEdecode(unsigned char *p, unsigned int size, wxInputStream& s)
             if (cont > size) // can happen only if the file is malformed
                 break;
             data = (unsigned char)s.GetC();
-            for (unsigned int i = 1; i <= cont; i++)
+            for (unsigned int i = 1; i <= cont; ++i)
                 *(p++) = (unsigned char)data;
             size -= cont;
         }
@@ -235,7 +235,7 @@ int ReadPCX(wxImage *image, wxInputStream& stream)
         {
             case wxPCX_8BIT:
             {
-                for (i = 0; i < width; i++)
+                for (i = 0; i < width; ++i)
                 {
                     // first pass, just store the colour index
                     *dst = p[i];
@@ -245,7 +245,7 @@ int ReadPCX(wxImage *image, wxInputStream& stream)
             }
             case wxPCX_24BIT:
             {
-                for (i = 0; i < width; i++)
+                for (i = 0; i < width; ++i)
                 {
                     *(dst++) = p[i];
                     *(dst++) = p[i + bytesperline];
@@ -283,7 +283,7 @@ int ReadPCX(wxImage *image, wxInputStream& stream)
         unsigned char r[256];
         unsigned char g[256];
         unsigned char b[256];
-        for (i = 0; i < 256; i++)
+        for (i = 0; i < 256; ++i)
         {
             r[i] = pal[3*i + 0];
             g[i] = pal[3*i + 1];
@@ -374,7 +374,7 @@ int SavePCX(wxImage *image, wxOutputStream& stream)
             {
                 unsigned char r, g, b;
 
-                for (i = 0; i < width; i++)
+                for (i = 0; i < width; ++i)
                 {
                     r = *(src++);
                     g = *(src++);
@@ -387,7 +387,7 @@ int SavePCX(wxImage *image, wxOutputStream& stream)
             }
             case wxPCX_24BIT:
             {
-                for (i = 0; i < width; i++)
+                for (i = 0; i < width; ++i)
                 {
                     p[i] = *(src++);
                     p[i + bytesperline] = *(src++);

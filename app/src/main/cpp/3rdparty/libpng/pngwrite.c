@@ -217,7 +217,7 @@ png_write_info(png_structrp png_ptr, png_const_inforp info_ptr)
           info_ptr->color_type == PNG_COLOR_TYPE_PALETTE)
       {
          int j;
-         for (j = 0; j<(int)info_ptr->num_trans; j++)
+         for (j = 0; j<(int)info_ptr->num_trans; ++j)
             info_ptr->trans_alpha[j] =
                (png_byte)(255 - info_ptr->trans_alpha[j]);
       }
@@ -271,13 +271,13 @@ png_write_info(png_structrp png_ptr, png_const_inforp info_ptr)
 
 #ifdef PNG_WRITE_sPLT_SUPPORTED
    if ((info_ptr->valid & PNG_INFO_sPLT) != 0)
-      for (i = 0; i < (int)info_ptr->splt_palettes_num; i++)
+      for (i = 0; i < (int)info_ptr->splt_palettes_num; ++i)
          png_write_sPLT(png_ptr, info_ptr->splt_palettes + i);
 #endif /* sPLT */
 
 #ifdef PNG_WRITE_TEXT_SUPPORTED
    /* Check to see if we need to write text chunks */
-   for (i = 0; i < info_ptr->num_text; i++)
+   for (i = 0; i < info_ptr->num_text; ++i)
    {
       png_debug2(2, "Writing header text chunk %d, type %d", i,
           info_ptr->text[i].compression);
@@ -374,7 +374,7 @@ png_write_end(png_structrp png_ptr, png_inforp info_ptr)
 #endif
 #ifdef PNG_WRITE_TEXT_SUPPORTED
       /* Loop through comment chunks */
-      for (i = 0; i < info_ptr->num_text; i++)
+      for (i = 0; i < info_ptr->num_text; ++i)
       {
          png_debug2(2, "Writing trailer text chunk %d, type %d", i,
             info_ptr->text[i].compression);
@@ -1192,7 +1192,7 @@ png_init_filter_heuristics(png_structrp png_ptr, int heuristic_method,
              (png_uint_32)((sizeof (png_byte)) * num_weights));
 
          /* To make sure that the weighting starts out fairly */
-         for (i = 0; i < num_weights; i++)
+         for (i = 0; i < num_weights; ++i)
          {
             png_ptr->prev_filters[i] = 255;
          }
@@ -1203,7 +1203,7 @@ png_init_filter_heuristics(png_structrp png_ptr, int heuristic_method,
          png_ptr->inv_filter_weights = (png_uint_16p)png_malloc(png_ptr,
              (png_uint_32)((sizeof (png_uint_16)) * num_weights));
 
-         for (i = 0; i < num_weights; i++)
+         for (i = 0; i < num_weights; ++i)
          {
             png_ptr->inv_filter_weights[i] =
             png_ptr->filter_weights[i] = PNG_WEIGHT_FACTOR;
@@ -1225,7 +1225,7 @@ png_init_filter_heuristics(png_structrp png_ptr, int heuristic_method,
              (png_uint_32)((sizeof (png_uint_16)) * PNG_FILTER_VALUE_LAST));
       }
 
-      for (i = 0; i < PNG_FILTER_VALUE_LAST; i++)
+      for (i = 0; i < PNG_FILTER_VALUE_LAST; ++i)
       {
          png_ptr->inv_filter_costs[i] =
          png_ptr->filter_costs[i] = PNG_COST_FACTOR;
@@ -1268,7 +1268,7 @@ png_set_filter_heuristics(png_structrp png_ptr, int heuristic_method,
    if (heuristic_method == PNG_FILTER_HEURISTIC_WEIGHTED)
    {
       int i;
-      for (i = 0; i < num_weights; i++)
+      for (i = 0; i < num_weights; ++i)
       {
          if (filter_weights[i] <= 0.0)
          {
@@ -1293,7 +1293,7 @@ png_set_filter_heuristics(png_structrp png_ptr, int heuristic_method,
        * compression settings.  The filter types are in order of increasing
        * relative cost, so it would be possible to do this with an algorithm.
        */
-      for (i = 0; i < PNG_FILTER_VALUE_LAST; i++) if (filter_costs[i] >= 1.0)
+      for (i = 0; i < PNG_FILTER_VALUE_LAST; ++i) if (filter_costs[i] >= 1.0)
       {
          png_ptr->inv_filter_costs[i] =
              (png_uint_16)(PNG_COST_FACTOR / filter_costs[i] + .5);
@@ -1323,7 +1323,7 @@ png_set_filter_heuristics_fixed(png_structrp png_ptr, int heuristic_method,
    if (heuristic_method == PNG_FILTER_HEURISTIC_WEIGHTED)
    {
       int i;
-      for (i = 0; i < num_weights; i++)
+      for (i = 0; i < num_weights; ++i)
       {
          if (filter_weights[i] <= 0)
          {
@@ -1348,7 +1348,7 @@ png_set_filter_heuristics_fixed(png_structrp png_ptr, int heuristic_method,
        * compression settings.  The filter types are in order of increasing
        * relative cost, so it would be possible to do this with an algorithm.
        */
-      for (i = 0; i < PNG_FILTER_VALUE_LAST; i++)
+      for (i = 0; i < PNG_FILTER_VALUE_LAST; ++i)
          if (filter_costs[i] >= PNG_FP_1)
       {
          png_uint_32 tmp;

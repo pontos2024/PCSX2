@@ -1843,7 +1843,7 @@ bool REGION::XPointInRegion(Region pRegion, int x, int y)
         return false;
     if (!INBOX(pRegion->extents, x, y))
         return false;
-    for (i=0; i<pRegion->numRects; i++)
+    for (i=0; i<pRegion->numRects; ++i)
     {
         if (INBOX (pRegion->rects[i], x, y))
             return true;

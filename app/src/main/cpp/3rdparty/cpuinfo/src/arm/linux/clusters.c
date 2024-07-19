@@ -97,7 +97,7 @@ bool cpuinfo_arm_linux_detect_core_clusters_by_heuristic(
 	uint32_t expected_cluster_processors = 0;
 	uint32_t cluster_start, cluster_flags, cluster_midr, cluster_max_frequency, cluster_min_frequency;
 	bool expected_cluster_exists;
-	for (uint32_t i = 0; i < max_processors; i++) {
+	for (uint32_t i = 0; i < max_processors; ++i) {
 		if (bitmask_all(processors[i].flags, CPUINFO_LINUX_FLAG_VALID)) {
 			if (expected_cluster_processors == 0) {
 				/* Expect this processor to start a new cluster */
@@ -262,7 +262,7 @@ bool cpuinfo_arm_linux_detect_core_clusters_by_heuristic(
 	/* Verification passed, assign all processors to new clusters */
 	cluster = 0;
 	expected_cluster_processors = 0;
-	for (uint32_t i = 0; i < max_processors; i++) {
+	for (uint32_t i = 0; i < max_processors; ++i) {
 		if (bitmask_all(processors[i].flags, CPUINFO_LINUX_FLAG_VALID)) {
 			if (expected_cluster_processors == 0) {
 				/* Expect this processor to start a new cluster */
@@ -321,7 +321,7 @@ void cpuinfo_arm_linux_detect_core_clusters_by_sequential_scan(
 	uint32_t cluster_flags = 0;
 	uint32_t cluster_processors = 0;
 	uint32_t cluster_start, cluster_midr, cluster_max_frequency, cluster_min_frequency;
-	for (uint32_t i = 0; i < max_processors; i++) {
+	for (uint32_t i = 0; i < max_processors; ++i) {
 		if ((processors[i].flags & (CPUINFO_LINUX_FLAG_VALID | CPUINFO_LINUX_FLAG_PACKAGE_CLUSTER)) == CPUINFO_LINUX_FLAG_VALID) {
 			if (cluster_processors == 0) {
 				goto new_cluster;
@@ -477,14 +477,14 @@ void cpuinfo_arm_linux_count_cluster_processors(
 	struct cpuinfo_arm_linux_processor processors[restrict static max_processors])
 {
 	/* First pass: accumulate the number of processors at the group leader's package_processor_count */
-	for (uint32_t i = 0; i < max_processors; i++) {
+	for (uint32_t i = 0; i < max_processors; ++i) {
 		if (bitmask_all(processors[i].flags, CPUINFO_LINUX_FLAG_VALID)) {
 			const uint32_t package_leader_id = processors[i].package_leader_id;
 			processors[package_leader_id].package_processor_count += 1;
 		}
 	}
 	/* Second pass: copy the package_processor_count from the group leader processor */
-	for (uint32_t i = 0; i < max_processors; i++) {
+	for (uint32_t i = 0; i < max_processors; ++i) {
 		if (bitmask_all(processors[i].flags, CPUINFO_LINUX_FLAG_VALID)) {
 			const uint32_t package_leader_id = processors[i].package_leader_id;
 			processors[i].package_processor_count = processors[package_leader_id].package_processor_count;

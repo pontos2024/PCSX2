@@ -445,7 +445,7 @@ jinit_c_coef_controller (j_compress_ptr cinfo, boolean need_full_buffer)
     buffer = (JBLOCKROW)
       (*cinfo->mem->alloc_large) ((j_common_ptr) cinfo, JPOOL_IMAGE,
 				  C_MAX_BLOCKS_IN_MCU * SIZEOF(JBLOCK));
-    for (i = 0; i < C_MAX_BLOCKS_IN_MCU; i++) {
+    for (i = 0; i < C_MAX_BLOCKS_IN_MCU; ++i) {
       coef->MCU_buffer[i] = buffer + i;
     }
     coef->whole_image[0] = NULL; /* flag for no virtual arrays */

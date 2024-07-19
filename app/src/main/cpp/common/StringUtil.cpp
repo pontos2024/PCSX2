@@ -19,11 +19,10 @@
 #include <codecvt>
 #include <cstdio>
 #include <sstream>
+#include <algorithm>
 
 #ifdef _WIN32
 #include "RedtapeWindows.h"
-#else
-#include <iconv.h>
 #endif
 
 namespace StringUtil
@@ -187,7 +186,7 @@ namespace StringUtil
 		std::vector<u8> data;
 		data.reserve(in.size() / 2);
 
-		for (size_t i = 0; i < in.size() / 2; i++)
+		for (size_t i = 0; i < in.size() / 2; ++i)
 		{
 			std::optional<u8> byte = StringUtil::FromChars<u8>(in.substr(i * 2, 2), 16);
 			if (byte.has_value())
@@ -202,10 +201,118 @@ namespace StringUtil
 	std::string EncodeHex(const u8* data, int length)
 	{
 		std::stringstream ss;
-		for (int i = 0; i < length; i++)
+		for (int i = 0; i < length; ++i)
 			ss << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(data[i]);
 
 		return ss.str();
+	}
+
+	std::string toLower(const std::string_view& input)
+	{
+		std::string newStr;
+		std::transform(input.begin(), input.end(), std::back_inserter(newStr),
+			[](unsigned char c) { return std::tolower(c); });
+		return newStr;
+	}
+
+	bool compareNoCase(const std::string_view& str1, const std::string_view& str2)
+	{
+		if (str1.length() != str2.length())
+		{
+			return false;
+		}
+		return Strncasecmp(str1.data(), str2.data(), str1.length()) == 0;
+	}
+
+	std::vector<std::string> splitOnNewLine(const std::string& str)
+	{
+		std::vector<std::string> lines;
+		std::istringstream stream(str);
+		std::string line;
+		while (std::getline(stream, line))
+		{
+			lines.push_back(line);
+		}
+		return lines;
+	}
+
+	std::string_view StripWhitespace(const std::string_view& str)
+	{
+		std::string_view::size_type start = 0;
+		while (start < str.size() && std::isspace(str[start]))
+			start++;
+		if (start == str.size())
+			return {};
+
+		std::string_view::size_type end = str.size() - 1;
+		while (end > start && std::isspace(str[end]))
+			end--;
+
+		return str.substr(start, end - start + 1);
+	}
+
+	void StripWhitespace(std::string* str)
+	{
+		{
+			const char* cstr = str->c_str();
+			std::string_view::size_type start = 0;
+			while (start < str->size() && std::isspace(cstr[start]))
+				start++;
+			if (start != 0)
+				str->erase(0, start);
+		}
+
+		{
+			const char* cstr = str->c_str();
+			std::string_view::size_type start = str->size();
+			while (start > 0 && std::isspace(cstr[start - 1]))
+				start--;
+			if (start != str->size())
+				str->erase(start);
+		}
+	}
+
+	std::vector<std::string_view> SplitString(const std::string_view& str, char delimiter, bool skip_empty /*= true*/)
+	{
+		std::vector<std::string_view> res;
+		std::string_view::size_type last_pos = 0;
+		std::string_view::size_type pos;
+		while (last_pos < str.size() && (pos = str.find(delimiter, last_pos)) != std::string_view::npos)
+		{
+			std::string_view part(StripWhitespace(str.substr(last_pos, pos - last_pos)));
+			if (!skip_empty || !part.empty())
+				res.push_back(std::move(part));
+
+			last_pos = pos + 1;
+		}
+
+		if (last_pos < str.size())
+		{
+			std::string_view part(StripWhitespace(str.substr(last_pos)));
+			if (!skip_empty || !part.empty())
+				res.push_back(std::move(part));
+		}
+
+		return res;
+	}
+
+	bool ParseAssignmentString(const std::string_view& str, std::string_view* key, std::string_view* value)
+	{
+		const std::string_view::size_type pos = str.find('=');
+		if (pos == std::string_view::npos)
+		{
+			*key = std::string_view();
+			*value = std::string_view();
+			return false;
+		}
+
+		*key = StripWhitespace(str.substr(0, pos));
+		if (pos != (str.size() - 1))
+			*value = StripWhitespace(str.substr(pos + 1));
+		else
+			*value = std::string_view();
+
+		return true;
 	}
 
 	std::wstring UTF8StringToWideString(const std::string_view& str)
@@ -229,7 +336,9 @@ namespace StringUtil
 			return false;
 
 		return true;
-#elif defined(__ANDROID__)
+#else
+		// This depends on wxString, which isn't great. But hopefully we won't need any wide strings outside
+		// of windows once wx is gone anyway.
 		if (str.empty())
 		{
 			dest.clear();
@@ -242,24 +351,6 @@ namespace StringUtil
 
 		dest = wxstr.ToStdWstring();
 		return true;
-#else
-		iconv_t conv = iconv_open("WCHAR_T", "UTF8");
-		if (conv == (iconv_t)-1)
-			return false;
-
-		dest.resize(str.length());
-
-		size_t bytes_in = str.size(), bytes_out = dest.size() * sizeof(wchar_t);
-		char* buf_in = (char*)str.data(), * buf_out = reinterpret_cast<char*>(dest.data());
-		bool result = false;
-		if (iconv(conv, &buf_in, &bytes_in, &buf_out, &bytes_out) != (size_t)-1)
-		{
-			dest.resize(bytes_out / sizeof(wchar_t));
-			result = true;
-		}
-
-		iconv_close(conv);
-		return result;
 #endif
 	}
 
@@ -287,7 +378,9 @@ namespace StringUtil
 		}
 
 		return true;
-#elif defined(__ANDROID__)
+#else
+		// This depends on wxString, which isn't great. But hopefully we won't need any wide strings outside
+		// of windows once wx is gone anyway.
 		if (str.empty())
 		{
 			dest.clear();
@@ -301,24 +394,6 @@ namespace StringUtil
 		const auto buf = wxstr.ToUTF8();
 		dest.assign(buf.data(), buf.length());
 		return true;
-#else
-		iconv_t conv = iconv_open("UTF8", "WCHAR_T");
-		if (conv == (iconv_t)-1)
-			return false;
-
-		dest.resize(str.length() * 4);
-
-		size_t bytes_in = str.size() * sizeof(wchar_t), bytes_out = dest.size();
-		char *buf_in = (char*)str.data(), *buf_out = dest.data();
-		bool result = false;
-		if (iconv(conv, &buf_in, &bytes_in, &buf_out, &bytes_out) != (size_t)-1)
-		{
-			dest.resize(bytes_out);
-			result = true;
-		}
-
-		iconv_close(conv);
-		return result;
 #endif
 	}
 } // namespace StringUtil

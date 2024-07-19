@@ -103,7 +103,7 @@ HRESULT CSource::AddPin(__in CSourceStream *pStream)
 HRESULT CSource::RemovePin(__in CSourceStream *pStream)
 {
     int i;
-    for (i = 0; i < m_iPins; i++) {
+    for (i = 0; i < m_iPins; ++i) {
         if (m_paStreams[i] == pStream) {
             if (m_iPins == 1) {
                 delete [] m_paStreams;

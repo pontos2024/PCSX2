@@ -107,8 +107,11 @@ void Threading::Mutex::Detach()
 
 	if (Wait(def_detach_timeout))
 		pthread_mutex_destroy(&m_mutex);
-	else
+#ifdef PCSX2_DEBUG
+	else {
 		Console.Error("(Thread Log) Mutex cleanup failed due to possible deadlock.");
+	}
+#endif
 }
 
 Threading::Mutex::~Mutex()
@@ -131,8 +134,11 @@ Threading::MutexRecursive::MutexRecursive()
 		pthread_mutexattr_settype(&_attr_recursive, PTHREAD_MUTEX_RECURSIVE);
 	}
 
-	if (pthread_mutex_init(&m_mutex, &_attr_recursive))
+	if (pthread_mutex_init(&m_mutex, &_attr_recursive)) {
+#ifdef PCSX2_DEBUG
 		Console.Error("(Thread Log) Failed to initialize mutex.");
+#endif
+	}
 }
 
 Threading::MutexRecursive::~MutexRecursive()

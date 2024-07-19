@@ -150,7 +150,7 @@ TEST(LoadNodeTest, CloneSeq) {
   EXPECT_FALSE(clone == node);
   EXPECT_EQ(NodeType::Sequence, clone.Type());
   EXPECT_EQ(clone.size(), node.size());
-  for (std::size_t i = 0; i < node.size(); i++) {
+  for (std::size_t i = 0; i < node.size(); ++i) {
     EXPECT_EQ(clone[i].as<int>(), node[i].as<int>());
   }
 }

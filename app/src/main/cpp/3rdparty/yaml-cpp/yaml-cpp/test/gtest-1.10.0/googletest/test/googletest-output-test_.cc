@@ -157,7 +157,7 @@ TEST(LoggingTest, InterleavingLoggingAndAssertions) {
   };
 
   printf("(expecting 2 failures on (3) >= (a[i]))\n");
-  for (int i = 0; i < static_cast<int>(sizeof(a)/sizeof(*a)); i++) {
+  for (int i = 0; i < static_cast<int>(sizeof(a)/sizeof(*a)); ++i) {
     printf("i == %d\n", i);
     EXPECT_GE(3, a[i]);
   }
@@ -211,7 +211,7 @@ TEST(SCOPED_TRACETest, ObeysScopes) {
 TEST(SCOPED_TRACETest, WorksInLoop) {
   printf("(expected to fail)\n");
 
-  for (int i = 1; i <= 2; i++) {
+  for (int i = 1; i <= 2; ++i) {
     SCOPED_TRACE(testing::Message() << "i = " << i);
 
     SubWithoutTrace(i);

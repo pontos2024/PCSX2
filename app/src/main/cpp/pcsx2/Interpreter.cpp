@@ -83,7 +83,7 @@ void intMemcheck(u32 op, u32 bits, bool store)
 	u32 end = start + bits/8;
 	
 	auto checks = CBreakPoints::GetMemChecks();
-	for (size_t i = 0; i < checks.size(); i++)
+	for (size_t i = 0; i < checks.size(); ++i)
 	{
 		auto& check = checks[i];
 

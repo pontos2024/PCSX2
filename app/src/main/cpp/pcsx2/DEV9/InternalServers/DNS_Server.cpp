@@ -56,7 +56,7 @@ namespace InternalServers
 		//Prefill unordered_map, allowing use to modify it from seperate threads
 		//See https://en.cppreference.com/w/cpp/container#Thread_safety
 		//Different elements in the same container can be modified concurrently by different threads
-		for (size_t i = 0; i < dnsQuestions.size(); i++)
+		for (size_t i = 0; i < dnsQuestions.size(); ++i)
 			answers[dnsQuestions[i]] = {0};
 	}
 
@@ -143,7 +143,7 @@ namespace InternalServers
 	void DNS_Server::LoadHostList()
 	{
 		hosts.clear();
-		for (size_t i = 0; i < config.EthHosts.size(); i++)
+		for (size_t i = 0; i < config.EthHosts.size(); ++i)
 		{
 			ConfigHost entry = config.EthHosts[i];
 			if (entry.Enabled)
@@ -171,7 +171,7 @@ namespace InternalServers
 		{
 			std::vector<std::string> reqs;
 
-			for (size_t i = 0; i < dns.questions.size(); i++)
+			for (size_t i = 0; i < dns.questions.size(); ++i)
 			{
 				DNS_QuestionEntry q = dns.questions[i];
 				if (q.entryType == 1 && q.entryClass == 1)
@@ -204,7 +204,7 @@ namespace InternalServers
 			DNS_State* state = new DNS_State(reqs.size(), reqs, ret, payload->sourcePort);
 			outstandingQueries++;
 
-			for (size_t i = 0; i < reqs.size(); i++)
+			for (size_t i = 0; i < reqs.size(); ++i)
 			{
 				if (CheckHostList(reqs[i], state))
 					continue;
@@ -242,7 +242,7 @@ namespace InternalServers
 		std::vector<std::string> reqs = state->questions;
 		std::unordered_map<std::string, IP_Address> answers = state->GetAnswers();
 
-		for (size_t i = 0; i < reqs.size(); i++)
+		for (size_t i = 0; i < reqs.size(); ++i)
 		{
 			IP_Address ans = answers[reqs[i]];
 			if (ans.integer != 0)

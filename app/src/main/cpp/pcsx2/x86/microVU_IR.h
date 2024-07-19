@@ -249,7 +249,7 @@ protected:
 
 	int findFreeRegRec(int startIdx)
 	{
-		for (int i = startIdx; i < xmmTotal; i++)
+		for (int i = startIdx; i < xmmTotal; ++i)
 		{
 			if (!xmmMap[i].isNeeded)
 			{
@@ -269,7 +269,7 @@ protected:
 			return _freeXMMregsCOP2();
 		}
 
-		for (int i = 0; i < xmmTotal; i++)
+		for (int i = 0; i < xmmTotal; ++i)
 		{
 			if (!xmmMap[i].isNeeded && (xmmMap[i].VFreg < 0))
 			{
@@ -291,7 +291,7 @@ public:
 	// Fully resets the regalloc by clearing all cached data
 	void reset(bool cop2mode)
 	{
-		for (int i = 0; i < xmmTotal; i++)
+		for (int i = 0; i < xmmTotal; ++i)
 		{
 			clearReg(i);
 		}
@@ -308,7 +308,7 @@ public:
 	// If clearState is 1, then it invalidates all cached reg data after write-back
 	void flushAll(bool clearState = true)
 	{
-		for (int i = 0; i < xmmTotal; i++)
+		for (int i = 0; i < xmmTotal; ++i)
 		{
 			writeBackReg(xmm(i));
 			if (clearState)
@@ -318,7 +318,7 @@ public:
 
 	void TDwritebackAll(bool clearState = false)
 	{
-		for (int i = 0; i < xmmTotal; i++)
+		for (int i = 0; i < xmmTotal; ++i)
 		{
 			microMapXMM& mapX = xmmMap[xmm(i).Id];
 
@@ -354,7 +354,7 @@ public:
 
 	void clearRegVF(int VFreg)
 	{
-		for (int i = 0; i < xmmTotal; i++)
+		for (int i = 0; i < xmmTotal; ++i)
 		{
 			if (xmmMap[i].VFreg == VFreg)
 				clearReg(i);
@@ -379,7 +379,7 @@ public:
 
 			if (invalidateRegs)
 			{
-				for (int i = 0; i < xmmTotal; i++)
+				for (int i = 0; i < xmmTotal; ++i)
 				{
 					microMapXMM& mapI = xmmMap[i];
 
@@ -429,7 +429,7 @@ public:
 				int mergeRegs = 0;
 				if (clear.xyzw < 0xf) // Try to merge partial writes
 					mergeRegs = 1;
-				for (int i = 0; i < xmmTotal; i++) // Invalidate any other read-only regs of same vfReg
+				for (int i = 0; i < xmmTotal; ++i) // Invalidate any other read-only regs of same vfReg
 				{
 					if (i == reg.Id)
 						continue;
@@ -475,7 +475,7 @@ public:
 		counter++;
 		if (vfLoadReg >= 0) // Search For Cached Regs
 		{
-			for (int i = 0; i < xmmTotal; i++)
+			for (int i = 0; i < xmmTotal; ++i)
 			{
 				const xmm& xmmI = xmm::GetInstance(i);
 				microMapXMM& mapI = xmmMap[i];

@@ -158,6 +158,7 @@ void SysOutOfMemory_EmergencyResponse(uptr blocksize)
 #include "svnrev.h"
 
 Pcsx2Config EmuConfig;
+Pcsx2Config2 EmuConfig2;
 
 
 // This function should be called once during program execution.
@@ -399,9 +400,9 @@ SysMainMemory::SysMainMemory()
 #else
 
 SysMainMemory::SysMainMemory()
-	: m_mainMemory(std::make_shared<VirtualMemoryManager>("Main Memory Manager", "pcsx2", 0, HostMemoryMap::MainSize))
-	, m_codeMemory(std::make_shared<VirtualMemoryManager>("Code Memory Manager", nullptr, 0, HostMemoryMap::CodeSize))
+	: m_mainMemory(std::make_shared<VirtualMemoryManager>("Main Memory Manager", "myps2", 0, HostMemoryMap::MainSize))
 	, m_bumpAllocator(m_mainMemory, HostMemoryMap::bumpAllocatorOffset, HostMemoryMap::MainSize - HostMemoryMap::bumpAllocatorOffset)
+	, m_codeMemory(std::make_shared<VirtualMemoryManager>("Code Memory Manager", nullptr, 0, HostMemoryMap::CodeSize))
 	, m_codeBumpAllocator(m_codeMemory, HostMemoryMap::codeBumpAllocatorOffset, HostMemoryMap::CodeSize - HostMemoryMap::codeBumpAllocatorOffset)
 {
 	uptr main_base = (uptr)MainMemory()->GetBase();
@@ -431,8 +432,9 @@ SysMainMemory::~SysMainMemory()
 void SysMainMemory::ReserveAll()
 {
 	pxInstallSignalHandler();
-
+#ifdef PCSX2_DEBUG
 	DevCon.WriteLn( Color_StrongBlue, "Mapping host memory for virtual systems..." );
+#endif
 	ConsoleIndentScope indent(1);
 
 	m_ee.Reserve(MainMemory());
@@ -444,8 +446,9 @@ void SysMainMemory::CommitAll()
 {
 	vtlb_Core_Alloc();
 	if (m_ee.IsCommitted() && m_iop.IsCommitted() && m_vu.IsCommitted()) return;
-
+#ifdef PCSX2_DEBUG
 	DevCon.WriteLn( Color_StrongBlue, "Allocating host memory for virtual systems..." );
+#endif
 	ConsoleIndentScope indent(1);
 
 	m_ee.Commit();
@@ -457,8 +460,9 @@ void SysMainMemory::CommitAll()
 void SysMainMemory::ResetAll()
 {
 	CommitAll();
-
+#ifdef PCSX2_DEBUG
 	DevCon.WriteLn( Color_StrongBlue, "Resetting host memory for virtual systems..." );
+#endif
 	ConsoleIndentScope indent(1);
 
 	m_ee.Reset();
@@ -471,8 +475,9 @@ void SysMainMemory::ResetAll()
 void SysMainMemory::DecommitAll()
 {
 	if (!m_ee.IsCommitted() && !m_iop.IsCommitted() && !m_vu.IsCommitted()) return;
-
+#ifdef PCSX2_DEBUG
 	Console.WriteLn( Color_Blue, "Decommitting host memory for virtual systems..." );
+#endif
 	ConsoleIndentScope indent(1);
 
 	// On linux, the MTVU isn't empty and the thread still uses the m_ee/m_vu memory
@@ -494,8 +499,9 @@ void SysMainMemory::DecommitAll()
 void SysMainMemory::ReleaseAll()
 {
 	DecommitAll();
-
+#ifdef PCSX2_DEBUG
 	Console.WriteLn( Color_Blue, "Releasing host memory maps for virtual systems..." );
+#endif
 	ConsoleIndentScope indent(1);
 
 	vtlb_Core_Free();		// Just to be sure... (calling order could result in it getting missed during Decommit).
@@ -516,7 +522,9 @@ void SysMainMemory::ReleaseAll()
 // --------------------------------------------------------------------------------------
 SysCpuProviderPack::SysCpuProviderPack()
 {
+#ifdef PCSX2_DEBUG
 	Console.WriteLn( Color_StrongBlue, "Reserving memory for recompilers..." );
+#endif
 	ConsoleIndentScope indent(1);
 
 	CpuProviders = std::make_unique<CpuInitializerSet>();
@@ -642,8 +650,9 @@ u8* SysMmapEx(uptr base, u32 size, uptr bounds, const char *caller)
 	{
 		if( base )
 		{
+#ifdef PCSX2_DEBUG
 			DbgCon.Warning( "First try failed allocating %s at address 0x%x", caller, base );
-
+#endif
 			// Let's try again at an OS-picked memory area, and then hope it meets needed
 			// boundschecking criteria below.
 			SafeSysMunmap( Mem, size );
@@ -652,7 +661,9 @@ u8* SysMmapEx(uptr base, u32 size, uptr bounds, const char *caller)
 
 		if( (bounds != 0) && (((uptr)Mem + size) > bounds) )
 		{
+#ifdef PCSX2_DEBUG
 			DevCon.Warning( "Second try failed allocating %s, block ptr 0x%x does not meet required criteria.", caller, Mem );
+#endif
 			SafeSysMunmap( Mem, size );
 
 			// returns NULL, caller should throw an exception.

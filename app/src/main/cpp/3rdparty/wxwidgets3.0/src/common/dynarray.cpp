@@ -245,7 +245,7 @@ void name::Add(T lItem, size_t nInsert)                                     \
   if (nInsert == 0)                                                         \
       return;                                                               \
   Grow(nInsert);                                                            \
-  for (size_t i = 0; i < nInsert; i++)                                      \
+  for (size_t i = 0; i < nInsert; ++i)                                      \
       m_pItems[m_nCount++] = lItem;                                         \
 }                                                                           \
                                                                             \
@@ -262,7 +262,7 @@ void name::Insert(T lItem, size_t nIndex, size_t nInsert)                   \
                                                                             \
   memmove(&m_pItems[nIndex + nInsert], &m_pItems[nIndex],                   \
           (m_nCount - nIndex)*sizeof(T));                                   \
-  for (size_t i = 0; i < nInsert; i++)                                      \
+  for (size_t i = 0; i < nInsert; ++i)                                      \
       m_pItems[nIndex + i] = lItem;                                         \
   m_nCount += nInsert;                                                      \
 }                                                                           \

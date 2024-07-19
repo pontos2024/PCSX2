@@ -86,7 +86,7 @@ public:
     {
         wxString sTest = sSearch;
         sTest.MakeLower();
-        for(size_t i = iStart; i < GetLineCount(); i++)
+        for(size_t i = iStart; i < GetLineCount(); ++i)
         {
             wxString sLine = GetLine(i);
             if(bIncludeComments || ! sLine.StartsWith(wxT("#")))
@@ -258,7 +258,7 @@ void wxMimeTypesManagerImpl::LoadXDGGlobs(const wxString& filename)
         return;
 
     size_t i;
-    for (i = 0; i < file.GetLineCount(); i++)
+    for (i = 0; i < file.GetLineCount(); ++i)
     {
        wxStringTokenizer tok( file.GetLine(i), ":" );
        wxString mime = tok.GetNextToken();
@@ -313,7 +313,7 @@ bool wxFileTypeImpl::GetMimeTypes(wxArrayString& mimeTypes) const
 {
     mimeTypes.Clear();
     size_t nCount = m_index.GetCount();
-    for (size_t i = 0; i < nCount; i++)
+    for (size_t i = 0; i < nCount; ++i)
         mimeTypes.Add(m_manager->m_aTypes[m_index[i]]);
 
     return true;
@@ -571,7 +571,7 @@ void wxMimeTypesManagerImpl::Initialize(int mailcapStyles,
 
         wxString defaultsList;
         size_t i;
-        for (i = 0; i < dirs.GetCount(); i++)
+        for (i = 0; i < dirs.GetCount(); ++i)
         {
             wxString f = dirs[i];
             if (f.Last() != '/') f += '/';
@@ -603,7 +603,7 @@ void wxMimeTypesManagerImpl::Initialize(int mailcapStyles,
                 int nIndex = textfile.pIndexOf( wxT("[Default Applications]") );
                 if (nIndex != wxNOT_FOUND)
                 {
-                    for (i = nIndex+1; i < textfile.GetLineCount(); i++)
+                    for (i = nIndex+1; i < textfile.GetLineCount(); ++i)
                     {
                         if (textfile.GetLine(i).Find(wxT("=")) != wxNOT_FOUND)
                         {
@@ -613,7 +613,7 @@ void wxMimeTypesManagerImpl::Initialize(int mailcapStyles,
                             {
                                 deskTopFilesSeen.Add(desktopFile);
                                 size_t j;
-                                for (j = 0; j < dirs.GetCount(); j++)
+                                for (j = 0; j < dirs.GetCount(); ++j)
                                 {
                                     wxString desktopPath = dirs[j];
                                     if (desktopPath.Last() != '/') desktopPath += '/';
@@ -670,7 +670,7 @@ wxFileType * wxMimeTypesManagerImpl::Associate(const wxFileTypeInfo& ftInfo)
     wxString sExt, sExtStore;
     size_t i, nIndex;
     size_t nExtCount = sA_Exts.GetCount();
-    for (i=0; i < nExtCount; i++)
+    for (i=0; i < nExtCount; ++i)
     {
         sExt = sA_Exts.Item(i);
 

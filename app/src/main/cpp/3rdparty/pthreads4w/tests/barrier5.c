@@ -84,7 +84,7 @@ main()
   LONG Crossings;
   pthread_t t[NUMTHREADS + 1];
 
-  for (j = 1; j <= NUMTHREADS; j++)
+  for (j = 1; j <= NUMTHREADS; ++j)
     {
       int height = j<HEIGHT?j:HEIGHT;
 
@@ -95,13 +95,13 @@ main()
 
       assert(pthread_barrier_init(&barrier, NULL, height) == 0);
 
-      for (i = 1; i <= j; i++)
+      for (i = 1; i <= j; ++i)
         {
           assert(pthread_create(&t[i], NULL, func, (void *)(size_t)Crossings) == 0);
         }
 
       serialThreadsTotal = 0;
-      for (i = 1; i <= j; i++)
+      for (i = 1; i <= j; ++i)
         {
           assert(pthread_join(t[i], &result) == 0);
           serialThreadsTotal += (int)(size_t)result;

@@ -75,8 +75,9 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 
 			u128 zerofill = u128::From32(0);
 			zerofill._u32[(mem >> 2) & 0x03] = value;
-
+#ifdef PCSX2_DEBUG
 			DevCon.WriteLn( Color_Cyan, "Writing 32-bit FIFO data (zero-extended to 128 bits)" );
+#endif
 			_hwWrite128<page>(mem & ~0x0f, &zerofill);
 		}
 		return;
@@ -100,7 +101,9 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 					// Not exactly sure what RST needs to do
 					gifRegs.ctrl.write(value & 9);
 					if (gifRegs.ctrl.RST) {
+#ifdef PCSX2_DEBUG
 						GUNIT_LOG("GIF CTRL - Reset");
+#endif
 						gifUnit.Reset(true); // Should it reset gsSIGNAL?
 						//gifUnit.ResetRegs();
 					}
@@ -114,7 +117,9 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 					//Need to kickstart the GIF if the M3R mask comes off
 					if (gifRegs.stat.M3R == 1 && gifRegs.mode.M3R == 0 && (gifch.chcr.STR || gif_fifo.fifoSize))
 					{
+#ifdef PCSX2_DEBUG
 						DevCon.Warning("GIF Mode cancelling P3 Disable");
+#endif
 						CPU_INT(DMAC_GIF, 8);
 					}
 						
@@ -321,7 +326,9 @@ void __fastcall _hwWrite8(u32 mem, u8 value)
 		case INTC_STAT:
 		case INTC_MASK:
 		case DMAC_FAKESTAT:
+#ifdef PCSX2_DEBUG
 			DevCon.Warning ( "8bit write mem = %x value %x", mem, value );
+#endif
 			_hwWrite32<page>(mem & ~3, (u32)value << (mem & 3) * 8);
 			return;
 	}
@@ -352,7 +359,9 @@ void __fastcall _hwWrite16(u32 mem, u16 value)
 		case INTC_STAT:
 		case INTC_MASK:
 		case DMAC_FAKESTAT:
+#ifdef PCSX2_DEBUG
 			DevCon.Warning ( "16bit write mem = %x value %x", mem, value );
+#endif
 			_hwWrite32<page>(mem & ~3, (u32)value << (mem & 3) * 8);
 			return;
 	}
@@ -393,8 +402,9 @@ void __fastcall _hwWrite64( u32 mem, const mem64_t* srcval )
 		case 0x06:
 		case 0x07:
 		{
+#ifdef PCSX2_DEBUG
 			DevCon.WriteLn( Color_Cyan, "Writing 64-bit FIFO data (zero-extended to 128 bits)" );
-
+#endif
 			u128 zerofill = u128::From32(0);
 			zerofill._u64[(mem >> 3) & 0x01] = *srcval;
 			hwWrite128<page>(mem & ~0x0f, &zerofill);

@@ -329,7 +329,7 @@ static void xfromman_call20_calculateXors(unsigned char buffer[128], unsigned ch
 {
 	unsigned char a = 0, b = 0, c = 0, i;
 
-	for (i = 0; i < 128; i++)
+	for (i = 0; i < 128; ++i)
 	{
 		a ^= xor_table[buffer[i]];
 		if (xor_table[buffer[i]] & 0x80)

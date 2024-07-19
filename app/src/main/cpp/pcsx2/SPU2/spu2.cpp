@@ -199,7 +199,7 @@ s32 SPU2init()
 
 	memcpy(regtable, regtable_original, sizeof(regtable));
 
-	for (uint mem = 0; mem < 0x800; mem++)
+	for (uint mem = 0; mem < 0x800; ++mem)
 	{
 		u16* ptr = regtable[mem >> 1];
 		if (!ptr)
@@ -376,7 +376,7 @@ void SPU2async(u32 cycles)
 	{
 		int oldI = Interpolation;
 		bool cState[6];
-		for (int i = 0; i < 6; i++)
+		for (int i = 0; i < 6; ++i)
 		{
 			cState[i] = !!(GetAsyncKeyState(VK_NUMPAD0 + i) & 0x8000);
 
@@ -434,7 +434,7 @@ u16 SPU2read(u32 rmem)
 	if (omem == 0x1f9001AC)
 	{
 		Cores[core].ActiveTSA = Cores[core].TSA;
-		for (int i = 0; i < 2; i++)
+		for (int i = 0; i < 2; ++i)
 		{
 			if (Cores[i].IRQEnable && (Cores[i].IRQA == Cores[core].ActiveTSA))
 			{

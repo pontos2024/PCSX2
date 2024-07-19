@@ -153,7 +153,7 @@ emit_dqt (j_compress_ptr cinfo, int index)
     ERREXIT1(cinfo, JERR_NO_QUANT_TABLE, index);
 
   prec = 0;
-  for (i = 0; i < DCTSIZE2; i++) {
+  for (i = 0; i < DCTSIZE2; ++i) {
     if (qtbl->quantval[i] > 255)
       prec = 1;
   }
@@ -165,7 +165,7 @@ emit_dqt (j_compress_ptr cinfo, int index)
 
     emit_byte(cinfo, index + (prec<<4));
 
-    for (i = 0; i < DCTSIZE2; i++) {
+    for (i = 0; i < DCTSIZE2; ++i) {
       /* The table entries must be emitted in zigzag order. */
       unsigned int qval = qtbl->quantval[jpeg_natural_order[i]];
       if (prec)
@@ -201,16 +201,16 @@ emit_dht (j_compress_ptr cinfo, int index, boolean is_ac)
     emit_marker(cinfo, M_DHT);
 
     length = 0;
-    for (i = 1; i <= 16; i++)
+    for (i = 1; i <= 16; ++i)
       length += htbl->bits[i];
 
     emit_2bytes(cinfo, length + 2 + 1 + 16);
     emit_byte(cinfo, index);
 
-    for (i = 1; i <= 16; i++)
+    for (i = 1; i <= 16; ++i)
       emit_byte(cinfo, htbl->bits[i]);
 
-    for (i = 0; i < length; i++)
+    for (i = 0; i < length; ++i)
       emit_byte(cinfo, htbl->huffval[i]);
 
     htbl->sent_table = TRUE;
@@ -230,24 +230,24 @@ emit_dac (j_compress_ptr cinfo)
   int length, i;
   jpeg_component_info *compptr;
 
-  for (i = 0; i < NUM_ARITH_TBLS; i++)
+  for (i = 0; i < NUM_ARITH_TBLS; ++i)
     dc_in_use[i] = ac_in_use[i] = 0;
 
-  for (i = 0; i < cinfo->comps_in_scan; i++) {
+  for (i = 0; i < cinfo->comps_in_scan; ++i) {
     compptr = cinfo->cur_comp_info[i];
     dc_in_use[compptr->dc_tbl_no] = 1;
     ac_in_use[compptr->ac_tbl_no] = 1;
   }
 
   length = 0;
-  for (i = 0; i < NUM_ARITH_TBLS; i++)
+  for (i = 0; i < NUM_ARITH_TBLS; ++i)
     length += dc_in_use[i] + ac_in_use[i];
 
   emit_marker(cinfo, M_DAC);
 
   emit_2bytes(cinfo, length*2 + 2);
 
-  for (i = 0; i < NUM_ARITH_TBLS; i++) {
+  for (i = 0; i < NUM_ARITH_TBLS; ++i) {
     if (dc_in_use[i]) {
       emit_byte(cinfo, i);
       emit_byte(cinfo, cinfo->arith_dc_L[i] + (cinfo->arith_dc_U[i]<<4));
@@ -317,7 +317,7 @@ emit_sos (j_compress_ptr cinfo)
 
   emit_byte(cinfo, cinfo->comps_in_scan);
 
-  for (i = 0; i < cinfo->comps_in_scan; i++) {
+  for (i = 0; i < cinfo->comps_in_scan; ++i) {
     compptr = cinfo->cur_comp_info[i];
     emit_byte(cinfo, compptr->component_id);
     td = compptr->dc_tbl_no;
@@ -567,7 +567,7 @@ write_scan_header (j_compress_ptr cinfo)
     /* Emit Huffman tables.
      * Note that emit_dht() suppresses any duplicate tables.
      */
-    for (i = 0; i < cinfo->comps_in_scan; i++) {
+    for (i = 0; i < cinfo->comps_in_scan; ++i) {
       compptr = cinfo->cur_comp_info[i];
       if (cinfo->progressive_mode) {
 	/* Progressive mode: only DC or only AC tables are used in one scan */
@@ -622,13 +622,13 @@ write_tables_only (j_compress_ptr cinfo)
 
   emit_marker(cinfo, M_SOI);
 
-  for (i = 0; i < NUM_QUANT_TBLS; i++) {
+  for (i = 0; i < NUM_QUANT_TBLS; ++i) {
     if (cinfo->quant_tbl_ptrs[i] != NULL)
       (void) emit_dqt(cinfo, i);
   }
 
   if (! cinfo->arith_code) {
-    for (i = 0; i < NUM_HUFF_TBLS; i++) {
+    for (i = 0; i < NUM_HUFF_TBLS; ++i) {
       if (cinfo->dc_huff_tbl_ptrs[i] != NULL)
 	emit_dht(cinfo, i, FALSE);
       if (cinfo->ac_huff_tbl_ptrs[i] != NULL)

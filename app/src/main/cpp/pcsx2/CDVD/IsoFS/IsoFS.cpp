@@ -151,7 +151,7 @@ const IsoFileDescriptor& IsoDirectory::GetEntry(int index) const
 
 int IsoDirectory::GetIndexOf(const wxString& fileName) const
 {
-	for (unsigned int i = 0; i < files.size(); i++)
+	for (unsigned int i = 0; i < files.size(); ++i)
 	{
 		if (files[i].name == fileName)
 			return i;

@@ -16,6 +16,9 @@
 #include "PrecompiledHeader.h"
 #include "GS.h"
 #include "GSCaptureDlg.h"
+#include "GS/GSExtra.h"
+#include "common/StringUtil.h"
+#include <commdlg.h>
 
 // Ideally this belongs in WIL, but CAUUID is used by a *single* COM function in WinAPI.
 // That's presumably why it's omitted and is unlikely to make it to upstream WIL.
@@ -55,7 +58,7 @@ GSCaptureDlg::GSCaptureDlg()
 {
 	m_width = theApp.GetConfigI("CaptureWidth");
 	m_height = theApp.GetConfigI("CaptureHeight");
-	m_filename = convert_utf8_to_utf16(theApp.GetConfigS("CaptureFileName"));
+	m_filename = StringUtil::UTF8StringToWideString(theApp.GetConfigS("CaptureFileName"));
 }
 
 int GSCaptureDlg::GetSelCodec(Codec& c)
@@ -94,7 +97,6 @@ void GSCaptureDlg::UpdateConfigureButton()
 		return;
 	}
 
-#ifndef _M_ARM64
 	if (auto pSPP = c.filter.try_query<ISpecifyPropertyPages>())
 	{
 		unique_cauuid caGUID;
@@ -104,7 +106,6 @@ void GSCaptureDlg::UpdateConfigureButton()
 	{
 		enable = pAMVfWCD->ShowDialog(VfwCompressDialog_QueryConfig, nullptr) == S_OK;
 	}
-#endif
 	EnableWindow(GetDlgItem(m_hWnd, IDC_CONFIGURE), enable);
 }
 
@@ -118,7 +119,7 @@ void GSCaptureDlg::OnInit()
 
 	m_codecs.clear();
 
-	const std::wstring selected = convert_utf8_to_utf16(theApp.GetConfigS("CaptureVideoCodecDisplayName"));
+	const std::wstring selected = StringUtil::UTF8StringToWideString(theApp.GetConfigS("CaptureVideoCodecDisplayName"));
 
 	ComboBoxAppend(IDC_CODECS, "Uncompressed", 0, true);
 	ComboBoxAppend(IDC_COLORSPACE, "YUY2", 0, true);
@@ -182,7 +183,7 @@ bool GSCaptureDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 				ofn.lStructSize = sizeof(ofn);
 				ofn.hwndOwner = m_hWnd;
 				ofn.lpstrFile = buff;
-				ofn.nMaxFile = countof(buff);
+				ofn.nMaxFile = std::size(buff);
 				ofn.lpstrFilter = L"Avi files (*.avi)\0*.avi\0";
 				ofn.Flags = OFN_EXPLORER | OFN_ENABLESIZING | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
 
@@ -204,7 +205,6 @@ bool GSCaptureDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 				Codec c;
 				if (GetSelCodec(c) == 1)
 				{
-#ifndef _M_ARM64
 					if (auto pSPP = c.filter.try_query<ISpecifyPropertyPages>())
 					{
 						unique_cauuid caGUID;
@@ -219,7 +219,6 @@ bool GSCaptureDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 						if (pAMVfWCD->ShowDialog(VfwCompressDialog_QueryConfig, NULL) == S_OK)
 							pAMVfWCD->ShowDialog(VfwCompressDialog_Config, m_hWnd);
 					}
-#endif
 				}
 				return true;
 			}
@@ -246,10 +245,10 @@ bool GSCaptureDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 
 			theApp.SetConfig("CaptureWidth", m_width);
 			theApp.SetConfig("CaptureHeight", m_height);
-			theApp.SetConfig("CaptureFileName", convert_utf16_to_utf8(m_filename).c_str());
+			theApp.SetConfig("CaptureFileName", StringUtil::WideStringToUTF8String(m_filename).c_str());
 
 			if (ris != 2)
-				theApp.SetConfig("CaptureVideoCodecDisplayName", convert_utf16_to_utf8(c.DisplayName).c_str());
+				theApp.SetConfig("CaptureVideoCodecDisplayName", StringUtil::WideStringToUTF8String(c.DisplayName).c_str());
 			else
 				theApp.SetConfig("CaptureVideoCodecDisplayName", "");
 			break;

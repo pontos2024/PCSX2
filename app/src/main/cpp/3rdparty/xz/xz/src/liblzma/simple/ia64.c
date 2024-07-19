@@ -73,7 +73,7 @@ ia64_code(void *simple lzma_attribute((__unused__)),
 				instruction &= (1 << bit_res) - 1;
 				instruction |= (inst_norm << bit_res);
 
-				for (size_t j = 0; j < 6; j++)
+				for (size_t j = 0; j < 6; ++j)
 					buffer[i + j + byte_pos] = (uint8_t)(
 							instruction
 							>> (8 * j));

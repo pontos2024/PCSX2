@@ -74,7 +74,7 @@ std::vector<unsigned char> DecodeBase64(const std::string &input) {
   unsigned char *out = &ret[0];
 
   unsigned value = 0;
-  for (std::size_t i = 0, cnt = 0; i < input.size(); i++) {
+  for (std::size_t i = 0, cnt = 0; i < input.size(); ++i) {
     if (std::isspace(input[i])) {
       // skip newlines
       continue;

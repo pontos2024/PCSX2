@@ -56,7 +56,7 @@ namespace GL
 
 	bool ContextAGL::Initialize(const Version* versions_to_try, size_t num_versions_to_try)
 	{
-		for (size_t i = 0; i < num_versions_to_try; i++)
+		for (size_t i = 0; i < num_versions_to_try; ++i)
 		{
 			const Version& cv = versions_to_try[i];
 			if (cv.profile == Profile::NoProfile && CreateContext(nullptr, NSOpenGLProfileVersionLegacy, true))

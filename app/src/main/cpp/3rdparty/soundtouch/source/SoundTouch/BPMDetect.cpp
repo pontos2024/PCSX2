@@ -118,7 +118,7 @@ static const double TWOPI = (2 * M_PI);
         FILE *fptr = fopen(name, "wt");
         if (fptr)
         {
-            for (uint i = 0; i < beats.size(); i++)
+            for (uint i = 0; i < beats.size(); ++i)
             {
                 BEAT b = beats[i];
                 fprintf(fptr, "%lf\t%lf\n", b.pos, b.strength);
@@ -134,7 +134,7 @@ static const double TWOPI = (2 * M_PI);
 // Hamming window
 void hamming(float *w, int N)
 {
-    for (int i = 0; i < N; i++)
+    for (int i = 0; i < N; ++i)
     {
         w[i] = (float)(0.54 - 0.46 * cos(TWOPI * i / (N - 1)));
     }
@@ -305,7 +305,7 @@ void BPMDetect::updateXCorr(int process_samples)
 
     // prescale pbuffer
     float tmp[XCORR_UPDATE_SEQUENCE];
-    for (int i = 0; i < process_samples; i++)
+    for (int i = 0; i < process_samples; ++i)
     {
         tmp[i] = hamw[i] * hamw[i] * pBuffer[i];
     }
@@ -345,7 +345,7 @@ void BPMDetect::updateBeatPos(int process_samples)
 
     // prescale pbuffer
     float tmp[XCORR_UPDATE_SEQUENCE / 2];
-    for (int i = 0; i < process_samples; i++)
+    for (int i = 0; i < process_samples; ++i)
     {
         tmp[i] = hamw2[i] * hamw2[i] * pBuffer[i];
     }
@@ -354,7 +354,7 @@ void BPMDetect::updateBeatPos(int process_samples)
     for (int offs = windowStart; offs < windowLen; offs++)
     {
         double sum = 0;
-        for (int i = 0; i < process_samples; i++)
+        for (int i = 0; i < process_samples; ++i)
         {
             sum += tmp[i] * pBuffer[offs + i];
         }
@@ -375,7 +375,7 @@ void BPMDetect::updateBeatPos(int process_samples)
     }
 
     // detect beats
-    for (int i = 0; i < skipstep; i++)
+    for (int i = 0; i < skipstep; ++i)
     {
         LONG_SAMPLETYPE max = 0;
 
@@ -455,7 +455,7 @@ void BPMDetect::removeBias()
     // 1. calc mean of 'xcorr' and 'i'
     double mean_i = 0;
     double mean_x = 0;
-    for (i = windowStart; i < windowLen; i++)
+    for (i = windowStart; i < windowLen; ++i)
     {
         mean_x += xcorr[i];
     }
@@ -465,7 +465,7 @@ void BPMDetect::removeBias()
     // 2. calculate linear regression coefficient
     double b = 0;
     double div = 0;
-    for (i = windowStart; i < windowLen; i++)
+    for (i = windowStart; i < windowLen; ++i)
     {
         double xt = xcorr[i] - mean_x;
         double xi = i - mean_i;
@@ -496,7 +496,7 @@ void BPMDetect::removeBias()
 // Calculate N-point moving average for "source" values
 void MAFilter(float *dest, const float *source, int start, int end, int N)
 {
-    for (int i = start; i < end; i++)
+    for (int i = start; i < end; ++i)
     {
         int i1 = i - N / 2;
         int i2 = i + N / 2 + 1;
@@ -565,7 +565,7 @@ int BPMDetect::getBeats(float *pos, float *values, int max_num)
     int num = beats.size();
     if ((!pos) || (!values)) return num;    // pos or values NULL, return just size
 
-    for (int i = 0; (i < num) && (i < max_num); i++)
+    for (int i = 0; (i < num) && (i < max_num); ++i)
     {
         pos[i] = beats[i].pos;
         values[i] = beats[i].strength;

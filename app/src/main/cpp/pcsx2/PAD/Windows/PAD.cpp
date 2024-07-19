@@ -259,7 +259,7 @@ void UpdateEnabledDevices(int updateList = 0)
 			}
 		}
 	}
-	for (int i = 0; i < dm->numDevices; i++)
+	for (int i = 0; i < dm->numDevices; ++i)
 	{
 		Device* dev = dm->devices[i];
 
@@ -421,7 +421,7 @@ void ProcessButtonBinding(Binding* b, ButtonSum* sum, int value)
 void CapSum(ButtonSum* sum)
 {
 	int i;
-	for (i = 0; i < 2; i++)
+	for (i = 0; i < 2; ++i)
 	{
 		int div = std::max(abs(sum->sticks[i].horiz), abs(sum->sticks[i].vert));
 		if (div > 255)
@@ -430,7 +430,7 @@ void CapSum(ButtonSum* sum)
 			sum->sticks[i].vert = sum->sticks[i].vert * 255 / div;
 		}
 	}
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < 16; ++i)
 	{
 		sum->buttons[i] = Cap(sum->buttons[i]);
 	}
@@ -503,7 +503,7 @@ void Update(unsigned int port, unsigned int slot)
 	u8 lockStateChanged[2][4];
 	memset(lockStateChanged, 0, sizeof(lockStateChanged));
 
-	for (i = 0; i < 8; i++)
+	for (i = 0; i < 8; ++i)
 	{
 		s[i & 1][i >> 1] = pads[i & 1][i >> 1].lockedSum;
 	}
@@ -519,7 +519,7 @@ void Update(unsigned int port, unsigned int slot)
 	rapidFire++;
 	static bool anyDeviceActiveAndBound = true;
 	bool currentDeviceActiveAndBound = false;
-	for (i = 0; i < dm->numDevices; i++)
+	for (i = 0; i < dm->numDevices; ++i)
 	{
 		Device* dev = dm->devices[i];
 		// Skip both disabled devices and inactive enabled devices.
@@ -533,7 +533,7 @@ void Update(unsigned int port, unsigned int slot)
 				int padtype = config.padConfigs[port][slot].type;
 				if (padtype == DisabledPad || !pads[port][slot].initialized)
 					continue;
-				for (int j = 0; j < dev->pads[port][slot][padtype].numBindings; j++)
+				for (int j = 0; j < dev->pads[port][slot][padtype].numBindings; ++j)
 				{
 					Binding* b = dev->pads[port][slot][padtype].bindings + j;
 					int cmd = b->command;
@@ -629,21 +629,21 @@ void Update(unsigned int port, unsigned int slot)
 						const unsigned int idList[5] = {ID_L2, ID_L1, ID_R1, ID_R2, ID_CROSS};
 						int values[5];
 						int i;
-						for (i = 0; i < 5; i++)
+						for (i = 0; i < 5; ++i)
 						{
 							int id = oldIdList[i] - ID_DPAD_UP;
 							values[i] = s[port][slot].buttons[id];
 							s[port][slot].buttons[id] = 0;
 						}
 						s[port][slot].buttons[ID_TRIANGLE - ID_DPAD_UP] = values[1];
-						for (i = 0; i < 5; i++)
+						for (i = 0; i < 5; ++i)
 						{
 							int id = idList[i] - ID_DPAD_UP;
 							s[port][slot].buttons[id] = values[i];
 						}
 						if (s[port][slot].buttons[14] <= 48 && s[port][slot].buttons[12] <= 48)
 						{
-							for (int i = 0; i < 5; i++)
+							for (int i = 0; i < 5; ++i)
 							{
 								unsigned int id = idList[i] - ID_DPAD_UP;
 								if (pads[port][slot].sum.buttons[id] < s[port][slot].buttons[id])
@@ -654,7 +654,7 @@ void Update(unsigned int port, unsigned int slot)
 						}
 						else if (pads[port][slot].sum.buttons[14] <= 48 && pads[port][slot].sum.buttons[12] <= 48)
 						{
-							for (int i = 0; i < 5; i++)
+							for (int i = 0; i < 5; ++i)
 							{
 								unsigned int id = idList[i] - ID_DPAD_UP;
 								if (pads[port][slot].sum.buttons[id])
@@ -668,7 +668,7 @@ void Update(unsigned int port, unsigned int slot)
 
 				if (pads[port][slot].mode == MODE_DIGITAL)
 				{
-					for (int i = 0; i <= 1; i++)
+					for (int i = 0; i <= 1; ++i)
 					{
 						if (s[port][slot].sticks[i].horiz >= 100)
 							s[port][slot].buttons[13] += s[port][slot].sticks[i].horiz;
@@ -721,7 +721,7 @@ void Update(unsigned int port, unsigned int slot)
 						}
 						pads[port][slot].lockedState ^= LOCK_BUTTONS;
 					}
-					for (i = 0; i < (int)sizeof(pads[port][slot].lockedSum) / 4; i++)
+					for (i = 0; i < (int)sizeof(pads[port][slot].lockedSum) / 4; ++i)
 					{
 						if (((int*)&pads[port][slot].lockedSum)[i])
 							break;
@@ -734,7 +734,7 @@ void Update(unsigned int port, unsigned int slot)
 			}
 		}
 	}
-	for (i = 0; i < 8; i++)
+	for (i = 0; i < 8; ++i)
 	{
 		pads[i & 1][i >> 1].sum = s[i & 1][i >> 1];
 	}
@@ -766,7 +766,7 @@ void GetNameAndVersionString(wchar_t* out)
 
 void PADshutdown()
 {
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < 8; ++i)
 		pads[i & 1][i >> 1].initialized = 0;
 	portInitialized[0] = portInitialized[1] = 0;
 	UnloadConfigs();
@@ -774,7 +774,7 @@ void PADshutdown()
 
 inline void StopVibrate()
 {
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < 8; ++i)
 	{
 		SetVibrate(i & 1, i >> 1, 0, 0);
 		SetVibrate(i & 1, i >> 1, 1, 0);
@@ -1167,11 +1167,11 @@ u8 PADpoll(u8 value)
 						u8 b1 = 0xFF, b2 = 0xFF;
 						b1 -= (sum->buttons[3] > 0) << 3; // Start
 
-						for (int i = 3; i < 6; i++)
+						for (int i = 3; i < 6; ++i)
 						{
 							b2 -= (sum->buttons[i + 4] > 0) << i; // R, A, B
 						}
-						for (int i = 4; i < 8; i++)
+						for (int i = 4; i < 8; ++i)
 						{
 							b1 -= (sum->buttons[i + 8] > 0) << i; // D-pad Up, Right, Down, Left
 						}
@@ -1190,11 +1190,11 @@ u8 PADpoll(u8 value)
 					}
 
 					u8 b1 = 0xFF, b2 = 0xFF;
-					for (int i = 0; i < 4; i++)
+					for (int i = 0; i < 4; ++i)
 					{
 						b1 -= (sum->buttons[i] > 0) << i;
 					}
-					for (int i = 0; i < 8; i++)
+					for (int i = 0; i < 8; ++i)
 					{
 						b2 -= (sum->buttons[i + 4] > 0) << i;
 					}
@@ -1206,7 +1206,7 @@ u8 PADpoll(u8 value)
 						// if (sum->sticks[2].vert > 0) sum->sticks[2].vert = 0;
 					}
 
-					for (int i = 4; i < 8; i++)
+					for (int i = 4; i < 8; ++i)
 					{
 						b1 -= (sum->buttons[i + 8] > 0) << i;
 					}

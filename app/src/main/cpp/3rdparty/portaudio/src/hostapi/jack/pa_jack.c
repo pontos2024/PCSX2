@@ -599,7 +599,7 @@ static PaError BuildDeviceList( PaJackHostApiRepresentation *jackApi )
             curDevInfo->defaultLowInputLatency = curDevInfo->defaultHighInputLatency =
                 jack_port_get_latency( p ) / globalSampleRate;
 
-            for( i = 0; clientPorts[i] != NULL; i++)
+            for( i = 0; clientPorts[i] != NULL; ++i)
             {
                 /* The number of ports returned is the number of output channels.
                  * We don't care what they are, we just care how many */
@@ -620,7 +620,7 @@ static PaError BuildDeviceList( PaJackHostApiRepresentation *jackApi )
             curDevInfo->defaultLowOutputLatency = curDevInfo->defaultHighOutputLatency =
                 jack_port_get_latency( p ) / globalSampleRate;
 
-            for( i = 0; clientPorts[i] != NULL; i++)
+            for( i = 0; clientPorts[i] != NULL; ++i)
             {
                 /* The number of ports returned is the number of input channels.
                  * We don't care what they are, we just care how many */

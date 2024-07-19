@@ -300,7 +300,7 @@ void V_Core::FinishDMAwrite()
 		// Important: Test both core IRQ settings for either DMA!
 		// Note: Because this buffer wraps, we use || instead of &&
 
-		for (int i = 0; i < 2; i++)
+		for (int i = 0; i < 2; ++i)
 		{
 			// Start is exclusive and end is inclusive... maybe? The end is documented to be inclusive,
 			// which suggests that memory access doesn't trigger interrupts, incrementing registers does
@@ -327,7 +327,7 @@ void V_Core::FinishDMAwrite()
 
 		// Flag interrupt?  If IRQA occurs between start and dest, flag it.
 		// Important: Test both core IRQ settings for either DMA!
-		for (int i = 0; i < 2; i++)
+		for (int i = 0; i < 2; ++i)
 		{
 			if (Cores[i].IRQEnable && (Cores[i].IRQA > ActiveTSA && Cores[i].IRQA <= TDA))
 			{
@@ -401,7 +401,7 @@ void V_Core::FinishDMAread()
 		// Important: Test both core IRQ settings for either DMA!
 		// Note: Because this buffer wraps, we use || instead of &&
 
-		for (int i = 0; i < 2; i++)
+		for (int i = 0; i < 2; ++i)
 		{
 			if (Cores[i].IRQEnable && (Cores[i].IRQA > start || Cores[i].IRQA <= TDA))
 			{
@@ -419,7 +419,7 @@ void V_Core::FinishDMAread()
 		// Flag interrupt?  If IRQA occurs between start and dest, flag it.
 		// Important: Test both core IRQ settings for either DMA!
 
-		for (int i = 0; i < 2; i++)
+		for (int i = 0; i < 2; ++i)
 		{
 			if (Cores[i].IRQEnable && (Cores[i].IRQA > ActiveTSA && Cores[i].IRQA <= TDA))
 			{

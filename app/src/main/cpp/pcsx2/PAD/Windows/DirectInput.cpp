@@ -226,7 +226,7 @@ public:
 
 		{
 			DIOBJECTDATAFORMAT* formats = (DIOBJECTDATAFORMAT*)calloc(numPhysicalControls, sizeof(DIOBJECTDATAFORMAT));
-			for (i = 0; i < numPhysicalControls; i++)
+			for (i = 0; i < numPhysicalControls; ++i)
 			{
 				formats[i].dwType = physicalControls[i].type | DIDFT_MAKEINSTANCE(physicalControls[i].id);
 				formats[i].dwOfs = 4 * i;
@@ -239,7 +239,7 @@ public:
 			format.dwNumObjs = numPhysicalControls;
 			format.rgodf = formats;
 			int res = did->SetDataFormat(&format);
-			for (i = 0; i < numPhysicalControls; i++)
+			for (i = 0; i < numPhysicalControls; ++i)
 			{
 				if (physicalControls[i].type == ABSAXIS)
 				{
@@ -299,7 +299,7 @@ public:
 			{
 				int padtype = config.padConfigs[port][slot].type;
 				int subIndex = i;
-				for (int j = 0; j < pads[port][slot][padtype].numFFBindings; j++)
+				for (int j = 0; j < pads[port][slot][padtype].numFFBindings; ++j)
 				{
 					ForceFeedbackBinding* b = 0;
 					b = &pads[port][slot][padtype].ffBindings[i - subIndex];
@@ -395,7 +395,7 @@ public:
 				Deactivate();
 				return 0;
 			}
-			for (int i = 0; i < numPhysicalControls; i++)
+			for (int i = 0; i < numPhysicalControls; ++i)
 			{
 				if (physicalControls[i].type & RELAXIS)
 				{
@@ -430,7 +430,7 @@ public:
 		if (diEffects)
 		{
 			int count = GetFFBindingCount();
-			for (int i = 0; i < count; i++)
+			for (int i = 0; i < count; ++i)
 			{
 				if (diEffects[i].die)
 				{
@@ -551,7 +551,7 @@ BOOL CALLBACK EnumDeviceObjectsCallback(LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID
 	int vkey = 0;
 	if (lpddoi->tszName[0] && did->type == KEYBOARD)
 	{
-		for (u32 i = 0; i < 256; i++)
+		for (u32 i = 0; i < 256; ++i)
 		{
 			wchar_t* t = GetVKStringW((u8)i);
 			if (!wcsicmp(lpddoi->tszName, t))

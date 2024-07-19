@@ -92,7 +92,7 @@ namespace usb_hid
 					 HidP_Input, pButtonCaps->UsagePage, 0, usage, &usageLength, pPreparsedData,
 					 (PCHAR)pRawInput->data.hid.bRawData, pRawInput->data.hid.dwSizeHid)) == HIDP_STATUS_SUCCESS)
 			{
-				for (uint32_t i = 0; i < usageLength; i++)
+				for (uint32_t i = 0; i < usageLength; ++i)
 				{
 					uint16_t btn = usage[i] - pButtonCaps->Range.UsageMin;
 				}
@@ -103,7 +103,7 @@ namespace usb_hid
 			capsLength = Caps.NumberInputValueCaps;
 			if (HidP_GetValueCaps(HidP_Input, pValueCaps, &capsLength, pPreparsedData) == HIDP_STATUS_SUCCESS)
 			{
-				for (USHORT i = 0; i < capsLength; i++)
+				for (USHORT i = 0; i < capsLength; ++i)
 				{
 					if (HidP_GetUsageValue(
 							HidP_Input, pValueCaps[i].UsagePage, 0,
@@ -228,7 +228,7 @@ namespace usb_hid
 			if (z != 0)
 			{
 				ev.u.btn.button = (z < 0) ? INPUT_BUTTON_WHEEL_DOWN : INPUT_BUTTON_WHEEL_UP;
-				for (int i = 0; i < z; i++)
+				for (int i = 0; i < z; ++i)
 				{
 					ev.u.btn.down = true;
 					SendPointerEvent(ev, hs);

@@ -210,7 +210,7 @@ using ::testing::ExpectationSet;
 ...
 ExpectationSet all_inits;
 // Collect all expectations of InitElement() calls
-for (int i = 0; i < element_count; i++) {
+for (int i = 0; i < element_count; ++i) {
   all_inits += EXPECT_CALL(my_mock, InitElement(i));
 }
 EXPECT_CALL(my_mock, Describe())

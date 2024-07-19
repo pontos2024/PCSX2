@@ -786,7 +786,7 @@ wxString wxZipEntry::GetName(wxPathFormat format /*=wxPATH_NATIVE*/) const
         case wxPATH_DOS:
         {
             wxString name(isDir ? m_Name + wxT("\\") : m_Name);
-            for (size_t i = 0; i < name.length(); i++)
+            for (size_t i = 0; i < name.length(); ++i)
                 if (name[i] == wxT('/'))
                     name[i] = wxT('\\');
             return name;

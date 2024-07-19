@@ -42,7 +42,9 @@ __fi u8 psxHw4Read8(u32 add)
 {
 	u16 mem = add & 0xFF;
 	u8 ret = cdvdRead(mem);
+#ifdef PCSX2_DEBUG
 	PSXHW_LOG("HwRead8 from Cdvd [segment 0x1f40], addr 0x%02x = 0x%02x", mem, ret);
+#endif
 	return ret;
 }
 
@@ -50,13 +52,15 @@ __fi void psxHw4Write8(u32 add, u8 value)
 {
 	u8 mem = (u8)add;	// only lower 8 bits are relevant (cdvd regs mirror across the page)
 	cdvdWrite(mem, value);
+#ifdef PCSX2_DEBUG
 	PSXHW_LOG("HwWrite8 to Cdvd [segment 0x1f40], addr 0x%02x = 0x%02x", mem, value);
+#endif
 }
 
 void psxDmaInterrupt(int n)
 {
 	if(n == 33) {
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < 6; ++i) {
 			if (HW_DMA_ICR & (1 << (16 + i))) {
 				if (HW_DMA_ICR & (1 << (24 + i))) {
 					if (HW_DMA_ICR & (1 << 23)) {
@@ -85,7 +89,7 @@ void psxDmaInterrupt2(int n)
 	bool fire_interrupt = n == 2 || n == 3;
 
 	if (n == 33) {
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < 6; ++i) {
 			if (HW_DMA_ICR2 & (1 << (24 + i))) {
 				if (HW_DMA_ICR2 & (1 << (16 + i)) || i == 2 || i == 3) {
 					fire_interrupt = true;

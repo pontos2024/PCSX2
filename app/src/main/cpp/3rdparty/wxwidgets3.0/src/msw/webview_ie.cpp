@@ -128,7 +128,7 @@ wxWebViewIE::~wxWebViewIE()
             wxFAIL_MSG("Could not retrive internet session");
         }
 
-        for(unsigned int i = 0; i < m_factories.size(); i++)
+        for(unsigned int i = 0; i < m_factories.size(); ++i)
         {
             session->UnregisterNameSpace(m_factories[i], 
                                         (m_factories[i]->GetName()).wc_str());
@@ -491,7 +491,7 @@ bool wxWebViewIE::CanGoForward() const
 void wxWebViewIE::LoadHistoryItem(wxSharedPtr<wxWebViewHistoryItem> item)
 {
     int pos = -1;
-    for(unsigned int i = 0; i < m_historyList.size(); i++)
+    for(unsigned int i = 0; i < m_historyList.size(); ++i)
     {
         //We compare the actual pointers to find the correct item
         if(m_historyList[i].get() == item.get())
@@ -509,7 +509,7 @@ wxVector<wxSharedPtr<wxWebViewHistoryItem> > wxWebViewIE::GetBackwardHistory()
     wxVector<wxSharedPtr<wxWebViewHistoryItem> > backhist;
     //As we don't have std::copy or an iterator constructor in the wxwidgets
     //native vector we construct it by hand
-    for(int i = 0; i < m_historyPosition; i++)
+    for(int i = 0; i < m_historyPosition; ++i)
     {
         backhist.push_back(m_historyList[i]);
     }
@@ -521,7 +521,7 @@ wxVector<wxSharedPtr<wxWebViewHistoryItem> > wxWebViewIE::GetForwardHistory()
     wxVector<wxSharedPtr<wxWebViewHistoryItem> > forwardhist;
     //As we don't have std::copy or an iterator constructor in the wxwidgets
     //native vector we construct it by hand
-    for(int i = m_historyPosition + 1; i < static_cast<int>(m_historyList.size()); i++)
+    for(int i = m_historyPosition + 1; i < static_cast<int>(m_historyList.size()); ++i)
     {
         forwardhist.push_back(m_historyList[i]);
     }
@@ -1204,7 +1204,7 @@ void wxWebViewIE::FindClear()
     //remove elements from m_findPointers without calling release first
     //or you will get a memory leak.
     size_t count = m_findPointers.size();
-    for(size_t i = 0; i < count; i++)
+    for(size_t i = 0; i < count; ++i)
     {
         m_findPointers[i].begin->Release();
         m_findPointers[i].end->Release();

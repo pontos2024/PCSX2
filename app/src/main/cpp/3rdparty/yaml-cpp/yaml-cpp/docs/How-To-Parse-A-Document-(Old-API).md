@@ -51,7 +51,7 @@ for(YAML::Iterator it=doc.begin();it!=doc.end();++it) {
 
 ```
 YAML::Node doc;    // already parsed
-for(unsigned i=0;i<doc.size();i++) {
+for(unsigned i=0;i<doc.size();++i) {
     std::string scalar;
     doc[i] >> scalar;
     std::cout << "Found scalar: " << scalar << std::endl;
@@ -198,7 +198,7 @@ void operator >> (const YAML::Node& node, Monster& monster) {
    node["name"] >> monster.name;
    node["position"] >> monster.position;
    const YAML::Node& powers = node["powers"];
-   for(unsigned i=0;i<powers.size();i++) {
+   for(unsigned i=0;i<powers.size();++i) {
       Power power;
       powers[i] >> power;
       monster.powers.push_back(power);
@@ -211,7 +211,7 @@ int main()
    YAML::Parser parser(fin);
    YAML::Node doc;
    parser.GetNextDocument(doc);
-   for(unsigned i=0;i<doc.size();i++) {
+   for(unsigned i=0;i<doc.size();++i) {
       Monster monster;
       doc[i] >> monster;
       std::cout << monster.name << "\n";

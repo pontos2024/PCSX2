@@ -153,7 +153,7 @@ void inifile_processString(const wxString& inStr)
 // Then sends the command to be parsed.
 void inifile_process(wxTextFile& f1)
 {
-	for (uint i = 0; i < f1.GetLineCount(); i++)
+	for (uint i = 0; i < f1.GetLineCount(); ++i)
 	{
 		inifile_processString(f1[i]);
 	}

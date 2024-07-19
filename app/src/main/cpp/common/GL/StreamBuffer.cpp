@@ -156,7 +156,7 @@ namespace GL
 
 			virtual ~SyncingStreamBuffer() override
 			{
-				for (u32 i = m_available_block_index; i <= m_used_block_index; i++)
+				for (u32 i = m_available_block_index; i <= m_used_block_index; ++i)
 				{
 					pxAssert(m_sync_objects[i]);
 					glDeleteSync(m_sync_objects[i]);

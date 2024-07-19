@@ -107,8 +107,8 @@ void cpuinfo_emscripten_init(void) {
 		strncpy(static_package.name, "ARM vCPU", CPUINFO_PACKAGE_NAME_MAX);
 	}
 
-	for (uint32_t i = 0; i < core_count; i++) {
-		for (uint32_t j = 0; j < processors_per_core; j++) {
+	for (uint32_t i = 0; i < core_count; ++i) {
+		for (uint32_t j = 0; j < processors_per_core; ++j) {
 			processors[i * processors_per_core + j] = (struct cpuinfo_processor) {
 				.smt_id = j,
 				.core = cores + i,

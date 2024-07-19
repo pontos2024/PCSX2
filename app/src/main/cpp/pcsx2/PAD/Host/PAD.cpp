@@ -40,6 +40,8 @@ const u32 build = 0; // increase that with each version
 
 PADconf g_conf;
 KeyStatus g_key_status;
+JoystickInfo* g_haptic_android = nullptr;
+bool g_forcefeedback = false;
 
 s32 PADinit()
 {
@@ -58,6 +60,10 @@ s32 PADinit()
 
 void PADshutdown()
 {
+	if(g_haptic_android != nullptr) {
+		delete g_haptic_android;
+		g_haptic_android = nullptr;
+	}
 }
 
 s32 PADopen(const WindowInfo& wi)
@@ -255,6 +261,14 @@ bool PAD::HandleHostInputEvent(const HostKeyEvent& event)
 	}
 }
 
+void PAD::SetVibration(bool p_isvalue)
+{
+	g_forcefeedback = p_isvalue;
+	for (auto & pad_option : g_conf.pad_options){
+		pad_option.forcefeedback = g_forcefeedback;
+	}
+}
+
 void PAD::LoadConfig(const SettingsInterface& si)
 {
 	g_conf.init();
@@ -289,7 +303,7 @@ void PAD::LoadConfig(const SettingsInterface& si)
 
 		const std::string section(StringUtil::StdStringFromFormat("Pad%u", pad));
 		g_conf.set_joy_uid(pad, si.GetUIntValue(section.c_str(), "JoystickUID", 0u));
-		g_conf.pad_options[pad].forcefeedback = si.GetBoolValue(section.c_str(), "ForceFeedback", true);
+		g_conf.pad_options[pad].forcefeedback = g_forcefeedback; //si.GetBoolValue(section.c_str(), "ForceFeedback", true);
 		g_conf.pad_options[pad].reverse_lx = si.GetBoolValue(section.c_str(), "ReverseLX", false);
 		g_conf.pad_options[pad].reverse_ly = si.GetBoolValue(section.c_str(), "ReverseLY", false);
 		g_conf.pad_options[pad].reverse_rx = si.GetBoolValue(section.c_str(), "ReverseRX", false);

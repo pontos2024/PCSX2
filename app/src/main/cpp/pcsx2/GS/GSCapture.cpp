@@ -17,7 +17,8 @@
 #include "GSCapture.h"
 #include "GSPng.h"
 #include "GSUtil.h"
-#include "GS_types.h"
+#include "GSExtra.h"
+#include "common/StringUtil.h"
 
 #ifdef _WIN32
 
@@ -126,7 +127,7 @@ GSSource : public CBaseFilter, private CCritSec, public IGSSource
 			vih.bmiHeader.biPlanes = 1;
 			vih.bmiHeader.biBitCount = 16;
 			vih.bmiHeader.biSizeImage = m_size.x * m_size.y * 2;
-			mt.SetFormat((uint8*)&vih, sizeof(vih));
+			mt.SetFormat((u8*)&vih, sizeof(vih));
 
 			m_mts.push_back(mt);
 
@@ -139,7 +140,7 @@ GSSource : public CBaseFilter, private CCritSec, public IGSSource
 			vih.bmiHeader.biPlanes = 1;
 			vih.bmiHeader.biBitCount = 32;
 			vih.bmiHeader.biSizeImage = m_size.x * m_size.y * 4;
-			mt.SetFormat((uint8*)&vih, sizeof(vih));
+			mt.SetFormat((u8*)&vih, sizeof(vih));
 
 			if (colorspace == 1)
 				m_mts.insert(m_mts.begin(), mt);
@@ -272,8 +273,8 @@ public:
 
 		const CMediaType& mt = m_output->CurrentMediaType();
 
-		uint8* src = (uint8*)bits;
-		uint8* dst = NULL;
+		u8* src = (u8*)bits;
+		u8* dst = NULL;
 
 		sample->GetPointer(&dst);
 
@@ -298,10 +299,10 @@ public:
 
 			const GSVector4 offset(16, 128, 16, 128);
 
-			for (int j = 0; j < h; j++, dst += dstpitch, src += srcpitch)
+			for (int j = 0; j < h; ++j, dst += dstpitch, src += srcpitch)
 			{
-				uint32* s = (uint32*)src;
-				uint16* d = (uint16*)dst;
+				u32* s = (u32*)src;
+				u16* d = (u16*)dst;
 
 				for (int i = 0; i < w; i += 2)
 				{
@@ -314,7 +315,7 @@ public:
 
 					GSVector4 c = lo.hadd(hi) + offset;
 
-					*((uint32*)&d[i]) = GSVector4i(c).rgba32();
+					*((u32*)&d[i]) = GSVector4i(c).rgba32();
 				}
 			}
 		}
@@ -325,7 +326,7 @@ public:
 			dst += dstpitch * (h - 1);
 			dstpitch = -dstpitch;
 
-			for (int j = 0; j < h; j++, dst += dstpitch, src += srcpitch)
+			for (int j = 0; j < h; ++j, dst += dstpitch, src += srcpitch)
 			{
 				if (rgba)
 				{
@@ -334,7 +335,7 @@ public:
 
 					GSVector4i mask(2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15);
 
-					for (int i = 0, w4 = w >> 2; i < w4; i++)
+					for (int i = 0, w4 = w >> 2; i < w4; ++i)
 					{
 						d[i] = s[i].shuffle8(mask);
 					}
@@ -397,11 +398,6 @@ GSCapture::GSCapture()
 	: m_capturing(false), m_frame(0)
 	, m_out_dir("/tmp/GS_Capture") // FIXME Later add an option
 {
-	m_out_dir = theApp.GetConfigS("capture_out_dir");
-	m_threads = theApp.GetConfigI("capture_threads");
-#if defined(__unix__)
-	m_compression_level = theApp.GetConfigI("png_compression_level");
-#endif
 }
 
 GSCapture::~GSCapture()
@@ -418,7 +414,14 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 
 	EndCapture();
 
-#if defined(_WIN32) && !defined(_M_ARM64)
+	// reload settings because they may have changed
+	m_out_dir = theApp.GetConfigS("capture_out_dir");
+	m_threads = theApp.GetConfigI("capture_threads");
+#if defined(__unix__)
+	m_compression_level = theApp.GetConfigI("png_compression_level");
+#endif
+
+#ifdef _WIN32
 
 	GSCaptureDlg dlg;
 
@@ -522,7 +525,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	m_src.query<IGSSource>()->DeliverNewSegment();
 
 	m_capturing = true;
-	filename = convert_utf16_to_utf8(dlg.m_filename.erase(dlg.m_filename.length() - 3, 3) + L"wav");
+	filename = StringUtil::WideStringToUTF8String(dlg.m_filename.erase(dlg.m_filename.length() - 3, 3) + L"wav");
 	return true;
 #elif defined(__unix__)
 	// Note I think it doesn't support multiple depth creation
@@ -534,16 +537,14 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	m_size.x = theApp.GetConfigI("CaptureWidth");
 	m_size.y = theApp.GetConfigI("CaptureHeight");
 
-	for (int i = 0; i < m_threads; i++)
+	for (int i = 0; i < m_threads; ++i)
 	{
-		m_workers.push_back(std::unique_ptr<GSPng::Worker>(new GSPng::Worker(&GSPng::Process)));
+		m_workers.push_back(std::unique_ptr<GSPng::Worker>(new GSPng::Worker({}, &GSPng::Process, {})));
 	}
 
 	m_capturing = true;
 	filename = m_out_dir + "/audio_recording.wav";
 	return true;
-#else
-	return false;
 #endif
 }
 
@@ -569,9 +570,9 @@ bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
 
 #elif defined(__unix__)
 
-	std::string out_file = m_out_dir + format("/frame.%010d.png", m_frame);
-	//GSPng::Save(GSPng::RGB_PNG, out_file, (uint8*)bits, m_size.x, m_size.y, pitch, m_compression_level);
-	m_workers[m_frame % m_threads]->Push(std::make_shared<GSPng::Transaction>(GSPng::RGB_PNG, out_file, static_cast<const uint8*>(bits), m_size.x, m_size.y, pitch, m_compression_level));
+	std::string out_file = m_out_dir + StringUtil::StdStringFromFormat("/frame.%010d.png", m_frame);
+	//GSPng::Save(GSPng::RGB_PNG, out_file, (u8*)bits, m_size.x, m_size.y, pitch, m_compression_level);
+	m_workers[m_frame % m_threads]->Push(std::make_shared<GSPng::Transaction>(GSPng::RGB_PNG, out_file, static_cast<const u8*>(bits), m_size.x, m_size.y, pitch, m_compression_level));
 
 	m_frame++;
 

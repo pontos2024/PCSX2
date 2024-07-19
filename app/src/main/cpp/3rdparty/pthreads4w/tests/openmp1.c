@@ -125,7 +125,7 @@ int main(int argc, char *argv[]) {
     OK = 1;
     {
       short i;
-      for (i=0;i<3;i++) OK &= ThreadOK[i];
+      for (i=0;i<3;++i) OK &= ThreadOK[i];
     }
     if (OK) printf("OMP : All looks good\n");
     else printf("OMP : Error\n");

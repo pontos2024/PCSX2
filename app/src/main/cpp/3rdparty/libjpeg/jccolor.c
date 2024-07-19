@@ -94,7 +94,7 @@ rgb_ycc_start (j_compress_ptr cinfo)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
 				(TABLE_SIZE * SIZEOF(INT32)));
 
-  for (i = 0; i <= MAXJSAMPLE; i++) {
+  for (i = 0; i <= MAXJSAMPLE; ++i) {
     rgb_ycc_tab[i+R_Y_OFF] = FIX(0.29900) * i;
     rgb_ycc_tab[i+G_Y_OFF] = FIX(0.58700) * i;
     rgb_ycc_tab[i+B_Y_OFF] = FIX(0.11400) * i     + ONE_HALF;

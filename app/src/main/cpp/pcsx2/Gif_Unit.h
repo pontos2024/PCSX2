@@ -19,6 +19,7 @@
 #include "Gif.h"
 #include "Vif.h"
 #include "GS.h"
+#include "GS/GSRegs.h"
 
 // FIXME common path ?
 #include "common/boost_spsc_queue.hpp"
@@ -120,7 +121,7 @@ struct Gif_Tag
 		u32 t = tag.REGS[0];
 		u32 i = 0;
 		u32 j = std::min<u32>(nRegs, 8);
-		for (; i < j; i++)
+		for (; i < j; ++i)
 		{
 			regs[i] = t & 0xf;
 			hasAD |= (regs[i] == GIF_REG_A_D);
@@ -128,7 +129,7 @@ struct Gif_Tag
 		}
 		t = tag.REGS[1];
 		j = nRegs;
-		for (; i < j; i++)
+		for (; i < j; ++i)
 		{
 			regs[i] = t & 0xf;
 			hasAD |= (regs[i] == GIF_REG_A_D);
@@ -222,7 +223,9 @@ struct Gif_Path
 		{
 			if (!isMTVU()) // MTVU Freaks out if you try to reset it, so let's just let it transfer
 			{
+#ifdef PCSX2_DEBUG
 				GUNIT_WARN("Gif Path %d - Soft Reset", idx + 1);
+#endif
 				curSize = curOffset;
 			}
 			return;
@@ -256,7 +259,9 @@ struct Gif_Path
 	// Moves packet data to start of buffer
 	void RealignPacket()
 	{
+#ifdef PCSX2_DEBUG
 		GUNIT_LOG("Path Buffer: Realigning packet!");
+#endif
 		s32 offset = curOffset - gsPack.size;
 		s32 sizeToAdd = curSize - offset;
 		s32 intersect = sizeToAdd - offset;
@@ -290,7 +295,9 @@ struct Gif_Path
 	{
 		if (curSize + size > buffSize)
 		{ // Move gsPack to front of buffer
+#ifdef PCSX2_DEBUG
 			GUNIT_LOG("CopyGSPacketData: Realigning packet!");
+#endif
 			RealignPacket();
 		}
 		for (;;)
@@ -327,7 +334,9 @@ struct Gif_Path
 				if (curOffset + 16 > curSize)
 				{
 					//GUNIT_LOG("Path Buffer: Not enough data for gif tag! [%d]", curSize-curOffset);
+#ifdef PCSX2_DEBUG
 					GUNIT_WARN("PATH %d not enough data pre tag, available %d wanted %d", gifRegs.stat.APATH, curSize - curOffset, 16);
+#endif
 					return gsPack;
 				}
 
@@ -340,12 +349,16 @@ struct Gif_Path
 				gifTag.setTag(&buffer[curOffset], 1);
 
 				state = (GIF_PATH_STATE)(gifTag.tag.FLG + 1);
+#ifdef PCSX2_DEBUG
 				GUNIT_WARN("PATH %d New tag State %d FLG %d EOP %d NLOOP %d", gifRegs.stat.APATH, gifRegs.stat.APATH, state, gifTag.tag.FLG, gifTag.tag.EOP, gifTag.tag.NLOOP);
+#endif
 				// We don't have enough data for a complete GS packet
 				if (!gifTag.hasAD && curOffset + 16 + gifTag.len > curSize)
 				{
 					gifTag.isValid = false; // So next time we test again
+#ifdef PCSX2_DEBUG
 					GUNIT_WARN("PATH %d not enough data, available %d wanted %d", gifRegs.stat.APATH, curSize - curOffset, 16 + gifTag.len);
+#endif
 					return gsPack;
 				}
 
@@ -360,7 +373,9 @@ struct Gif_Path
 				{
 					if (curOffset + 16 > curSize)
 					{
+#ifdef PCSX2_DEBUG
 						GUNIT_WARN("PATH %d not enough data AD, available %d wanted %d", gifRegs.stat.APATH, curSize - curOffset, 16);
+#endif
 						return gsPack; // Exit Early
 					}
 					if (gifTag.curReg() == GIF_REG_A_D)
@@ -373,7 +388,9 @@ struct Gif_Path
 				}
 				if (dblSIGNAL && !(gifTag.tag.EOP && !gifTag.nLoop))
 				{
+#ifdef PCSX2_DEBUG
 					GUNIT_WARN("PATH %d early exit (double signal)", gifRegs.stat.APATH);
+#endif
 					return gsPack; // Exit Early
 				}
 			}
@@ -392,7 +409,9 @@ struct Gif_Path
 
 				gsPack.Reset();
 				gsPack.offset = curOffset;
+#ifdef PCSX2_DEBUG
 				GUNIT_WARN("EOP PATH %d", gifRegs.stat.APATH);
+#endif
 				//Path 3 Masking is timing sensitive, we need to simulate its length! (NFSU2/Outrun 2006)
 
 				if ((gifRegs.stat.APATH - 1) == GIF_PATH_3)
@@ -521,7 +540,9 @@ struct Gif_Unit
 	// Enable softReset when resetting during game emulation
 	void Reset(bool softReset = false)
 	{
+#ifdef PCSX2_DEBUG
 		GUNIT_WARN(Color_Red, "Gif Unit Reset!!! [soft=%d]", softReset);
+#endif
 		ResetRegs();
 		gsSIGNAL.Reset();
 		gsFINISH.Reset();
@@ -610,16 +631,21 @@ struct Gif_Unit
 				return 0;
 			}
 		}
-
+#ifdef PCSX2_DEBUG
 		GUNIT_LOG("%s - [path=%d][size=%d]", Gif_TransferStr[(tranType >> 8) & 0xf], (tranType & 3) + 1, size);
+#endif
 		if (size == 0)
 		{
+#ifdef PCSX2_DEBUG
 			GUNIT_WARN("Gif Unit - Size == 0");
+#endif
 			return 0;
 		}
 		if (!CanDoGif())
 		{
+#ifdef PCSX2_DEBUG
 			GUNIT_WARN("Gif Unit - Signal or PSE Set or Dir = GS to EE");
+#endif
 		}
 		//pxAssertDev((stat.APATH==0) || checkPaths(1,1,1), "Gif Unit - APATH wasn't cleared?");
 		lastTranType = tranType;
@@ -765,21 +791,27 @@ struct Gif_Unit
 			}
 			if (!gsSIGNAL.queued && !gifPath[0].isDone())
 			{
+#ifdef PCSX2_DEBUG
 				GUNIT_WARN("Swapping to PATH 1");
+#endif
 				stat.APATH = 1;
 				stat.P1Q = 0;
 				curPath = 0;
 			}
 			else if (!gsSIGNAL.queued && !gifPath[1].isDone())
 			{
+#ifdef PCSX2_DEBUG
 				GUNIT_WARN("Swapping to PATH 2");
+#endif
 				stat.APATH = 2;
 				stat.P2Q = 0;
 				curPath = 1;
 			}
 			else if (!gsSIGNAL.queued && !gifPath[2].isDone() && !Path3Masked())
 			{
+#ifdef PCSX2_DEBUG
 				GUNIT_WARN("Swapping to PATH 3");
+#endif
 				stat.APATH = 3;
 				stat.P3Q = 0;
 				stat.IP3 = 0;
@@ -788,7 +820,9 @@ struct Gif_Unit
 			}
 			else
 			{
+#ifdef PCSX2_DEBUG
 				GUNIT_WARN("Finished Processing");
+#endif
 				// If PATH3 was stalled due to another transfer but the DMA ended, it'll never check this
 				// So lets quickly check if it's currently set to path3
 				if (stat.APATH == 3 || path3Check)
@@ -857,6 +891,7 @@ struct Gif_Unit
 		u32 a = checkPaths(1, 1, 1), b = checkQueued(1, 1, 1);
 		(void)a; // Don't warn about unused variable
 		(void)b;
+#ifdef PCSX2_DEBUG
 		GUNIT_LOG("Gif Unit - LastTransfer = %s, Paths = [%d,%d,%d], Queued = [%d,%d,%d]",
 				  Gif_TransferStr[(lastTranType >> 8) & 0xf],
 				  !!(a & 1), !!(a & 2), !!(a & 4), !!(b & 1), !!(b & 2), !!(b & 4));
@@ -864,6 +899,7 @@ struct Gif_Unit
 				  stat.APATH, gsSIGNAL.queued, stat.PSE, stat.DIR);
 		GUNIT_LOG("Gif Unit - [CanDoGif = %d][CanDoPath3 = %d][CanDoP3Slice = %d]",
 				  CanDoGif(), CanDoPath3(), CanDoP3Slice());
+#endif
 		if (printP1)
 			PrintPathInfo(GIF_PATH_1);
 		if (printP2)
@@ -874,8 +910,10 @@ struct Gif_Unit
 
 	void PrintPathInfo(GIF_PATH path)
 	{
+#ifdef PCSX2_DEBUG
 		GUNIT_LOG("Gif Path %d - [hasData = %d][state = %d]", path,
 				  gifPath[path].hasDataRemaining(), gifPath[path].state);
+#endif
 	}
 };
 

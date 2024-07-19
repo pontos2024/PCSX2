@@ -288,12 +288,12 @@ trigger_user_callback(pa_stream * s, void const * input_data, size_t nbytes, cub
       if (stm->output_sample_spec.format == PA_SAMPLE_S16BE ||
           stm->output_sample_spec.format == PA_SAMPLE_S16LE) {
         short * b = buffer;
-        for (uint32_t i = 0; i < samples; i++) {
+        for (uint32_t i = 0; i < samples; ++i) {
           b[i] *= stm->volume;
         }
       } else {
         float * b = buffer;
-        for (uint32_t i = 0; i < samples; i++) {
+        for (uint32_t i = 0; i < samples; ++i) {
           b[i] *= stm->volume;
         }
       }

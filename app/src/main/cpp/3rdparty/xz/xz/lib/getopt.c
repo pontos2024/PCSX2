@@ -198,7 +198,7 @@ exchange (char **argv, struct _getopt_data *d)
 	  register int i;
 
 	  /* Swap it with the top part of the top segment.  */
-	  for (i = 0; i < len; i++)
+	  for (i = 0; i < len; ++i)
 	    {
 	      tem = argv[bottom + i];
 	      argv[bottom + i] = argv[top - (middle - bottom) + i];
@@ -215,7 +215,7 @@ exchange (char **argv, struct _getopt_data *d)
 	  register int i;
 
 	  /* Swap it with the bottom part of the bottom segment.  */
-	  for (i = 0; i < len; i++)
+	  for (i = 0; i < len; ++i)
 	    {
 	      tem = argv[bottom + i];
 	      argv[bottom + i] = argv[middle + i];

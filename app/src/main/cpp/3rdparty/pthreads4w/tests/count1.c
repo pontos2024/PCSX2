@@ -65,7 +65,7 @@ main()
    * Spawn NUMTHREADS threads. Each thread should increment the
    * numThreads variable, sleep for one second.
    */
-  for (i = 0; i < maxThreads; i++)
+  for (i = 0; i < maxThreads; ++i)
     {
       assert(pthread_create(&threads[i], NULL, myfunc, 0) == 0);
     }
@@ -73,7 +73,7 @@ main()
   /*
    * Wait for all the threads to exit.
    */
-  for (i = 0; i < maxThreads; i++)
+  for (i = 0; i < maxThreads; ++i)
     {
       assert(pthread_join(threads[i], NULL) == 0);
     }

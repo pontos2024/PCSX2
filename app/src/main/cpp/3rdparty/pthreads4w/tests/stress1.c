@@ -246,7 +246,7 @@ main ()
 
   pthread_barrier_wait(&startBarrier);
 
-  for (i = 1; !allExit; i++)
+  for (i = 1; !allExit; ++i)
     {
       pthread_barrier_wait(&holdBarrier);
       if (i >= ITERATIONS)

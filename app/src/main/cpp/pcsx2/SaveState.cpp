@@ -76,7 +76,7 @@ static void PostLoadPrep()
 {
 	resetCache();
 //	WriteCP0Status(cpuRegs.CP0.n.Status.val);
-	for(int i=0; i<48; i++) MapTLB(i);
+	for(int i=0; i<48; ++i) MapTLB(i);
 	if (EmuConfig.Gamefixes.GoemonTlbHack) GoemonPreloadTlb();
 #if 0
 	CBreakPoints::SetSkipFirst(BREAKPOINT_EE, 0);
@@ -790,7 +790,7 @@ static bool SaveState_CompressScreenshot(SaveStateScreenshotData* data, wxZipOut
 	{
 		// ensure the alpha channel is set to opaque
 		u32* row = &data->pixels[y * data->width];
-		for (u32 x = 0; x < data->width; x++)
+		for (u32 x = 0; x < data->width; ++x)
 			row[x] |= 0xFF000000u;
 
 		png_write_row(png_ptr, reinterpret_cast<png_const_bytep>(row));
@@ -879,8 +879,11 @@ void SaveState_ZipToDisk(ArchiveEntryList* srclist, std::unique_ptr<SaveStateScr
 	if (!out->IsOk())
 		throw Exception::CannotCreateStream(tempfile);
 
-	std::thread threaded_save(ZipStateToDiskOnThread, std::move(elist), std::move(screenshot), std::move(out), filename, tempfile, slot_for_message);
-	threaded_save.detach();
+//	std::thread threaded_save(ZipStateToDiskOnThread, std::move(elist), std::move(screenshot), std::move(out), filename, tempfile, slot_for_message);
+//	threaded_save.detach();
+
+    // zip work
+    ZipStateToDiskOnThread(std::move(elist), std::move(screenshot), std::move(out), filename, tempfile, slot_for_message);
 }
 
 void SaveState_UnzipFromDisk(const wxString& filename)

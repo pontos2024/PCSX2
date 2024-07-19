@@ -819,7 +819,7 @@ int TPpContext::tStringInput::scan(TPpToken* ppToken)
                 const unsigned long long remainderMaxInt64 = 0xFFFFFFFFFFFFFFFFull - 10 * oneTenthMaxInt64;
                 const unsigned short oneTenthMaxInt16  = 0xFFFFu / 10;
                 const unsigned short remainderMaxInt16 = 0xFFFFu - 10 * oneTenthMaxInt16;
-                for (int i = 0; i < numericLen; i++) {
+                for (int i = 0; i < numericLen; ++i) {
                     ch = ppToken->name[i] - '0';
                     bool overflow = false;
                     if (isInt64)

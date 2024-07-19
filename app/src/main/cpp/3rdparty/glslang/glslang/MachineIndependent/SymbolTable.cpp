@@ -190,7 +190,7 @@ void TSymbol::dumpExtensions(TInfoSink& infoSink) const
     if (numExtensions) {
         infoSink.debug << " <";
 
-        for (int i = 0; i < numExtensions; i++)
+        for (int i = 0; i < numExtensions; ++i)
             infoSink.debug << getExtensions()[i] << ",";
 
         infoSink.debug << ">";
@@ -220,7 +220,7 @@ void TFunction::dump(TInfoSink& infoSink, bool complete) const
                        << "(";
 
         int numParams = getParamCount();
-        for (int i = 0; i < numParams; i++) {
+        for (int i = 0; i < numParams; ++i) {
             const TParameter &param = parameters[i];
             infoSink.debug << param.type->getCompleteString() << " "
                            << (param.type->isStruct() ? "of " + param.type->getTypeName() + " " : "")

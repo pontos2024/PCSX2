@@ -41,17 +41,22 @@
 
 void __fastcall ReadFIFO_VIF1(mem128_t* out)
 {
-	if (vif1Regs.stat.test(VIF1_STAT_INT | VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS))
+#ifdef PCSX2_DEBUG
+	if (vif1Regs.stat.test(VIF1_STAT_INT | VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS)) {
 		DevCon.Warning("Reading from vif1 fifo when stalled");
+	}
+#endif
 
 	ZeroQWC(out); // Clear first in case no data gets written...
 	pxAssertRel(vif1Regs.stat.FQC != 0, "FQC = 0 on VIF FIFO READ!");
 	if (vif1Regs.stat.FDR)
 	{
+#ifdef PCSX2_DEBUG
 		if (vif1Regs.stat.FQC > vif1.GSLastDownloadSize)
 		{
 			DevCon.Warning("Warning! GS Download size < FIFO count!");
 		}
+#endif
 		if (vif1Regs.stat.FQC > 0)
 		{
 			GetMTGS().WaitGS();
@@ -59,14 +64,17 @@ void __fastcall ReadFIFO_VIF1(mem128_t* out)
 			GetMTGS().WaitGS(false); // wait without reg sync
 			GSreadFIFO((u8*)out);
 			vif1.GSLastDownloadSize--;
+#ifdef PCSX2_DEBUG
 			GUNIT_LOG("ReadFIFO_VIF1");
+#endif
 			if (vif1.GSLastDownloadSize <= 16)
 				gifRegs.stat.OPH = false;
 			vif1Regs.stat.FQC = std::min((u32)16, vif1.GSLastDownloadSize);
 		}
 	}
-
+#ifdef PCSX2_DEBUG
 	VIF_LOG("ReadFIFO/VIF1 -> %ls", WX_STR(out->ToString()));
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -74,11 +82,16 @@ void __fastcall ReadFIFO_VIF1(mem128_t* out)
 //
 void __fastcall WriteFIFO_VIF0(const mem128_t* value)
 {
+#ifdef PCSX2_DEBUG
 	VIF_LOG("WriteFIFO/VIF0 <- %ls", WX_STR(value->ToString()));
 
-	vif0ch.qwc += 1;
-	if (vif0.irqoffset.value != 0 && vif0.vifstalled.enabled)
+	if (vif0.irqoffset.value != 0 && vif0.vifstalled.enabled) {
 		DevCon.Warning("Offset on VIF0 FIFO start!");
+	}
+#endif
+
+	vif0ch.qwc += 1;
+
 	bool ret = VIF0transfer((u32*)value, 4);
 
 	if (vif0.cmd)
@@ -96,6 +109,7 @@ void __fastcall WriteFIFO_VIF0(const mem128_t* value)
 
 void __fastcall WriteFIFO_VIF1(const mem128_t* value)
 {
+#ifdef PCSX2_DEBUG
 	VIF_LOG("WriteFIFO/VIF1 <- %ls", WX_STR(value->ToString()));
 
 	if (vif1Regs.stat.FDR)
@@ -110,6 +124,7 @@ void __fastcall WriteFIFO_VIF1(const mem128_t* value)
 	{
 		DevCon.Warning("Offset on VIF1 FIFO start!");
 	}
+#endif
 
 	bool ret = VIF1transfer((u32*)value, 4);
 
@@ -136,7 +151,9 @@ void __fastcall WriteFIFO_VIF1(const mem128_t* value)
 
 void __fastcall WriteFIFO_GIF(const mem128_t* value)
 {
+#ifdef PCSX2_DEBUG
 	GUNIT_LOG("WriteFIFO_GIF()");
+#endif
 	if ((!gifUnit.CanDoPath3() || gif_fifo.fifoSize > 0))
 	{
 		//DevCon.Warning("GIF FIFO HW Write");

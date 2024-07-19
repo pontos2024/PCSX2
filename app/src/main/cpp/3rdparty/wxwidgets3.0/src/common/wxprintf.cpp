@@ -69,7 +69,7 @@ static int wxCopyStrWithPercents(
         return 0;
 
     size_t i;
-    for ( i = 0; i < maxIn-1 && written < maxOut; source++, i++)
+    for ( i = 0; i < maxIn-1 && written < maxOut; source++, ++i)
     {
         dest[written++] = *source;
         if (*(source+1) == wxT('%'))
@@ -123,7 +123,7 @@ static int wxDoVsnprintf(CharType *buf, size_t lenMax,
 #endif
 
     // now load arguments from stack
-    for (i=0; i < parser.nargs && ok; i++)
+    for (i=0; i < parser.nargs && ok; ++i)
     {
         // !pspec[i] means that the user forgot a positional parameter (e.g. %$1s %$3s);
         // LoadArg == false means that wxPrintfConvSpec::Parse failed to set the
@@ -143,7 +143,7 @@ static int wxDoVsnprintf(CharType *buf, size_t lenMax,
 
     // finally, process each conversion specifier with its own argument
     const CharType *toparse = format;
-    for (i=0; i < parser.nargs; i++)
+    for (i=0; i < parser.nargs; ++i)
     {
         wxPrintfConvSpec<CharType>& spec = parser.specs[i];
 

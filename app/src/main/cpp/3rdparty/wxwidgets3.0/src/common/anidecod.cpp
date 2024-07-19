@@ -291,7 +291,7 @@ bool wxANIDecoder::Load( wxInputStream& stream )
                 return false;       // rate chunks should always be placed after anih chunk
 
             wxASSERT(m_info.GetCount() == m_nFrames);
-            for (unsigned int i=0; i<m_nFrames; i++)
+            for (unsigned int i=0; i<m_nFrames; ++i)
             {
                 if (!stream.Read(&FCC2, 4))
                     return false;
@@ -305,7 +305,7 @@ bool wxANIDecoder::Load( wxInputStream& stream )
                 return false;       // seq chunks should always be placed after anih chunk
 
             wxASSERT(m_info.GetCount() == m_nFrames);
-            for (unsigned int i=0; i<m_nFrames; i++)
+            for (unsigned int i=0; i<m_nFrames; ++i)
             {
                 if (!stream.Read(&FCC2, 4))
                     return false;
@@ -345,14 +345,14 @@ bool wxANIDecoder::Load( wxInputStream& stream )
     {
         // if no SEQ chunk is available, display the frames in the order
         // they were loaded
-        for (unsigned int i=0; i<m_nFrames; i++)
+        for (unsigned int i=0; i<m_nFrames; ++i)
             if (m_info[i].m_imageIndex == -1)
                 m_info[i].m_imageIndex = i;
     }
 
     // if some frame has an invalid delay, use the global delay given in the
     // ANI header
-    for (unsigned int i=0; i<m_nFrames; i++)
+    for (unsigned int i=0; i<m_nFrames; ++i)
         if (m_info[i].m_delay == 0)
             m_info[i].m_delay = globaldelay;
 

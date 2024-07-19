@@ -618,7 +618,7 @@ void wxPostScriptDCImpl::DoDrawPolygon (int n, const wxPoint points[], wxCoord x
 
         CalcBoundingBox( points[0].x + xoffset, points[0].y + yoffset );
 
-        for (int i = 1; i < n; i++)
+        for (int i = 1; i < n; ++i)
         {
             xx = XLOG2DEV(points[i].x + xoffset);
             yy = YLOG2DEV(points[i].y + yoffset);
@@ -649,7 +649,7 @@ void wxPostScriptDCImpl::DoDrawPolygon (int n, const wxPoint points[], wxCoord x
 
         CalcBoundingBox( points[0].x + xoffset, points[0].y + yoffset );
 
-        for (int i = 1; i < n; i++)
+        for (int i = 1; i < n; ++i)
         {
             xx = XLOG2DEV(points[i].x + xoffset);
             yy = YLOG2DEV(points[i].y + yoffset);
@@ -691,7 +691,7 @@ void wxPostScriptDCImpl::DoDrawPolyPolygon (int n, const int count[], const wxPo
 
             CalcBoundingBox( points[ofs].x + xoffset, points[ofs].y + yoffset );
 
-            for (int j = 1; j < count[i]; j++)
+            for (int j = 1; j < count[i]; ++j)
             {
                 xx = XLOG2DEV(points[ofs+j].x + xoffset);
                 yy = YLOG2DEV(points[ofs+j].y + yoffset);
@@ -725,7 +725,7 @@ void wxPostScriptDCImpl::DoDrawPolyPolygon (int n, const int count[], const wxPo
 
             CalcBoundingBox( points[ofs].x + xoffset, points[ofs].y + yoffset );
 
-            for (int j = 1; j < count[i]; j++)
+            for (int j = 1; j < count[i]; ++j)
             {
                 xx = XLOG2DEV(points[ofs+j].x + xoffset);
                 yy = YLOG2DEV(points[ofs+j].y + yoffset);
@@ -765,7 +765,7 @@ void wxPostScriptDCImpl::DoDrawLines (int n, const wxPoint points[], wxCoord xof
     buffer.Replace( ",", "." );
     PsPrint( buffer );
 
-    for (i = 1; i < n; i++)
+    for (i = 1; i < n; ++i)
     {
         buffer.Printf( "%f %f lineto\n",
                   XLOG2DEV(points[i].x+xoffset),
@@ -1006,12 +1006,12 @@ void wxPostScriptDCImpl::DoDrawBitmap( const wxBitmap& bitmap, wxCoord x, wxCoor
     int firstDigit, secondDigit;
 
     //rows
-    for (int j = 0; j < h; j++)
+    for (int j = 0; j < h; ++j)
     {
         char* bufferindex = charbuffer.data();
 
         //cols
-        for (int i = 0; i < w*3; i++)
+        for (int i = 0; i < w*3; ++i)
         {
             firstDigit = (int)(*data/16.0);
             secondDigit = (int)(*data - (firstDigit*16.0));
@@ -2223,13 +2223,13 @@ void wxPostScriptDCImpl::DoGetTextExtent(const wxString& string,
         {
             wxLogDebug( wxT("GetTextExtent: can't open AFM file '%s'"), afmName.c_str() );
             wxLogDebug( wxT("               using approximate values"));
-            for (int i=0; i<256; i++) lastWidths[i] = 500; /* an approximate value */
+            for (int i=0; i<256; ++i) lastWidths[i] = 500; /* an approximate value */
             lastDescender = -150; /* dito. */
         }
         else
         {
             /* init the widths array */
-            for(int i=0; i<256; i++) lastWidths[i] = INT_MIN;
+            for(int i=0; i<256; ++i) lastWidths[i] = INT_MIN;
             /* some variables for holding parts of a line */
             char cString[10], semiString[10], WXString[10];
             char descString[20];

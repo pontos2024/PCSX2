@@ -209,7 +209,7 @@ namespace usb_mic
 			gtk_container_add(GTK_CONTAINER(ro_frame), frame_vbox);
 
 			const char* labels[] = {"Source 1", "Source 2", "Sink 1", "Sink 2"};
-			for (int i = 0; i < 2; i++)
+			for (int i = 0; i < 2; ++i)
 			{
 				std::string devName;
 				LoadSetting(dev_type, port, APINAME, (i ? N_AUDIO_SOURCE1 : N_AUDIO_SOURCE0), devName);
@@ -220,7 +220,7 @@ namespace usb_mic
 			}
 
 			//TODO only one for now
-			for (int i = 2; i < 3 /*4*/; i++)
+			for (int i = 2; i < 3 /*4*/; ++i)
 			{
 				std::string devName;
 				LoadSetting(dev_type, port, APINAME, (i - 2 ? N_AUDIO_SINK1 : N_AUDIO_SINK0), devName);
@@ -245,7 +245,7 @@ namespace usb_mic
 			gtk_table_set_homogeneous(GTK_TABLE(table), FALSE);
 			GtkAttachOptions opt = (GtkAttachOptions)(GTK_EXPAND | GTK_FILL); // default
 
-			for (int i = 0; i < 2; i++)
+			for (int i = 0; i < 2; ++i)
 			{
 				GtkWidget* label = gtk_label_new(labels_buff[i]);
 				gtk_table_attach(GTK_TABLE(table), label,
@@ -271,7 +271,7 @@ namespace usb_mic
 			gint result = gtk_dialog_run(GTK_DIALOG(dlg));
 
 			int scale_vals[2];
-			for (int i = 0; i < 2; i++)
+			for (int i = 0; i < 2; ++i)
 			{
 				scale_vals[i] = gtk_range_get_value(GTK_RANGE(scales[i]));
 			}
@@ -286,7 +286,7 @@ namespace usb_mic
 			if (result == GTK_RESPONSE_OK)
 			{
 				ret = RESULT_OK;
-				for (int i = 0; i < 2; i++)
+				for (int i = 0; i < 2; ++i)
 				{
 					int idx = dev_idxs[i];
 					{

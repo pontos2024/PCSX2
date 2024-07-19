@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
 			break;
 
 		/* Scan for signature. */
-		for (i = 0; i<BUFSIZE-23; i++) {
+		for (i = 0; i<BUFSIZE-23; ++i) {
 			if (find_lzma_header(buf+i) && numlzma-- <= 0) {
 				fwrite(buf+i, (BUFSIZE-i), 1, stdout);
 				for (;;) {

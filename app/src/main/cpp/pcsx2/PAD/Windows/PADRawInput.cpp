@@ -195,7 +195,7 @@ ExtraWndProcResult RawInputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			unsigned int size = sizeof(RAWINPUT);
 			if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, &in, &size, sizeof(RAWINPUTHEADER)) > 0)
 			{
-				for (int i = 0; i < dm->numDevices; i++)
+				for (int i = 0; i < dm->numDevices; ++i)
 				{
 					Device* dev = dm->devices[i];
 					if (dev->api != RAW || !dev->active)
@@ -252,7 +252,7 @@ ExtraWndProcResult RawInputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 	}
 	else if (uMsg == WM_ACTIVATE)
 	{
-		for (int i = 0; i < dm->numDevices; i++)
+		for (int i = 0; i < dm->numDevices; ++i)
 		{
 			Device* dev = dm->devices[i];
 			if (dev->api != RAW || dev->physicalControlState == 0)
@@ -287,7 +287,7 @@ void EnumRawInputDevices()
 		// Not necessary, but reminder that count is -1 on failure.
 		if (count > 0)
 		{
-			for (int i = 0; i < count; i++)
+			for (int i = 0; i < count; ++i)
 			{
 				if (list[i].dwType != RIM_TYPEKEYBOARD && list[i].dwType != RIM_TYPEMOUSE)
 					continue;
@@ -303,7 +303,7 @@ void EnumRawInputDevices()
 					// and reformat it to point to registry entry containing device description.
 					wcscpy(productID, instanceID);
 					wchar_t* temp = 0;
-					for (int j = 0; j < 3; j++)
+					for (int j = 0; j < 3; ++j)
 					{
 						wchar_t* s = wcschr(productID, '#');
 						if (!s)

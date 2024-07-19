@@ -56,7 +56,7 @@ GTEST_API_ std::string JoinAsTuple(const Strings& fields) {
       return fields[0];
     default:
       std::string result = "(" + fields[0];
-      for (size_t i = 1; i < fields.size(); i++) {
+      for (size_t i = 1; i < fields.size(); ++i) {
         result += ", ";
         result += fields[i];
       }

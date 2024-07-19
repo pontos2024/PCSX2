@@ -435,7 +435,7 @@ namespace usb_mic
 
 		//cs 1 cn 0xFF, ep 0x81 attrib 1
 		Console.Warning("singstar: ep control cs %x, cn %X, %X %X data:", cs, cn, attrib, ep);
-		/*for(int i=0; i<length; i++)
+		/*for(int i=0; i<length; ++i)
 		Console.Warning("%02X ", data[i]);
 	Console.Warning("\n");*/
 
@@ -603,7 +603,7 @@ namespace usb_mic
 
 					memset(dst, 0, len);
 
-					for (int i = 0; i < 2; i++)
+					for (int i = 0; i < 2; ++i)
 					{
 						frames = max_frames;
 						if (s->audsrc[i] &&
@@ -634,7 +634,7 @@ namespace usb_mic
 							frames = out_frames[k];
 
 							uint32_t i = 0;
-							for (; i < frames && i < max_frames; i++)
+							for (; i < frames && i < max_frames; ++i)
 							{
 								dst[i * outChns + off] = SetVolume(s->buffer[k][i * chn], s->f.vol[0]);
 								//dst[i * 2 + 1] = 0;
@@ -650,7 +650,7 @@ namespace usb_mic
 							src1 = s->buffer[0].data();
 
 							uint32_t i = 0;
-							for (; i < frames && i < max_frames; i++)
+							for (; i < frames && i < max_frames; ++i)
 							{
 								dst[i * outChns] = SetVolume(src1[i * chn], s->f.vol[0]);
 								if (outChns > 1)
@@ -675,7 +675,7 @@ namespace usb_mic
 							src2 = s->buffer[1].data();
 
 							uint32_t i = 0;
-							for (; i < minLen && i < max_frames; i++)
+							for (; i < minLen && i < max_frames; ++i)
 							{
 								dst[i * outChns] = SetVolume(src1[i * cn1], s->f.vol[0]);
 								if (outChns > 1)
@@ -728,7 +728,7 @@ namespace usb_mic
 
 		if (!s)
 			return;
-		for (int i = 0; i < 2; i++)
+		for (int i = 0; i < 2; ++i)
 		{
 			if (s->audsrc[i])
 			{
@@ -747,7 +747,7 @@ namespace usb_mic
 		SINGSTARMICState* s = (SINGSTARMICState*)dev;
 		if (s)
 		{
-			for (int i = 0; i < 2; i++)
+			for (int i = 0; i < 2; ++i)
 				if (s->audsrc[i])
 					s->audsrc[i]->Start();
 		}
@@ -759,7 +759,7 @@ namespace usb_mic
 		SINGSTARMICState* s = (SINGSTARMICState*)dev;
 		if (s)
 		{
-			for (int i = 0; i < 2; i++)
+			for (int i = 0; i < 2; ++i)
 				if (s->audsrc[i])
 					s->audsrc[i]->Stop();
 		}
@@ -814,7 +814,7 @@ namespace usb_mic
 		else
 			s->f.mode = MIC_MODE_SEPARATE;
 
-		for (int i = 0; i < 2; i++)
+		for (int i = 0; i < 2; ++i)
 			if (s->audsrc[i])
 				s->buffer[i].resize(BUFFER_FRAMES * s->audsrc[i]->GetChannels());
 

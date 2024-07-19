@@ -275,7 +275,7 @@ void Threading::pxThread::Start()
 	const int create_result = pthread_create(&m_thread, has_attributes ? &attrs : NULL, _internal_callback, this);
 	if (has_attributes)
 		pthread_attr_destroy(&attrs);
-	
+
 	if (create_result != 0)
 		throw Exception::ThreadCreationError(this).SetDiagMsg(L"Thread creation error: " + wxString(std::strerror(errno)));
 

@@ -17,6 +17,11 @@
 #include "common/Pcsx2Defs.h"
 #include "common/StringHelpers.h"
 
+__fi wxString fromUTF8(const std::string& str)
+{
+    return wxString(str.data(), wxMBConvUTF8(), str.size());
+}
+
 __fi wxString fromUTF8(const char* src)
 {
 	// IMPORTANT:  We cannot use wxString::FromUTF8 because it *stupidly* relies on a C++ global instance of

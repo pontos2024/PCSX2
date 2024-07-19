@@ -41,7 +41,7 @@ static void ConvertUInt64ToHex(UInt64 val, char *s)
 {
   UInt64 v = val;
   unsigned i;
-  for (i = 1;; i++)
+  for (i = 1;; ++i)
   {
     v >>= 4;
     if (v == 0)

@@ -1208,7 +1208,7 @@ protected:
 
     void FillArrayWithIid(_Inout_ unsigned long *index, _Inout_ IID* iids) throw()
     {
-        for(unsigned long i = 0; i < iidCount_; i++)
+        for(unsigned long i = 0; i < iidCount_; ++i)
         {
             *(iids + *index) = *(iidsCached_ + i);
             (*index)++;

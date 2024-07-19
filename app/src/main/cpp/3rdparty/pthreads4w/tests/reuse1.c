@@ -104,7 +104,7 @@ main()
   assert(washere == 1);
   last_t = t;
 
-  for (i = 1; i < NUMTHREADS; i++)
+  for (i = 1; i < NUMTHREADS; ++i)
     {
       washere = 0;
       assert(pthread_create(&t, &attr, func, (void *)(size_t)i) == 0);

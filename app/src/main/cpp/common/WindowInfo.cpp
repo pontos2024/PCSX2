@@ -165,7 +165,7 @@ static bool GetRefreshRateFromXRandR(const WindowInfo& wi, float* refresh_rate)
 	ScopedGuard ci_guard([ci]() { XRRFreeCrtcInfo(ci); });
 
 	XRRModeInfo* mode = nullptr;
-	for (int i = 0; i < res->nmode; i++)
+	for (int i = 0; i < res->nmode; ++i)
 	{
 		if (res->modes[i].id == ci->mode)
 		{

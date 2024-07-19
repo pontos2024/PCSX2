@@ -81,7 +81,9 @@ void ATA::Close()
 	//verify queue
 	if (!writeQueue.IsQueueEmpty())
 	{
+#ifdef PCSX2_DEBUG
 		Console.Error("DEV9: ATA: Write queue not empty, possible data loss");
+#endif
 		pxAssert(false);
 		abort(); //All data must be written at this point
 	}
@@ -194,7 +196,9 @@ u16 ATA::Read16(u32 addr)
 				return 0;
 			return regStatus;
 		default:
+#ifdef PCSX2_DEBUG
 			Console.Error("DEV9: ATA: Unknown 16bit read at address %x", addr);
+#endif
 			return 0xff;
 	}
 }
@@ -203,7 +207,9 @@ void ATA::Write16(u32 addr, u16 value)
 {
 	if (addr != ATA_R_CMD && (regStatus & (ATA_STAT_BUSY | ATA_STAT_DRQ)) != 0)
 	{
+#ifdef PCSX2_DEBUG
 		Console.Error("DEV9: ATA: DEVICE BUSY, DROPPING WRITE");
+#endif
 		return;
 	}
 	switch (addr)
@@ -258,7 +264,9 @@ void ATA::Write16(u32 addr, u16 value)
 
 			if ((value & 0x4) != 0)
 			{
+#ifdef PCSX2_DEBUG
 				DevCon.WriteLn("DEV9: *ATA_R_CONTROL RESET");
+#endif
 				ResetBegin();
 				ResetEnd(false);
 			}
@@ -274,7 +282,9 @@ void ATA::Write16(u32 addr, u16 value)
 			IDE_ExecCmd(value);
 			break;
 		default:
+#ifdef PCSX2_DEBUG
 			Console.Error("DEV9: ATA: UNKNOWN 16bit write at address %x, value %x", addr, value);
+#endif
 			break;
 	}
 }
@@ -345,8 +355,9 @@ s64 ATA::HDD_GetLBA()
 	{
 		regStatus |= (u8)ATA_STAT_ERR;
 		regError |= (u8)ATA_ERR_ABORT;
-
+#ifdef PCSX2_DEBUG
 		Console.Error("DEV9: ATA: Tried to get LBA address while LBA mode disabled");
+#endif
 		//(c.Nh + h).Ns+(s-1)
 		//s64 CHSasLBA = ((regLcyl + (regHcyl << 8)) * curHeads + (regSelect & 0x0F)) * curSectors + (regSector - 1);
 		return -1;
@@ -378,8 +389,9 @@ void ATA::HDD_SetLBA(s64 sectorNum)
 	{
 		regStatus |= ATA_STAT_ERR;
 		regError |= ATA_ERR_ABORT;
-
+#ifdef PCSX2_DEBUG
 		Console.Error("DEV9: ATA: Tried to set LBA address while LBA mode disabled");
+#endif
 	}
 }
 

@@ -675,7 +675,7 @@ using ::testing::Return;
 {
   InSequence s;
 
-  for (int i = 1; i <= n; i++) {
+  for (int i = 1; i <= n; ++i) {
     EXPECT_CALL(turtle, GetX())
         .WillOnce(Return(10*i))
         .RetiresOnSaturation();

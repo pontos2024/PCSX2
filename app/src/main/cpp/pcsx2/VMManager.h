@@ -30,7 +30,7 @@ enum class CDVD_SourceType : uint8_t;
 enum class VMState
 {
 	Shutdown,
-	Starting,
+    Initializing,
 	Running,
 	Paused,
 	Stopping,
@@ -105,6 +105,8 @@ namespace VMManager
 
 	/// Returns the save state filename for the given game serial/crc.
 	std::string GetSaveStateFileName(const char* game_serial, u32 game_crc, s32 slot);
+
+    std::string GetSaveStateFileNameSerial(const char* game_serial, u32 game_crc, s32 slot);
 
 	/// Returns true if there is a save state in the specified slot.
 	bool HasSaveStateInSlot(const char* game_serial, u32 game_crc, s32 slot);

@@ -40,7 +40,7 @@ namespace GLLoader
 	extern bool in_replayer;
 
 	// GL
-  extern bool is_gles;
+    extern bool is_gles;
 	extern bool has_dual_source_blend;
 	extern bool has_clip_control;
 	extern bool found_framebuffer_fetch;

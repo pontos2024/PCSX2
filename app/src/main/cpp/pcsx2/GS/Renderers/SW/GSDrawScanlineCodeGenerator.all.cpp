@@ -55,7 +55,7 @@ static void DumpPix(CodeGenerator& cg, const Xmm& x)
 
 	cg.sub(cg.rsp, 16 * 16);
 
-	for (u32 i = 0; i < 16; i++)
+	for (u32 i = 0; i < 16; ++i)
 	{
 		cg.movups(cg.xword[cg.rsp + i * 16], Xmm(i));
 	}
@@ -69,7 +69,7 @@ static void DumpPix(CodeGenerator& cg, const Xmm& x)
 	cg.call(cg.rax);
 	cg.add(cg.rsp, 40);
 
-	for (u32 i = 0; i < 16; i++)
+	for (u32 i = 0; i < 16; ++i)
 	{
 		cg.movups(Xmm(i), cg.xword[cg.rsp + i * 16]);
 	}
@@ -448,7 +448,7 @@ void GSDrawScanlineCodeGenerator2::Generate()
 
 		sub(rsp, _64_win_stack_size);
 
-		for (int i = 0; i < 10; i++)
+		for (int i = 0; i < 10; ++i)
 		{
 			movdqa(ptr[rsp + _64_win_xmm_start + 16 * i], Xmm(i + 6));
 		}
@@ -704,7 +704,7 @@ L("exit");
 	else
 	{
 #ifdef _WIN32
-		for (int i = 0; i < 10; i++)
+		for (int i = 0; i < 10; ++i)
 		{
 			movdqa(Xmm(i + 6), ptr[rsp + _64_win_xmm_start + 16 * i]);
 		}
@@ -3457,7 +3457,7 @@ void GSDrawScanlineCodeGenerator2::ReadTexelImplYmm(
 		texInRBX = true;
 	}
 
-	for (int i = 0; i < pixels; i++)
+	for (int i = 0; i < pixels; ++i)
 	{
 		const Xmm xdst{dst[i].getIdx()};
 		const Xmm xsrc{src[i].getIdx()};
@@ -3470,7 +3470,7 @@ void GSDrawScanlineCodeGenerator2::ReadTexelImplYmm(
 
 			vextracti128(xt1, src[i], 1);
 
-			for (int j = 0; j < 4; j++)
+			for (int j = 0; j < 4; ++j)
 			{
 				ReadTexelImplLoadTexLOD(j, mip_offset);
 
@@ -3495,7 +3495,7 @@ void GSDrawScanlineCodeGenerator2::ReadTexelImplYmm(
 			{
 				vextracti128(xt1, src[i], 1);
 
-				for (int j = 0; j < 4; j++)
+				for (int j = 0; j < 4; ++j)
 				{
 					ReadTexelImpl(xdst, xsrc, j, texInRBX, false);
 					ReadTexelImpl(xt2, xt1, j, texInRBX, false);
@@ -3529,11 +3529,11 @@ void GSDrawScanlineCodeGenerator2::ReadTexelImplSSE4(
 	if (use_lod && !m_sel.lcm)
 	{
 		bool texInRBX = true;
-		for (int j = 0; j < 4; j++)
+		for (int j = 0; j < 4; ++j)
 		{
 			ReadTexelImplLoadTexLOD(j, mip_offset);
 
-			for (int i = 0; i < pixels; i++)
+			for (int i = 0; i < pixels; ++i)
 			{
 				ReadTexelImpl(dst[i], src[i], j, texInRBX, preserve[i]);
 			}
@@ -3550,9 +3550,9 @@ void GSDrawScanlineCodeGenerator2::ReadTexelImplSSE4(
 			texInRBX = true;
 		}
 
-		for (int i = 0; i < pixels; i++)
+		for (int i = 0; i < pixels; ++i)
 		{
-			for (int j = 0; j < 4; j++)
+			for (int j = 0; j < 4; ++j)
 			{
 				ReadTexelImpl(dst[i], src[i], j, texInRBX, preserve);
 			}

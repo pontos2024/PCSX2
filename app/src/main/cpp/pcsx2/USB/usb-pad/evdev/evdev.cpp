@@ -190,7 +190,7 @@ namespace usb_pad
 			struct input_absinfo absinfo;
 
 			/* Poll all axis */
-			for (int i = ABS_X; i < ABS_MAX; i++)
+			for (int i = ABS_X; i < ABS_MAX; ++i)
 			{
 				absinfo = {};
 
@@ -287,7 +287,7 @@ namespace usb_pad
 				while ((len = read(device.cfg.fd, &events, sizeof(events))) > -1)
 				{
 					len /= sizeof(events[0]);
-					for (int i = 0; i < len; i++)
+					for (int i = 0; i < len; ++i)
 					{
 						input_event& event = events[i];
 						switch (event.type)

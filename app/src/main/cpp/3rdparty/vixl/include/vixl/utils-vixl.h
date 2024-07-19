@@ -475,7 +475,7 @@ T ReverseBits(T value) {
   VIXL_ASSERT((sizeof(value) == 1) || (sizeof(value) == 2) ||
               (sizeof(value) == 4) || (sizeof(value) == 8));
   T result = 0;
-  for (unsigned i = 0; i < (sizeof(value) * 8); i++) {
+  for (unsigned i = 0; i < (sizeof(value) * 8); ++i) {
     result = (result << 1) | (value & 1);
     value >>= 1;
   }
@@ -516,7 +516,7 @@ T ReverseBytes(T value, int block_bytes_log2) {
                                               {4, 5, 6, 7, 0, 1, 2, 3},
                                               {0, 1, 2, 3, 4, 5, 6, 7}};
   uint64_t temp = 0;
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0; i < 8; ++i) {
     temp <<= 8;
     temp |= bytes[permute_table[block_bytes_log2 - 1][i]];
   }
@@ -735,7 +735,7 @@ class BitField {
   // check_set will check if the bits are on (true) or off(false)
   template <typename ForEachBitHelper, bool check_set>
   bool ForEachBit(const ForEachBitHelper& helper) {
-    for (int i = 0; static_cast<size_t>(i) < bitfield_.size(); i++) {
+    for (int i = 0; static_cast<size_t>(i) < bitfield_.size(); ++i) {
       if (bitfield_[i] == check_set)
         if (!helper.execute(i)) return false;
     }

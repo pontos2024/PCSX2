@@ -45,7 +45,7 @@ int32_t SinkI32::read(void *data, int32_t numFrames) {
         intData += numSamples;
         signal += numSamples;
 #else
-        for (int i = 0; i < numSamples; i++) {
+        for (int i = 0; i < numSamples; ++i) {
             *intData++ = FlowgraphUtilities::clamp32FromFloat(*signal++);
         }
 #endif

@@ -43,7 +43,7 @@ namespace usb_pad
 				return false;
 
 			cfg.controls.resize(max_buttons + max_axes);
-			for (u32 i = 0; i < max_buttons + max_axes; i++)
+			for (u32 i = 0; i < max_buttons + max_axes; ++i)
 			{
 				str.clear();
 				str.str("");
@@ -73,7 +73,7 @@ namespace usb_pad
 					cfg.controls[i] = -1;
 			}
 
-			for (int i = 0; i < 3; i++)
+			for (int i = 0; i < 3; ++i)
 			{
 				str.clear();
 				str.str("");
@@ -116,7 +116,7 @@ namespace usb_pad
 			const bool use_control_names = !strcmp(dev_type, PadDevice::TypeName());
 			bool has_axes = false;
 
-			for (u32 i = 0; i < max_buttons + max_axes; i++)
+			for (u32 i = 0; i < max_buttons + max_axes; ++i)
 			{
 				str.clear();
 				str.str("");
@@ -148,7 +148,7 @@ namespace usb_pad
 				}
 			}
 
-			for (u32 i = 0; i < 3 && has_axes; i++)
+			for (u32 i = 0; i < 3 && has_axes; ++i)
 			{
 				str.clear();
 				str.str("");
@@ -216,7 +216,7 @@ namespace usb_pad
 			std::stringstream str;
 
 			const size_t c = countof(buzz_map_names);
-			for (size_t i = 0; i < cfg.controls.size(); i++)
+			for (size_t i = 0; i < cfg.controls.size(); ++i)
 			{
 				str.str("");
 				str.clear();
@@ -236,7 +236,7 @@ namespace usb_pad
 			gtk_list_store_clear(cfg->store);
 			for (auto& it : cfg->jsconf)
 			{
-				for (size_t i = 0; i < it.second.controls.size(); i++)
+				for (size_t i = 0; i < it.second.controls.size(); ++i)
 				{
 					if (it.second.controls[i] < 0)
 						continue;
@@ -596,7 +596,7 @@ namespace usb_pad
 					{3, 2, JOY_START},
 				};
 
-				for (int i = 0; i < (int)countof(button_labels); i++)
+				for (int i = 0; i < (int)countof(button_labels); ++i)
 				{
 					GtkWidget* button = gtk_button_new_with_label(button_labels[i]);
 					g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), reinterpret_cast<gpointer>(port));
@@ -649,7 +649,7 @@ namespace usb_pad
 			gtk_table_set_homogeneous(GTK_TABLE(table), FALSE);
 			GtkAttachOptions opt = (GtkAttachOptions)(GTK_EXPAND | GTK_FILL); // default
 
-			for (int i = 0; i < 2; i++)
+			for (int i = 0; i < 2; ++i)
 			{
 				if (LoadSetting(dev_type, port, apiname, ff_var_name[i][0], ff_enabled[i]))
 					ff_enabled[i] = !!ff_enabled[i];
@@ -748,7 +748,7 @@ namespace usb_pad
 				{
 					SaveSetting(dev_type, port, apiname, N_HIDRAW_FF_PT, cfg.use_hidraw_ff_pt);
 				}
-				for (int i = 0; i < 2; i++)
+				for (int i = 0; i < 2; ++i)
 				{
 					SaveSetting(dev_type, port, apiname, ff_var_name[i][0], ff_enabled[i]);
 					int val = gtk_range_get_value(GTK_RANGE(ff_scales[i]));
@@ -770,7 +770,7 @@ namespace usb_pad
 			GdkPixbuf* pixbuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, 24, 24);
 			guchar* data = gdk_pixbuf_get_pixels(pixbuf);
 
-			for (size_t i = 0; i < 24 * 24; i++)
+			for (size_t i = 0; i < 24 * 24; ++i)
 			{
 				data[i * 4 + 0] = rgb & 0xFF;
 				data[i * 4 + 1] = (rgb >> 8) & 0xFF;
@@ -869,9 +869,9 @@ namespace usb_pad
 					0x00FFFF,
 				};
 
-				for (int j = 0; j < 4; j++)
+				for (int j = 0; j < 4; ++j)
 				{
-					for (int i = 0; i < (int)countof(button_labels); i++)
+					for (int i = 0; i < (int)countof(button_labels); ++i)
 					{
 						GtkWidget* button = gtk_button_new_with_label(button_labels[i]);
 

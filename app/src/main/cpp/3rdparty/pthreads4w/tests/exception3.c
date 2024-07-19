@@ -154,7 +154,7 @@ main()
   assert(pthread_mutex_init(&caughtLock, &ma) == 0);
   assert(pthread_mutexattr_destroy(&ma) == 0);
 
-  for (i = 0; i < NUMTHREADS; i++)
+  for (i = 0; i < NUMTHREADS; ++i)
     {
       assert(pthread_create(&et[i], NULL, exceptionedThread, NULL) == 0);
     }

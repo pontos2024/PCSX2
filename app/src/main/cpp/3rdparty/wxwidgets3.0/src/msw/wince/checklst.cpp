@@ -203,7 +203,7 @@ unsigned int wxCheckListBox::GetCount() const
 int wxCheckListBox::GetSelection() const
 {
     int i;
-    for (i = 0; (unsigned int)i < GetCount(); i++)
+    for (i = 0; (unsigned int)i < GetCount(); ++i)
     {
         int selState = ListView_GetItemState(GetHwnd(), i, LVIS_SELECTED);
         if (selState == LVIS_SELECTED)
@@ -216,7 +216,7 @@ int wxCheckListBox::GetSelection() const
 int wxCheckListBox::GetSelections(wxArrayInt& aSelections) const
 {
     int i;
-    for (i = 0; (unsigned int)i < GetCount(); i++)
+    for (i = 0; (unsigned int)i < GetCount(); ++i)
     {
         int selState = ListView_GetItemState(GetHwnd(), i, LVIS_SELECTED);
         if (selState == LVIS_SELECTED)

@@ -1719,7 +1719,7 @@ wxDocTemplate *wxDocManager::FindTemplateForPath(const wxString& path)
     wxDocTemplate *theTemplate = NULL;
 
     // Find the template which this extension corresponds to
-    for (size_t i = 0; i < m_templates.GetCount(); i++)
+    for (size_t i = 0; i < m_templates.GetCount(); ++i)
     {
         wxDocTemplate *temp = (wxDocTemplate *)m_templates.Item(i)->GetData();
         if ( temp->FileMatchesTemplate(path) )
@@ -1744,7 +1744,7 @@ wxDocTemplate *wxDocManager::SelectDocumentPath(wxDocTemplate **templates,
 #ifdef wxHAS_MULTIPLE_FILEDLG_FILTERS
     wxString descrBuf;
 
-    for (int i = 0; i < noTemplates; i++)
+    for (int i = 0; i < noTemplates; ++i)
     {
         if (templates[i]->IsVisible())
         {
@@ -1826,13 +1826,13 @@ wxDocTemplate *wxDocManager::SelectDocumentType(wxDocTemplate **templates,
     int i;
     int n = 0;
 
-    for (i = 0; i < noTemplates; i++)
+    for (i = 0; i < noTemplates; ++i)
     {
         if (templates[i]->IsVisible())
         {
             int j;
             bool want = true;
-            for (j = 0; j < n; j++)
+            for (j = 0; j < n; ++j)
             {
                 //filter out NOT unique documents + view combinations
                 if ( templates[i]->m_docTypeName == data[j]->m_docTypeName &&
@@ -1858,9 +1858,9 @@ wxDocTemplate *wxDocManager::SelectDocumentType(wxDocTemplate **templates,
         // are typically short.
         int j;
         n = strings.Count();
-        for (i = 0; i < n; i++)
+        for (i = 0; i < n; ++i)
         {
-            for (j = 0; j < noTemplates; j++)
+            for (j = 0; j < noTemplates; ++j)
             {
                 if (strings[i] == templates[j]->m_description)
                     data[i] = templates[j];
@@ -1904,14 +1904,14 @@ wxDocTemplate *wxDocManager::SelectViewType(wxDocTemplate **templates,
     int i;
     int n = 0;
 
-    for (i = 0; i < noTemplates; i++)
+    for (i = 0; i < noTemplates; ++i)
     {
         wxDocTemplate *templ = templates[i];
         if ( templ->IsVisible() && !templ->GetViewName().empty() )
         {
             int j;
             bool want = true;
-            for (j = 0; j < n; j++)
+            for (j = 0; j < n; ++j)
             {
                 //filter out NOT unique views
                 if ( templates[i]->m_viewTypeName == data[j]->m_viewTypeName )
@@ -1934,9 +1934,9 @@ wxDocTemplate *wxDocManager::SelectViewType(wxDocTemplate **templates,
         // are typically short.
         int j;
         n = strings.Count();
-        for (i = 0; i < n; i++)
+        for (i = 0; i < n; ++i)
         {
-            for (j = 0; j < noTemplates; j++)
+            for (j = 0; j < noTemplates; ++j)
             {
                 if (strings[i] == templates[j]->m_viewTypeName)
                     data[i] = templates[j];

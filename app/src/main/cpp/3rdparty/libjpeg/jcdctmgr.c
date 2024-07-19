@@ -86,7 +86,7 @@ forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
       register int i;
       register JCOEFPTR output_ptr = coef_blocks[bi];
 
-      for (i = 0; i < DCTSIZE2; i++) {
+      for (i = 0; i < DCTSIZE2; ++i) {
 	qval = divisors[i];
 	temp = workspace[i];
 	/* Divide the coefficient value by qval, ensuring proper rounding.
@@ -149,7 +149,7 @@ forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
       register int i;
       register JCOEFPTR output_ptr = coef_blocks[bi];
 
-      for (i = 0; i < DCTSIZE2; i++) {
+      for (i = 0; i < DCTSIZE2; ++i) {
 	/* Apply the quantization and scaling factor */
 	temp = workspace[i] * divisors[i];
 	/* Round to nearest integer.
@@ -366,7 +366,7 @@ start_pass_fdctmgr (j_compress_ptr cinfo)
 				      DCTSIZE2 * SIZEOF(DCTELEM));
       }
       dtbl = fdct->divisors[qtblno];
-      for (i = 0; i < DCTSIZE2; i++) {
+      for (i = 0; i < DCTSIZE2; ++i) {
 	dtbl[i] = ((DCTELEM) qtbl->quantval[i]) << 3;
       }
       fdct->pub.forward_DCT[ci] = forward_DCT;
@@ -401,7 +401,7 @@ start_pass_fdctmgr (j_compress_ptr cinfo)
 					DCTSIZE2 * SIZEOF(DCTELEM));
 	}
 	dtbl = fdct->divisors[qtblno];
-	for (i = 0; i < DCTSIZE2; i++) {
+	for (i = 0; i < DCTSIZE2; ++i) {
 	  dtbl[i] = (DCTELEM)
 	    DESCALE(MULTIPLY16V16((INT32) qtbl->quantval[i],
 				  (INT32) aanscales[i]),
@@ -473,7 +473,7 @@ jinit_forward_dct (j_compress_ptr cinfo)
   fdct->pub.start_pass = start_pass_fdctmgr;
 
   /* Mark divisor tables unallocated */
-  for (i = 0; i < NUM_QUANT_TBLS; i++) {
+  for (i = 0; i < NUM_QUANT_TBLS; ++i) {
     fdct->divisors[i] = NULL;
 #ifdef DCT_FLOAT_SUPPORTED
     fdct->float_divisors[i] = NULL;

@@ -117,7 +117,9 @@ __fi tDMA_TAG* SPRdmaGetAddr(u32 addr, bool write)
 	{
 		if (addr >= 0x11008000 && THREAD_VU1)
 		{
+#ifdef PCSX2_DEBUG
 			DevCon.Warning("MTVU: SPR Accessing VU1 Memory");
+#endif
 			vu1Thread.WaitVU();
 		}
 		
@@ -273,7 +275,9 @@ static __ri void DmaExec( void (*func)(), u32 mem, u32 value )
 		static bool warned; //Check if the warning has already been output to console, to prevent constant spam.
 		if (!warned)
 		{
+#ifdef PCSX2_DEBUG
 			DevCon.Warning(L"%s CHCR.MOD set to 3, assuming 1 (chain)", ChcrName(mem));
+#endif
 			warned = true;
 		}
 		reg.chcr.MOD = 0x1;
@@ -327,7 +331,9 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 	{
 		if ((psHu32(mem & ~0xff) & 0x100) && dmacRegs.ctrl.DMAE && !psHu8(DMAC_ENABLER + 2))
 		{
+#ifdef PCSX2_DEBUG
 			DevCon.Warning("Gamefix: Write to DMA addr %x while STR is busy!", mem);
+#endif
 			while (psHu32(mem & ~0xff) & 0x100)
 			{
 				switch ((mem >> 8) & 0xFF)
@@ -366,7 +372,9 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 	iswitch(mem) {
 		icase(D0_CHCR) // dma0 - vif0
 		{
+#ifdef PCSX2_DEBUG
 			DMA_LOG("VIF0dma EXECUTE, value=0x%x", value);
+#endif
 			DmaExec(dmaVIF0, mem, value);
 			return false;
 		}
@@ -379,7 +387,9 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 
 		icase(D1_CHCR) // dma1 - vif1 - chcr
 		{
+#ifdef PCSX2_DEBUG
 			DMA_LOG("VIF1dma EXECUTE, value=0x%x", value);
+#endif
 			DmaExec(dmaVIF1, mem, value);
 			return false;
 		}
@@ -392,7 +402,9 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 
 		icase(D2_CHCR) // dma2 - gif
 		{
+#ifdef PCSX2_DEBUG
 			DMA_LOG("GIFdma EXECUTE, value=0x%x", value);
+#endif
 			DmaExec(dmaGIF, mem, value);
 			return false;
 		}
@@ -405,7 +417,9 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 
 		icase(D3_CHCR) // dma3 - fromIPU
 		{
+#ifdef PCSX2_DEBUG
 			DMA_LOG("IPU0dma EXECUTE, value=0x%x\n", value);
+#endif
 			DmaExec(dmaIPU0, mem, value);
 			return false;
 		}
@@ -418,7 +432,9 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 
 		icase(D4_CHCR) // dma4 - toIPU
 		{
+#ifdef PCSX2_DEBUG
 			DMA_LOG("IPU1dma EXECUTE, value=0x%x\n", value);
+#endif
 			DmaExec(dmaIPU1, mem, value);
 			return false;
 		}
@@ -431,7 +447,9 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 
 		icase(D5_CHCR) // dma5 - sif0
 		{
+#ifdef PCSX2_DEBUG
 			DMA_LOG("SIF0dma EXECUTE, value=0x%x", value);
+#endif
 			DmaExec(dmaSIF0, mem, value);
 			return false;
 		}
@@ -444,7 +462,9 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 
 		icase(D6_CHCR) // dma6 - sif1
 		{
+#ifdef PCSX2_DEBUG
 			DMA_LOG("SIF1dma EXECUTE, value=0x%x", value);
+#endif
 			DmaExec(dmaSIF1, mem, value);
 			return false;
 		}
@@ -457,7 +477,9 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 
 		icase(D7_CHCR) // dma7 - sif2
 		{
+#ifdef PCSX2_DEBUG
 			DMA_LOG("SIF2dma EXECUTE, value=0x%x", value);
+#endif
 			DmaExec(dmaSIF2, mem, value);
 			return false;
 		}
@@ -470,7 +492,9 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 
 		icase(D8_CHCR) // dma8 - fromSPR
 		{
+#ifdef PCSX2_DEBUG
 			DMA_LOG("SPR0dma EXECUTE (fromSPR), value=0x%x", value);
+#endif
 			DmaExec(dmaSPR0, mem, value);
 			return false;
 		}
@@ -511,7 +535,9 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 
 		icase(D9_CHCR) // dma9 - toSPR
 		{
+#ifdef PCSX2_DEBUG
 			DMA_LOG("SPR1dma EXECUTE (toSPR), value=0x%x", value);
+#endif
 			DmaExec(dmaSPR1, mem, value);
 			return false;
 		}
@@ -525,9 +551,9 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 		icase(DMAC_CTRL)
 		{
 			u32 oldvalue = psHu32(mem);
-
+#ifdef PCSX2_DEBUG
 			HW_LOG("DMAC_CTRL Write 32bit %x", value);
-
+#endif
 			psHu32(mem) = value;
 			//Check for DMAS that were started while the DMAC was disabled
 			if (((oldvalue & 0x1) == 0) && ((value & 0x1) == 1))
@@ -585,9 +611,10 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 		//Which causes a CPCOND0 to fail.
 		icase(DMAC_FAKESTAT)
 		{
+#ifdef PCSX2_DEBUG
 			//DevCon.Warning("Midway fixup addr=%x writing %x for DMA_STAT", mem, value);
 			HW_LOG("Midways own DMAC_STAT Write 32bit %x", value);
-
+#endif
 			// lower 16 bits: clear on 1
 			// upper 16 bits: reverse on 1
 
@@ -600,8 +627,9 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 
 		icase(DMAC_STAT)
 		{
+#ifdef PCSX2_DEBUG
 			HW_LOG("DMAC_STAT Write 32bit %x", value);
-
+#endif
 			// lower 16 bits: clear on 1
 			// upper 16 bits: reverse on 1
 
@@ -614,7 +642,9 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 
 		icase(DMAC_ENABLEW)
 		{
+#ifdef PCSX2_DEBUG
 			HW_LOG("DMAC_ENABLEW Write 32bit %lx", value);
+#endif
 			oldvalue = psHu8(DMAC_ENABLEW + 2);
 			psHu32(DMAC_ENABLEW) = value;
 			psHu32(DMAC_ENABLER) = value;

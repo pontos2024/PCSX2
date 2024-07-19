@@ -270,7 +270,7 @@ struct eeProfiler
 		u64 total = 0;
 		std::vector<std::pair<u32, u32>> v;
 		std::vector<std::pair<u32, u32>> vc;
-		for (int i = 0; i < static_cast<int>(eeOpcode::LAST); i++)
+		for (int i = 0; i < static_cast<int>(eeOpcode::LAST); ++i)
 		{
 			total += opStats[i];
 			v.push_back(std::make_pair(opStats[i], i));
@@ -279,7 +279,7 @@ struct eeProfiler
 		std::reverse(v.begin(), v.end());
 
 		DevCon.WriteLn("EE Profiler:");
-		for (u32 i = 0; i < v.size(); i++)
+		for (u32 i = 0; i < v.size(); ++i)
 		{
 			u64 count = v[i].first;
 			double stat = (double)count / (double)total * 100.0;
@@ -296,14 +296,14 @@ struct eeProfiler
 		u64 gs  = 0;
 		u64 vu  = 0;
 		// FIXME: MAYBE count the scratch pad
-		for (size_t i = 0; i < memSpace; i++)
+		for (size_t i = 0; i < memSpace; ++i)
 			total += memStats[i];
 
 		int ou = 32 * _1kb; // user segment (0x10000000)
 		int ok = 352 * _1kb; // kernel segment (0xB0000000)
-		for (int i = 0; i < 4 * _1kb; i++) reg += memStats[ou + 0 * _1kb + i] + memStats[ok + 0 * _1kb + i];
-		for (int i = 0; i < 4 * _1kb; i++) gs  += memStats[ou + 4 * _1kb + i] + memStats[ok + 4 * _1kb + i];
-		for (int i = 0; i < 4 * _1kb; i++) vu  += memStats[ou + 8 * _1kb + i] + memStats[ok + 8 * _1kb + i];
+		for (int i = 0; i < 4 * _1kb; ++i) reg += memStats[ou + 0 * _1kb + i] + memStats[ok + 0 * _1kb + i];
+		for (int i = 0; i < 4 * _1kb; ++i) gs  += memStats[ou + 4 * _1kb + i] + memStats[ok + 4 * _1kb + i];
+		for (int i = 0; i < 4 * _1kb; ++i) vu  += memStats[ou + 8 * _1kb + i] + memStats[ok + 8 * _1kb + i];
 
 
 		u64 ram = total - reg - gs - vu;
@@ -315,10 +315,10 @@ struct eeProfiler
 		// Compute const memory stat
 		u64 total_const = 0;
 		u64 reg_const = 0;
-		for (size_t i = 0; i < memSpace; i++)
+		for (size_t i = 0; i < memSpace; ++i)
 			total_const += memStatsConst[i];
 
-		for (int i = 0; i < 4 * _1kb; i++)
+		for (int i = 0; i < 4 * _1kb; ++i)
 			reg_const += memStatsConst[ou + i] + memStatsConst[ok + i];
 		u64 ram_const = total_const - reg_const; // value is slightly wrong but good enough
 
@@ -338,7 +338,7 @@ struct eeProfiler
 
 		v.clear();
 		vc.clear();
-		for (int i = 0; i < 4 * _1kb; i++)
+		for (int i = 0; i < 4 * _1kb; ++i)
 		{
 			u32 reg_c = memStatsConst[ou + i] + memStatsConst[ok + i];
 			u32 reg   = memStats[ok + i] + memStats[ou + i] - reg_c;
@@ -354,7 +354,7 @@ struct eeProfiler
 		std::reverse(vc.begin(), vc.end());
 
 		DevCon.WriteLn("\nEE Reg Profiler:");
-		for (u32 i = 0; i < v.size(); i++)
+		for (u32 i = 0; i < v.size(); ++i)
 		{
 			u64    count = v[i].first;
 			double stat  = (double)count / (double)(reg - reg_const) * 100.0;
@@ -365,7 +365,7 @@ struct eeProfiler
 		}
 
 		DevCon.WriteLn("\nEE Const Reg Profiler:");
-		for (u32 i = 0; i < vc.size(); i++)
+		for (u32 i = 0; i < vc.size(); ++i)
 		{
 			u64    count = vc[i].first;
 			double stat  = (double)count / (double)reg_const * 100.0;

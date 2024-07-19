@@ -385,7 +385,7 @@ static void lzma_allocator_free(void* p )
 	lzma_allocator *codec = (lzma_allocator *)(p);
 
 	/* free our memory */
-	for (i = 0 ; i < MAX_LZMA_ALLOCS ; i++)
+	for (i = 0 ; i < MAX_LZMA_ALLOCS ; ++i)
 	{
 		if (codec->allocptr[i] != NULL)
 			free(codec->allocptr[i]);
@@ -1467,7 +1467,7 @@ CHD_EXPORT chd_error chd_open_file(core_file *file, int mode, chd_file *parent, 
 		for (decompnum = 0; decompnum < ARRAY_LENGTH(newchd->header.compression); decompnum++)
 		{
 			int i;
-			for (i = 0 ; i < ARRAY_LENGTH(codec_interfaces) ; i++)
+			for (i = 0 ; i < ARRAY_LENGTH(codec_interfaces) ; ++i)
 			{
 				if (codec_interfaces[i].compression == newchd->header.compression[decompnum])
 				{
@@ -1620,7 +1620,7 @@ CHD_EXPORT void chd_close(chd_file *chd)
 	{
 		int i;
 		/* Free the codecs */
-		for (i = 0 ; i < ARRAY_LENGTH(chd->codecintf); i++)
+		for (i = 0 ; i < ARRAY_LENGTH(chd->codecintf); ++i)
 		{
 			void* codec = NULL;
 
@@ -2468,17 +2468,17 @@ static chd_error map_read(chd_file *chd)
 		/* process that many */
 		if (entrysize == MAP_ENTRY_SIZE)
 		{
-			for (j = 0; j < entries; j++)
+			for (j = 0; j < entries; ++j)
 				map_extract(&raw_map_entries[j * MAP_ENTRY_SIZE], &chd->map[i + j]);
 		}
 		else
 		{
-			for (j = 0; j < entries; j++)
+			for (j = 0; j < entries; ++j)
 				map_extract_old(&raw_map_entries[j * OLD_MAP_ENTRY_SIZE], &chd->map[i + j], chd->header.hunkbytes);
 		}
 
 		/* track the maximum offset */
-		for (j = 0; j < entries; j++)
+		for (j = 0; j < entries; ++j)
 			if ((chd->map[i + j].flags & MAP_ENTRY_FLAG_TYPE_MASK) == V34_MAP_ENTRY_TYPE_COMPRESSED ||
 				(chd->map[i + j].flags & MAP_ENTRY_FLAG_TYPE_MASK) == V34_MAP_ENTRY_TYPE_UNCOMPRESSED)
 				maxoffset = MAX(maxoffset, chd->map[i + j].offset + chd->map[i + j].length);
@@ -2667,7 +2667,7 @@ static voidpf zlib_fast_alloc(voidpf opaque, uInt items, uInt size)
 	size = (size * items + 0x3ff) & ~0x3ff;
 
 	/* reuse a hunk if we can */
-	for (i = 0; i < MAX_ZLIB_ALLOCS; i++)
+	for (i = 0; i < MAX_ZLIB_ALLOCS; ++i)
 	{
 		ptr = alloc->allocptr[i];
 		if (ptr && size == *ptr)
@@ -2686,7 +2686,7 @@ static voidpf zlib_fast_alloc(voidpf opaque, uInt items, uInt size)
 		return NULL;
 
 	/* put it into the list */
-	for (i = 0; i < MAX_ZLIB_ALLOCS; i++)
+	for (i = 0; i < MAX_ZLIB_ALLOCS; ++i)
 		if (!alloc->allocptr[i])
 		{
 			alloc->allocptr[i] = ptr;
@@ -2714,7 +2714,7 @@ static void zlib_fast_free(voidpf opaque, voidpf address)
 	int i;
 
 	/* find the hunk */
-	for (i = 0; i < MAX_ZLIB_ALLOCS; i++)
+	for (i = 0; i < MAX_ZLIB_ALLOCS; ++i)
 		if (ptr == alloc->allocptr2[i])
 		{
 			/* clear the low bit of the size to allow matches */
@@ -2731,7 +2731,7 @@ static void zlib_allocator_free(voidpf opaque)
 	zlib_allocator *alloc = (zlib_allocator *)opaque;
 	int i;
 
-	for (i = 0; i < MAX_ZLIB_ALLOCS; i++)
+	for (i = 0; i < MAX_ZLIB_ALLOCS; ++i)
 		if (alloc->allocptr[i])
 			free(alloc->allocptr[i]);
 }

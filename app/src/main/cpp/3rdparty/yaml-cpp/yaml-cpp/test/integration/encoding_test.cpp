@@ -96,7 +96,7 @@ class EncodingTest : public HandlerTest {
     InSequence sequence;
     EXPECT_CALL(handler, OnDocumentStart(_));
     EXPECT_CALL(handler, OnSequenceStart(_, "?", 0, EmitterStyle::Block));
-    for (std::size_t i = 0; i < m_entries.size(); i++) {
+    for (std::size_t i = 0; i < m_entries.size(); ++i) {
       EXPECT_CALL(handler, OnScalar(_, "!", 0, m_entries[i]));
     }
     EXPECT_CALL(handler, OnSequenceEnd());

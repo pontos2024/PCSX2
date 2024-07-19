@@ -1770,7 +1770,7 @@ class FunctionMocker<R(Args...)> final : public UntypedFunctionMockerBase {
          << (count == 1 ? "expectation, but it didn't match" :
              "expectations, but none matched")
          << ":\n";
-    for (size_t i = 0; i < count; i++) {
+    for (size_t i = 0; i < count; ++i) {
       TypedExpectation<F>* const expectation =
           static_cast<TypedExpectation<F>*>(untyped_expectations_[i].get());
       *why << "\n";

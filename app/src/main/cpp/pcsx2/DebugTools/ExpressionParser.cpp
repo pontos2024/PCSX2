@@ -191,7 +191,7 @@ ExpressionOpcodeType getExpressionOpcode(const char* str, int& ReturnLen, Expres
 	int longestlen = 0;
 	ExpressionOpcodeType result = EXOP_NONE;
 
-	for (int i = 0; i < EXOP_NUMBER; i++)
+	for (int i = 0; i < EXOP_NUMBER; ++i)
 	{
 		if (ExpressionOpcodes[i].sign &&
 			(LastOpcode == EXOP_NUMBER || LastOpcode == EXOP_BRACKETR)) continue;
@@ -382,7 +382,7 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 #if 0			// only for testing
 	char test[1024];
 	int testPos = 0;
-	for (int i = 0; i < dest.size(); i++)
+	for (int i = 0; i < dest.size(); ++i)
 	{
 		switch (dest[i].first)
 		{
@@ -468,7 +468,7 @@ bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs,
 					valueStack.push_back(val);
 				}
 				break;
-			case EXOP_SIGNPLUS:		// keine aktion nötig
+			case EXOP_SIGNPLUS:		// keine aktion nï¿½tig
 				break;
 			case EXOP_SIGNMINUS:	// -0
 				if (useFloat)

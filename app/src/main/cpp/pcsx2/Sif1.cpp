@@ -27,7 +27,9 @@ static bool sif1_dma_stall = false;
 
 static __fi void Sif1Init()
 {
+#ifdef PCSX2_DEBUG
 	SIF_LOG("SIF1 DMA start...");
+#endif
 	done = false;
 	sif1.ee.cycles = 0;
 	sif1.iop.cycles = 0;
@@ -37,8 +39,9 @@ static __fi void Sif1Init()
 static __fi bool WriteEEtoFifo()
 {
 	// There's some data ready to transfer into the fifo..
-
+#ifdef PCSX2_DEBUG
 	SIF_LOG("Sif 1: Write EE to Fifo");
+#endif
 	const int writeSize = std::min((s32)sif1ch.qwc, sif1.fifo.sif_free() >> 2);
 
 	tDMA_TAG *ptag;
@@ -46,7 +49,9 @@ static __fi bool WriteEEtoFifo()
 	ptag = sif1ch.getAddr(sif1ch.madr, DMAC_SIF1, false);
 	if (ptag == NULL)
 	{
+#ifdef PCSX2_DEBUG
 		DevCon.Warning("Write EE to Fifo: ptag == NULL");
+#endif
 		return false;
 	}
 
@@ -64,12 +69,13 @@ static __fi bool WriteEEtoFifo()
 static __fi bool WriteFifoToIOP()
 {
 	// If we're reading something, continue to do so.
-
+#ifdef PCSX2_DEBUG
 	SIF_LOG("Sif1: Write Fifo to IOP");
+#endif
 	const int readSize = std::min(sif1.iop.counter, sif1.fifo.size);
-
+#ifdef PCSX2_DEBUG
 	SIF_LOG("Sif 1 IOP doing transfer %04X to %08X", readSize, HW_DMA10_MADR);
-
+#endif
 	sif1.fifo.read((u32*)iopPhysMem(hw_dma10.madr), readSize);
 	psxCpu->Clear(hw_dma10.madr, readSize);
 	hw_dma10.madr += readSize << 2;
@@ -84,8 +90,9 @@ static __fi bool ProcessEETag()
 {
 	// Chain mode
 	tDMA_TAG *ptag;
+#ifdef PCSX2_DEBUG
 	SIF_LOG("Sif1: ProcessEETag");
-
+#endif
 	// Process DMA tag at sif1ch.tadr
 	ptag = sif1ch.DMAtransfer(sif1ch.tadr, DMAC_SIF1);
 	if (ptag == NULL)
@@ -96,11 +103,14 @@ static __fi bool ProcessEETag()
 
 	if (sif1ch.chcr.TTE)
 	{
+#ifdef PCSX2_DEBUG
 		Console.WriteLn("SIF1 TTE");
+#endif
 		sif1.fifo.write((u32*)ptag + 2, 2);
 	}
-
+#ifdef PCSX2_DEBUG
 	SIF_LOG(wxString(ptag->tag_to_str()).To8BitData());
+#endif
 	sif1ch.madr = ptag[1]._u32;
 
 	sif1.ee.end = hwDmacSrcChain(sif1ch, ptag->ID);
@@ -120,14 +130,16 @@ static __fi bool SIFIOPReadTag()
 	// Read a tag.
 	sif1.fifo.read((u32*)&sif1.iop.data, 4);
 	//sif1words = (sif1words + 3) & 0xfffffffc; // Round up to nearest 4.
+#ifdef PCSX2_DEBUG
 	SIF_LOG("SIF 1 IOP: dest chain tag madr:%08X wc:%04X id:%X irq:%d",
 		sif1data & 0xffffff, sif1words, sif1tag.ID, sif1tag.IRQ);
-
+#endif
 	// Only use the first 24 bits.
 	hw_dma10.madr = sif1data & 0xffffff;
 
-	
+#ifdef PCSX2_DEBUG
 	if (sif1words > 0xFFFFC) DevCon.Warning("SIF1 Overrun %x", sif1words);
+#endif
 	//Maximum transfer amount 1mb-16 also masking out top part which is a "Mode" cache stuff, we don't care :)
 	sif1.iop.counter = sif1words & 0xFFFFC;
 
@@ -141,14 +153,17 @@ static __fi void EndEE()
 {
 	sif1.ee.end = false;
 	sif1.ee.busy = false;
+#ifdef PCSX2_DEBUG
 	SIF_LOG("Sif 1: End EE");
-
+#endif
 	// Voodoocycles : Okami wants around 100 cycles when booting up
 	// Other games reach like 50k cycles here, but the EE will long have given up by then and just retry.
 	// (Cause of double interrupts on the EE)
 	if (sif1.ee.cycles == 0)
 	{
+#ifdef PCSX2_DEBUG
 		SIF_LOG("SIF1 EE: cycles = 0");
+#endif
 		sif1.ee.cycles = 1;
 	}
 
@@ -162,15 +177,18 @@ static __fi void EndIOP()
 	sif1data = 0;
 	sif1.iop.end = false;
 	sif1.iop.busy = false;
+#ifdef PCSX2_DEBUG
 	SIF_LOG("Sif 1: End IOP");
-
+#endif
 	//Fixme ( voodoocycles ):
 	//The *24 are needed for ecco the dolphin (CDVD hangs) and silver surfer (Pad not detected)
 	//Greater than *35 break rebooting when trying to play Tekken5 arcade history
 	//Total cycles over 1024 makes SIF too slow to keep up the sound stream in so3...
 	if (sif1.iop.cycles == 0)
 	{
+#ifdef PCSX2_DEBUG
 		DevCon.Warning("SIF1 IOP: cycles = 0");
+#endif
 		sif1.iop.cycles = 1;
 	}
 	// iop is 1/8th the clock rate of the EE and psxcycles is in words (not quadwords)
@@ -266,8 +284,9 @@ static __fi void Sif1End()
 {
 	psHu32(SBUS_F240) &= ~0x40;
 	psHu32(SBUS_F240) &= ~0x4000;
-
+#ifdef PCSX2_DEBUG
 	DMA_LOG("SIF1 DMA End");
+#endif
 }
 
 // Transfer EE to IOP, putting data in the fifo as an intermediate step.
@@ -329,12 +348,14 @@ __fi void  EEsif1Interrupt()
 // Main difference is this checks for iop, where psxDma10 checks for ee.
 __fi void dmaSIF1()
 {
+#ifdef PCSX2_DEBUG
 	SIF_LOG(wxString(L"dmaSIF1" + sif1ch.cmqt_to_str()).To8BitData());
 
 	if (sif1.fifo.readPos != sif1.fifo.writePos)
 	{
 		SIF_LOG("warning, sif1.fifoReadPos != sif1.fifoWritePos");
 	}
+#endif
 
 	psHu32(SBUS_F240) |= 0x4000;
 	sif1.ee.busy = true;

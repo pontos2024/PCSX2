@@ -137,6 +137,8 @@ set(pcsx2Sources
 	Gif_Unit.cpp
 	GS.cpp
 	GSState.cpp
+	Host.cpp
+	HostDisplay.cpp
 	Hw.cpp
 	HwRead.cpp
 	HwWrite.cpp
@@ -215,6 +217,7 @@ set(pcsx2Headers
 	GS.h
 	Hardware.h
 	Host.h
+	HostDisplay.h
 	Hw.h
 	IopBios.h
 	IopCommon.h
@@ -696,6 +699,8 @@ set(pcsx2GSSources
 	GS/Renderers/HW/GSHwHack.cpp
 	GS/Renderers/HW/GSRendererHW.cpp
 	GS/Renderers/HW/GSTextureCache.cpp
+	GS/Renderers/HW/GSTextureReplacementLoaders.cpp
+	GS/Renderers/HW/GSTextureReplacements.cpp
 	GS/Renderers/SW/GSDrawScanline.cpp
 	GS/Renderers/SW/GSDrawScanlineCodeGenerator.cpp
 	GS/Renderers/SW/GSRasterizer.cpp
@@ -703,21 +708,8 @@ set(pcsx2GSSources
 	GS/Renderers/SW/GSSetupPrimCodeGenerator.cpp
 	GS/Renderers/SW/GSTextureCacheSW.cpp
 	GS/Renderers/SW/GSTextureSW.cpp
-	GS/Renderers/OpenGL/GLLoader.cpp
-	GS/Renderers/OpenGL/GLState.cpp
-	GS/Renderers/OpenGL/GSDeviceOGL.cpp
-	GS/Renderers/OpenGL/GSRendererOGL.cpp
-	GS/Renderers/OpenGL/GSShaderOGL.cpp
-	GS/Renderers/OpenGL/GSTextureCacheOGL.cpp
-	GS/Renderers/OpenGL/GSTextureOGL.cpp
 	GS/Window/GSSetting.cpp
-	)
-
-set(pcsx2GSx86Sources
-	GS/Renderers/SW/GSDrawScanlineCodeGenerator.all.cpp
-	GS/Renderers/SW/GSNewCodeGenerator.cpp
-	GS/Renderers/SW/GSSetupPrimCodeGenerator.all.cpp
-	)
+)
 
 # GS headers
 set(pcsx2GSHeaders
@@ -731,7 +723,10 @@ set(pcsx2GSHeaders
 	GS/GSDrawingContext.h
 	GS/GSDrawingEnvironment.h
 	GS/GSDump.h
-	GS/GS_types.h
+	GS/GSExtra.h
+	GS/GSGL.h
+	GS/GSIntrin.h
+	GS/GSRegs.h
 	GS/GS.h
 	GS/GSLocalMemory.h
 	GS/GSLzma.h
@@ -762,6 +757,7 @@ set(pcsx2GSHeaders
 	GS/Renderers/Null/GSTextureNull.h
 	GS/Renderers/HW/GSRendererHW.h
 	GS/Renderers/HW/GSTextureCache.h
+	GS/Renderers/HW/GSTextureReplacements.h
 	GS/Renderers/HW/GSVertexHW.h
 	GS/Renderers/SW/GSDrawScanlineCodeGenerator.h
 	GS/Renderers/SW/GSDrawScanlineCodeGenerator.all.h
@@ -775,18 +771,38 @@ set(pcsx2GSHeaders
 	GS/Renderers/SW/GSTextureCacheSW.h
 	GS/Renderers/SW/GSTextureSW.h
 	GS/Renderers/SW/GSVertexSW.h
-	GS/Renderers/OpenGL/GLLoader.h
-	GS/Renderers/OpenGL/GLState.h
-	GS/Renderers/OpenGL/GSDeviceOGL.h
-	GS/Renderers/OpenGL/GSRendererOGL.h
-	GS/Renderers/OpenGL/GSShaderOGL.h
-	GS/Renderers/OpenGL/GSTextureCacheOGL.h
-	GS/Renderers/OpenGL/GSTextureOGL.h
-	GS/Renderers/OpenGL/GSUniformBufferOGL.h
 	GS/Window/GSCaptureDlg.h
 	GS/Window/GSDialog.h
 	GS/Window/GSSetting.h
+)
+
+if(USE_OPENGL)
+	list(APPEND pcsx2GSSources
+		GS/Renderers/OpenGL/GLLoader.cpp
+		GS/Renderers/OpenGL/GLState.cpp
+		GS/Renderers/OpenGL/GSDeviceOGL.cpp
+		GS/Renderers/OpenGL/GSTextureOGL.cpp
 	)
+	list(APPEND pcsx2GSHeaders
+		GS/Renderers/OpenGL/GLLoader.h
+		GS/Renderers/OpenGL/GLState.h
+		GS/Renderers/OpenGL/GSDeviceOGL.h
+		GS/Renderers/OpenGL/GSTextureOGL.h
+		GS/Renderers/OpenGL/GSUniformBufferOGL.h
+	)
+	target_link_libraries(PCSX2_FLAGS INTERFACE glad)
+endif()
+
+if(USE_VULKAN)
+	list(APPEND pcsx2GSSources
+		GS/Renderers/Vulkan/GSDeviceVK.cpp
+		GS/Renderers/Vulkan/GSTextureVK.cpp
+	)
+	list(APPEND pcsx2GSHeaders
+		GS/Renderers/Vulkan/GSDeviceVK.h
+		GS/Renderers/Vulkan/GSTextureVK.h
+	)
+endif()
 
 if(NOT PCSX2_CORE)
 	list(APPEND pcsx2GSSources
@@ -963,6 +979,7 @@ set(pcsx2DebugToolsSources
 	DebugTools/MipsAssembler.cpp
 	DebugTools/MipsAssemblerTables.cpp
 	DebugTools/MipsStackWalk.cpp
+	DebugTools/Breakpoints.cpp
 	DebugTools/SymbolMap.cpp
 	DebugTools/DisR3000A.cpp
 	DebugTools/DisR5900asm.cpp
@@ -979,6 +996,7 @@ set(pcsx2DebugToolsHeaders
 	DebugTools/MipsAssembler.h
 	DebugTools/MipsAssemblerTables.h
 	DebugTools/MipsStackWalk.h
+	DebugTools/Breakpoints.h
 	DebugTools/SymbolMap.h
 	DebugTools/Debug.h
 	DebugTools/DisASM.h
@@ -989,34 +1007,48 @@ set(pcsx2DebugToolsHeaders
 # Frontend sources
 set(pcsx2FrontendSources
 	Frontend/ImGuiManager.cpp
-	Frontend/ImGuiManager.cpp
-#	Frontend/imgui_impl_vulkan.cpp
-	Frontend/OpenGLHostDisplay.cpp
-#	Frontend/VulkanHostDisplay.cpp
-	HostDisplay.cpp
-	HostSettings.cpp
 )
 
 # Frontend headers
 set(pcsx2FrontendHeaders
 	Frontend/ImGuiManager.h
-#	Frontend/imgui_impl_vulkan.h
-	Frontend/OpenGLHostDisplay.h
-#	Frontend/VulkanHostDisplay.h
-	HostDisplay.h
 )
+
+if(USE_OPENGL)
+	list(APPEND pcsx2FrontendSources
+		Frontend/OpenGLHostDisplay.cpp
+		Frontend/imgui_impl_opengl3.cpp
+	)
+	list(APPEND pcsx2FrontendHeaders
+		Frontend/OpenGLHostDisplay.h
+		Frontend/imgui_impl_opengl3.h
+	)
+endif()
+
+if(USE_VULKAN)
+	list(APPEND pcsx2FrontendSources
+		Frontend/VulkanHostDisplay.cpp
+		Frontend/imgui_impl_vulkan.cpp
+	)
+	list(APPEND pcsx2FrontendHeaders
+		Frontend/imgui_impl_vulkan.h
+		Frontend/VulkanHostDisplay.h
+	)
+endif()
 
 if(PCSX2_CORE)
 	list(APPEND pcsx2FrontendSources
 		Frontend/GameList.cpp
 		Frontend/INISettingsInterface.cpp
 		Frontend/LayeredSettingsInterface.cpp
+		HostSettings.cpp
 		VMManager.cpp
 	)
 	list(APPEND pcsx2FrontendHeaders
 		Frontend/GameList.h
 		Frontend/INISettingsInterface.h
 		Frontend/LayeredSettingsInterface.h
+		HostSettings.h
 		VMManager.h)
 endif()
 
@@ -1557,6 +1589,7 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	chdr-static
 	simpleini
 	wxWidgets::all
+	Zstd::Zstd
 	ZLIB::ZLIB
 	PkgConfig::SOUNDTOUCH
 	PkgConfig::SAMPLERATE
@@ -1598,8 +1631,7 @@ elseif(ANDROID)
 		android
 		SDL2
 		${log-lib}
-
-			)
+	)
 else()
 	if (NOT PCSX2_CORE)
 		target_link_libraries(PCSX2_FLAGS INTERFACE

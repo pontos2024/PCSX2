@@ -30,7 +30,7 @@ int32_t ClipToRange::onProcess(int32_t numFrames) {
     float *outputBuffer = output.getBuffer();
 
     int32_t numSamples = numFrames * output.getSamplesPerFrame();
-    for (int32_t i = 0; i < numSamples; i++) {
+    for (int32_t i = 0; i < numSamples; ++i) {
         *outputBuffer++ = std::min(mMaximum, std::max(mMinimum, *inputBuffer++));
     }
 

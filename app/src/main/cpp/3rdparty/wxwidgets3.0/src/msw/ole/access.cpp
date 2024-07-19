@@ -1627,7 +1627,7 @@ IAccessible* wxIAccessible::GetChildStdAccessible(int id)
         this->get_accChildCount(& nChildren);
 
         int i;
-        for (i = 0; i < nChildren; i++)
+        for (i = 0; i < nChildren; ++i)
         {
             long obtained = 0;
             VARIANT var;

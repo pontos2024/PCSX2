@@ -668,7 +668,7 @@ bool wxStandardDialogLayoutAdapter::DoLayoutAdaptation(wxDialog* dialog)
         {
             // If we have a book control, make all the pages (that use sizers) scrollable
             wxWindowList windows;
-            for (size_t i = 0; i < bookContentWindow->GetPageCount(); i++)
+            for (size_t i = 0; i < bookContentWindow->GetPageCount(); ++i)
             {
                 wxWindow* page = bookContentWindow->GetPage(i);
 

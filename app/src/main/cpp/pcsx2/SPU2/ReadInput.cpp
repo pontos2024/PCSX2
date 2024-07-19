@@ -106,7 +106,7 @@ StereoOut32 V_Core::ReadInput()
 	StereoOut32 retval;
 	s16 ReadIndex = OutPos;
 
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 2; ++i)
 		if (Cores[i].IRQEnable && (0x2000 + (Index << 10) + ReadIndex) == (Cores[i].IRQA & 0xfffffdff))
 			SetIrqCall(i);
 

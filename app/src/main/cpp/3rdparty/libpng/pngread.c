@@ -648,7 +648,7 @@ png_read_rows(png_structrp png_ptr, png_bytepp row,
    rp = row;
    dp = display_row;
    if (rp != NULL && dp != NULL)
-      for (i = 0; i < num_rows; i++)
+      for (i = 0; i < num_rows; ++i)
       {
          png_bytep rptr = *rp++;
          png_bytep dptr = *dp++;
@@ -657,7 +657,7 @@ png_read_rows(png_structrp png_ptr, png_bytepp row,
       }
 
    else if (rp != NULL)
-      for (i = 0; i < num_rows; i++)
+      for (i = 0; i < num_rows; ++i)
       {
          png_bytep rptr = *rp;
          png_read_row(png_ptr, rptr, NULL);
@@ -665,7 +665,7 @@ png_read_rows(png_structrp png_ptr, png_bytepp row,
       }
 
    else if (dp != NULL)
-      for (i = 0; i < num_rows; i++)
+      for (i = 0; i < num_rows; ++i)
       {
          png_bytep dptr = *dp;
          png_read_row(png_ptr, NULL, dptr);
@@ -736,10 +736,10 @@ png_read_image(png_structrp png_ptr, png_bytepp image)
 
    image_height=png_ptr->height;
 
-   for (j = 0; j < pass; j++)
+   for (j = 0; j < pass; ++j)
    {
       rp = image;
-      for (i = 0; i < image_height; i++)
+      for (i = 0; i < image_height; ++i)
       {
          png_read_row(png_ptr, *rp, NULL);
          rp++;

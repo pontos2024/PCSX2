@@ -177,7 +177,7 @@ template int nVifUnpack<1>(const u8* data);
 // and the interpreted C unpacks use the vif.MaskRow/MaskCol members directly.
 static void setMasks(const vifStruct& vif, const VIFregisters& v)
 {
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < 16; ++i)
 	{
 		int m = (v.mask >> (i * 2)) & 3;
 		switch (m)

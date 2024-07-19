@@ -86,11 +86,11 @@ main()
   InitializeCriticalSection(&numThreads.cs);
   InitializeCriticalSection(&numOnce.cs);
 
-  for (j = 0; j < NUM_ONCE; j++)
+  for (j = 0; j < NUM_ONCE; ++j)
     {
       once[j] = o;
 
-      for (i = 0; i < NUM_THREADS; i++)
+      for (i = 0; i < NUM_THREADS; ++i)
         {
 	  /* GCC build: create was failing with EAGAIN after 790 threads */
           while (0 != pthread_create(&t[i][j], NULL, mythread, (void *)(size_t)j))
@@ -98,8 +98,8 @@ main()
         }
     }
 
-  for (j = 0; j < NUM_ONCE; j++)
-    for (i = 0; i < NUM_THREADS; i++)
+  for (j = 0; j < NUM_ONCE; ++j)
+    for (i = 0; i < NUM_THREADS; ++i)
       if (pthread_join(t[i][j], NULL) != 0)
         printf("Join failed for [thread,once] = [%d,%d]\n", i, j);
 

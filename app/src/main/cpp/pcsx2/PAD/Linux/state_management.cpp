@@ -105,7 +105,7 @@ void Pad::reset()
 
 void Pad::rumble(unsigned port)
 {
-	for (unsigned motor = 0; motor < 2; motor++)
+	for (unsigned motor = 0; motor < 2; ++motor)
 	{
 		// TODO:  Probably be better to send all of these at once.
 		if (nextVibrate[motor] | currentVibrate[motor])
@@ -120,28 +120,28 @@ void Pad::rumble(unsigned port)
 void Pad::stop_vibrate_all()
 {
 #if 0
-	for (int i=0; i<8; i++) {
+	for (int i=0; i<8; ++i) {
 		SetVibrate(i&1, i>>1, 0, 0);
 		SetVibrate(i&1, i>>1, 1, 0);
 	}
 #endif
 	// FIXME equivalent ?
-	for (int port = 0; port < 2; port++)
-		for (int slot = 0; slot < 4; slot++)
+	for (int port = 0; port < 2; ++port)
+		for (int slot = 0; slot < 4; ++slot)
 			pads[port][slot].reset_vibrate();
 }
 
 void Pad::reset_all()
 {
-	for (int port = 0; port < 2; port++)
-		for (int slot = 0; slot < 4; slot++)
+	for (int port = 0; port < 2; ++port)
+		for (int slot = 0; slot < 4; ++slot)
 			pads[port][slot].reset();
 }
 
 void Pad::rumble_all()
 {
-	for (unsigned port = 0; port < 2; port++)
-		for (unsigned slot = 0; slot < 4; slot++)
+	for (unsigned port = 0; port < 2; ++port)
+		for (unsigned slot = 0; slot < 4; ++slot)
 			pads[port][slot].rumble(port);
 }
 
@@ -203,10 +203,10 @@ u8 pad_poll(u8 value)
 				ButtonSum *sum = &pad->sum;
 
 				u8 b1 = 0xFF, b2 = 0xFF;
-				for (i = 0; i<4; i++) {
+				for (i = 0; i<4; ++i) {
 					b1 -= (sum->buttons[i]   > 0) << i;
 				}
-				for (i = 0; i<8; i++) {
+				for (i = 0; i<8; ++i) {
 					b2 -= (sum->buttons[i+4] > 0) << i;
 				}
 #endif
@@ -221,7 +221,7 @@ u8 pad_poll(u8 value)
 #endif
 
 #if 0
-				for (i = 4; i<8; i++) {
+				for (i = 4; i<8; ++i) {
 					b1 -= (sum->buttons[i+8] > 0) << i;
 				}
 #endif

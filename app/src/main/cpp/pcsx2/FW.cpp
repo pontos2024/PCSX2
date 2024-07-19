@@ -31,7 +31,9 @@ s32 FWopen()
 	fwregs = (s8*)calloc(0x10000, 1);
 	if (fwregs == NULL)
 	{
+#ifdef PCSX2_DEBUG
 		DevCon.WriteLn("FW: Error allocating Memory");
+#endif
 		return -1;
 	}
 	return 0;
@@ -100,9 +102,9 @@ u32 FWread32(u32 addr)
 			ret = fwRu32(addr);
 			break;
 	}
-
+#ifdef PCSX2_DEBUG
 	DevCon.WriteLn("FW: read mem 0x%x: 0x%x", addr, ret);
-
+#endif
 	return ret;
 }
 
@@ -191,5 +193,7 @@ void FWwrite32(u32 addr, u32 value)
 			fwRu32(addr) = value;
 			break;
 	}
+#ifdef PCSX2_DEBUG
 	DevCon.WriteLn("FW: write mem 0x%x: 0x%x", addr, value);
+#endif
 }

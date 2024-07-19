@@ -98,9 +98,10 @@ VirtualMemoryManager::VirtualMemoryManager(const char* name, const char* file_ma
 		m_baseptr = (uptr)HostSys::MapSharedMemory(m_file_handle, 0, (void*)base, reserved_bytes, PageProtectionMode());
 		if (!m_baseptr || (upper_bounds != 0 && (((uptr)m_baseptr + reserved_bytes) > upper_bounds)))
 		{
+#ifdef PCSX2_DEBUG
 			DevCon.Warning(L"%s: host memory @ %ls -> %ls is unavailable; attempting to map elsewhere...",
 				WX_STR(m_name), pxsPtr(base), pxsPtr(base + size));
-
+#endif
 			SafeSysMunmap(m_baseptr, reserved_bytes);
 
 			if (base)
@@ -118,9 +119,10 @@ VirtualMemoryManager::VirtualMemoryManager(const char* name, const char* file_ma
 
 		if (!m_baseptr || (upper_bounds != 0 && (((uptr)m_baseptr + reserved_bytes) > upper_bounds)))
 		{
+#ifdef PCSX2_DEBUG
 			DevCon.Warning(L"%s: host memory @ %ls -> %ls is unavailable; attempting to map elsewhere...",
 				WX_STR(m_name), pxsPtr(base), pxsPtr(base + size));
-
+#endif
 			SafeSysMunmap(m_baseptr, reserved_bytes);
 
 			if (base)
@@ -163,8 +165,10 @@ VirtualMemoryManager::VirtualMemoryManager(const char* name, const char* file_ma
 	else
 		mbkb.Write("[%ukb]", reserved_bytes / 1024);
 
+#ifdef PCSX2_DEBUG
 	DevCon.WriteLn(Color_Gray, L"%-32s @ %ls -> %ls %ls", WX_STR(m_name),
 		pxsPtr(m_baseptr), pxsPtr((uptr)m_baseptr + reserved_bytes), mbkb.c_str());
+#endif
 }
 
 VirtualMemoryManager::~VirtualMemoryManager()
@@ -184,7 +188,7 @@ VirtualMemoryManager::~VirtualMemoryManager()
 
 static bool VMMMarkPagesAsInUse(std::atomic<bool>* begin, std::atomic<bool>* end)
 {
-	for (auto current = begin; current < end; current++)
+	for (auto current = begin; current < end; ++current)
 	{
 		bool expected = false;
 		if (!current->compare_exchange_strong(expected, true), std::memory_order_relaxed)
@@ -336,8 +340,10 @@ void* VirtualMemoryReserve::Assign(VirtualMemoryManagerPtr allocator, void* base
 	else
 		mbkb.Write("[%ukb]", reserved_bytes / 1024);
 
+#ifdef PCSX2_DEBUG
 	DevCon.WriteLn(Color_Gray, L"%-32s @ %ls -> %ls %ls", WX_STR(m_name),
 		pxsPtr(m_baseptr), pxsPtr((uptr)m_baseptr + reserved_bytes), mbkb.c_str());
+#endif
 
 	return m_baseptr;
 }
@@ -411,18 +417,21 @@ bool VirtualMemoryReserve::TryResize(uint newsize)
 	{
 		uint toReservePages = newPages - m_pages_reserved;
 		uint toReserveBytes = toReservePages * __pagesize;
-
+#ifdef PCSX2_DEBUG
 		DevCon.WriteLn(L"%-32s is being expanded by %u pages.", WX_STR(m_name), toReservePages);
-
+#endif
 		if (!m_allocator->AllocAtAddress(GetPtrEnd(), toReserveBytes))
 		{
+#ifdef PCSX2_DEBUG
 			Console.Warning("%-32s could not be passively resized due to virtual memory conflict!", WX_STR(m_name));
 			Console.Indent().Warning("(attempted to map memory @ %08p -> %08p)", m_baseptr, (uptr)m_baseptr + toReserveBytes);
+#endif
 			return false;
 		}
-
+#ifdef PCSX2_DEBUG
 		DevCon.WriteLn(Color_Gray, L"%-32s @ %08p -> %08p [%umb]", WX_STR(m_name),
 			m_baseptr, (uptr)m_baseptr + toReserveBytes, toReserveBytes / _1mb);
+#endif
 	}
 	else if (newPages < m_pages_reserved)
 	{
@@ -431,13 +440,14 @@ bool VirtualMemoryReserve::TryResize(uint newsize)
 
 		uint toRemovePages = m_pages_reserved - newPages;
 		uint toRemoveBytes = toRemovePages * __pagesize;
-
+#ifdef PCSX2_DEBUG
 		DevCon.WriteLn(L"%-32s is being shrunk by %u pages.", WX_STR(m_name), toRemovePages);
-
+#endif
 		m_allocator->Free(GetPtrEnd() - toRemoveBytes, toRemoveBytes);
-
+#ifdef PCSX2_DEBUG
 		DevCon.WriteLn(Color_Gray, L"%-32s @ %08p -> %08p [%umb]", WX_STR(m_name),
 			m_baseptr, GetPtrEnd(), GetReserveSizeInBytes() / _1mb);
+#endif
 	}
 
 	m_pages_reserved = newPages;

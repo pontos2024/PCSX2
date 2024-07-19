@@ -629,7 +629,7 @@ int wxFileDialog::ShowModal()
 
     wxString filterBuffer;
 
-    for (i = 0; i < items ; i++)
+    for (i = 0; i < items ; ++i)
     {
         filterBuffer += wildDescriptions[i];
         filterBuffer += wxT("|");

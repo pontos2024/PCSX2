@@ -48,7 +48,7 @@ INT_PTR CALLBACK DiagDialog(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM 
 				LVITEM item;
 				item.mask = LVIF_TEXT;
 				item.iSubItem = 0;
-				for (int i = 0; i < dev->numVirtualControls; i++)
+				for (int i = 0; i < dev->numVirtualControls; ++i)
 				{
 					item.pszText = dev->GetVirtualControlName(dev->virtualControls + i);
 					item.iItem = i;
@@ -70,7 +70,7 @@ INT_PTR CALLBACK DiagDialog(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM 
 				if (!dev->active)
 				{
 					item.pszText = L"N/A";
-					for (int i = 0; i < dev->numVirtualControls; i++)
+					for (int i = 0; i < dev->numVirtualControls; ++i)
 					{
 						item.iItem = i;
 						ListView_SetItem(hWndList, &item);
@@ -79,7 +79,7 @@ INT_PTR CALLBACK DiagDialog(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM 
 				}
 				else
 				{
-					for (int i = 0; i < dev->numVirtualControls; i++)
+					for (int i = 0; i < dev->numVirtualControls; ++i)
 					{
 						if (fullRefresh || dev->virtualControlState[i] != dev->oldVirtualControlState[i])
 						{
@@ -145,7 +145,7 @@ void Diagnose(int id, HWND hWnd)
 {
 	// init = 0;
 	dev = dm->devices[id];
-	for (int i = 0; i < dm->numDevices; i++)
+	for (int i = 0; i < dm->numDevices; ++i)
 	{
 		if (i != id)
 			dm->DisableDevice(i);

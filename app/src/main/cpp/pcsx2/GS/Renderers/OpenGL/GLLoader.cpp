@@ -13,6 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <unordered_set>
 #include "PrecompiledHeader.h"
 #include "GLLoader.h"
 #include "GS.h"
@@ -211,7 +212,7 @@ namespace GLLoader
 		return found;
 	}
 
-  void check_gl_version()
+    void check_gl_version()
 	{
 		const char* vendor = (const char*)glGetString(GL_VENDOR);
 		const char* renderer = (const char*)glGetString(GL_RENDERER);
@@ -257,10 +258,10 @@ namespace GLLoader
 		GLint minor_gl = 0;
 		glGetIntegerv(GL_MAJOR_VERSION, &major_gl);
 		glGetIntegerv(GL_MINOR_VERSION, &minor_gl);
-    if (!GLAD_GL_VERSION_3_3 && !GLAD_GL_ES_VERSION_3_1)
+        if (!GLAD_GL_VERSION_3_3 && !GLAD_GL_ES_VERSION_3_1)
 		{
-      fprintf(stderr, "OpenGL is not supported. Only OpenGL %d.%d\n was found", major_gl, minor_gl);
-			throw GSRecoverableError();
+            fprintf(stderr, "OpenGL is not supported. Only OpenGL %d.%d\n was found", major_gl, minor_gl);
+            throw GSRecoverableError();
 		}
 	}
 
@@ -268,7 +269,7 @@ namespace GLLoader
 	{
 		int max_ext = 0;
 		glGetIntegerv(GL_NUM_EXTENSIONS, &max_ext);
-		for (GLint i = 0; i < max_ext; i++)
+		for (GLint i = 0; i < max_ext; ++i)
 		{
 			std::string ext{(const char*)glGetStringi(GL_EXTENSIONS, i)};
 			GLExtension::Set(ext);
@@ -276,7 +277,7 @@ namespace GLLoader
 		}
 
 		// Mandatory for both renderer
-    if (GLAD_GL_VERSION_3_3)
+        if (GLAD_GL_VERSION_3_3)
 		{
 			// GL4.1
 			mandatory("GL_ARB_separate_shader_objects");
@@ -350,12 +351,16 @@ namespace GLLoader
 			if (!has_dual_source_blend)
 			{
 				Host::AddOSDMessage("Dual-source blending is not supported, this will affect performance.", 5.0f);
+#ifdef PCSX2_DEBUG
 				Console.Warning("Dual source blending is missing");
+#endif
 			}
 			if (!has_dual_source_blend && !found_framebuffer_fetch)
 			{
 				Host::AddOSDMessage("Both dual source blending and framebuffer fetch are missing, things will be broken.", 10.0f);
+#ifdef PCSX2_DEBUG
 				Console.Error("Missing both dual-source blending and framebuffer fetch");
+#endif
 			}
 		}
 		else
@@ -364,7 +369,7 @@ namespace GLLoader
 		}
 
 		// Thank you Intel for not providing support of basic features on your IGPUs.
-    if (!GLAD_GL_ARB_direct_state_access)
+        if (!GLAD_GL_ARB_direct_state_access)
 		{
 			Emulate_DSA::Init();
 		}
@@ -436,7 +441,7 @@ namespace GLLoader
 
   void check_gl_requirements()
   {
-    check_gl_version();
+        check_gl_version();
 
 		check_gl_supported_extension();
 

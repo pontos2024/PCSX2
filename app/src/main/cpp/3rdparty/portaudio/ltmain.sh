@@ -4369,7 +4369,7 @@ main (int argc, char *argv[])
    * argz[0], which is handled differently
    */
   newargc=0;
-  for (i = 1; i < argc; i++)
+  for (i = 1; i < argc; ++i)
     {
       if (strcmp (argv[i], dumpscript_opt) == 0)
 	{
@@ -4511,7 +4511,7 @@ EOF
 
   lt_debugprintf (__FILE__, __LINE__, "(main) lt_argv_zero: %s\n",
 		  nonnull (lt_argv_zero));
-  for (i = 0; i < newargc; i++)
+  for (i = 0; i < newargc; ++i)
     {
       lt_debugprintf (__FILE__, __LINE__, "(main) newargz[%d]: %s\n",
 		      i, nonnull (newargz[i]));
@@ -4982,7 +4982,7 @@ prepare_spawn (char **argv)
   new_argv = XMALLOC (char *, argc + 1);
 
   /* Put quoted arguments into the new argument vector.  */
-  for (i = 0; i < argc; i++)
+  for (i = 0; i < argc; ++i)
     {
       const char *string = argv[i];
 

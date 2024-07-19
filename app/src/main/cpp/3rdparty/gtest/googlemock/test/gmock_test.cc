@@ -55,7 +55,7 @@ void TestInitGoogleMock(const Char* (&argv)[M], const Char* (&new_argv)[N],
   InitGoogleMock(&argc, const_cast<Char**>(argv));
   ASSERT_EQ(N - 1, argc) << "The new argv has wrong number of elements.";
 
-  for (int i = 0; i < N; i++) {
+  for (int i = 0; i < N; ++i) {
     EXPECT_STREQ(new_argv[i], argv[i]);
   }
 

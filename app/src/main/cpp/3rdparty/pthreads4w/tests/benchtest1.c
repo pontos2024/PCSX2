@@ -70,7 +70,7 @@ int iter;
  * when doing the overhead timing with an empty loop.
  */
 #define TESTSTART \
-  { int i, j = 0, k = 0; PTW32_FTIME(&currSysTimeStart); for (i = 0; i < ITERATIONS; i++) { j++;
+  { int i, j = 0, k = 0; PTW32_FTIME(&currSysTimeStart); for (i = 0; i < ITERATIONS; ++i) { j++;
 
 #define TESTSTOP \
   }; PTW32_FTIME(&currSysTimeStop); if (j + k == i) j++; }

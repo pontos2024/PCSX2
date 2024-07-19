@@ -62,10 +62,10 @@ jpeg_CreateDecompress (j_decompress_ptr cinfo, int version, size_t structsize)
   cinfo->progress = NULL;
   cinfo->src = NULL;
 
-  for (i = 0; i < NUM_QUANT_TBLS; i++)
+  for (i = 0; i < NUM_QUANT_TBLS; ++i)
     cinfo->quant_tbl_ptrs[i] = NULL;
 
-  for (i = 0; i < NUM_HUFF_TBLS; i++) {
+  for (i = 0; i < NUM_HUFF_TBLS; ++i) {
     cinfo->dc_huff_tbl_ptrs[i] = NULL;
     cinfo->ac_huff_tbl_ptrs[i] = NULL;
   }

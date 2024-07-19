@@ -726,7 +726,7 @@ jinit_d_coef_controller (j_decompress_ptr cinfo, boolean need_full_buffer)
     buffer = (JBLOCKROW)
       (*cinfo->mem->alloc_large) ((j_common_ptr) cinfo, JPOOL_IMAGE,
 				  D_MAX_BLOCKS_IN_MCU * SIZEOF(JBLOCK));
-    for (i = 0; i < D_MAX_BLOCKS_IN_MCU; i++) {
+    for (i = 0; i < D_MAX_BLOCKS_IN_MCU; ++i) {
       coef->MCU_buffer[i] = buffer + i;
     }
     coef->pub.consume_data = dummy_consume_data;

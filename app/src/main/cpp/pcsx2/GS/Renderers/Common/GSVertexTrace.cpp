@@ -17,17 +17,19 @@
 #include "GSVertexTrace.h"
 #include "GS/GSUtil.h"
 #include "GS/GSState.h"
+#include <cfloat>
 
 CONSTINIT const GSVector4 GSVertexTrace::s_minmax = GSVector4::cxpr(FLT_MAX, -FLT_MAX, 0.f, 0.f);
 
-GSVertexTrace::GSVertexTrace(const GSState* state)
+GSVertexTrace::GSVertexTrace(const GSState* state, bool provoking_vertex_first)
 	: m_accurate_stq(false), m_state(state), m_primclass(GS_INVALID_CLASS)
 {
-	m_force_filter = static_cast<BiFiltering>(theApp.GetConfigI("filter"));
 	memset(&m_alpha, 0, sizeof(m_alpha));
 
 	#define InitUpdate3(P, IIP, TME, FST, COLOR) \
-		m_fmm[COLOR][FST][TME][IIP][P] = &GSVertexTrace::FindMinMax<P, IIP, TME, FST, COLOR>;
+	m_fmm[COLOR][FST][TME][IIP][P] = \
+		provoking_vertex_first ? &GSVertexTrace::FindMinMax<P, IIP, TME, FST, COLOR, true> : \
+                                 &GSVertexTrace::FindMinMax<P, IIP, TME, FST, COLOR, false>;
 
 	#define InitUpdate2(P, IIP, TME) \
 		InitUpdate3(P, IIP, TME, 0, 0) \
@@ -47,14 +49,17 @@ GSVertexTrace::GSVertexTrace(const GSState* state)
 	InitUpdate(GS_SPRITE_CLASS);
 }
 
-void GSVertexTrace::Update(const void* vertex, const uint32* index, int v_count, int i_count, GS_PRIM_CLASS primclass)
+void GSVertexTrace::Update(const void* vertex, const u32* index, int v_count, int i_count, GS_PRIM_CLASS primclass)
 {
+	if (i_count == 0)
+		return;
+
 	m_primclass = primclass;
 
-	uint32 iip = m_state->PRIM->IIP;
-	uint32 tme = m_state->PRIM->TME;
-	uint32 fst = m_state->PRIM->FST;
-	uint32 color = !(m_state->PRIM->TME && m_state->m_context->TEX0.TFX == TFX_DECAL && m_state->m_context->TEX0.TCC);
+	u32 iip = m_state->PRIM->IIP;
+	u32 tme = m_state->PRIM->TME;
+	u32 fst = m_state->PRIM->FST;
+	u32 color = !(m_state->PRIM->TME && m_state->m_context->TEX0.TFX == TFX_DECAL && m_state->m_context->TEX0.TCC);
 
 	(this->*m_fmm[color][fst][tme][iip][primclass])(vertex, index, i_count);
 
@@ -125,7 +130,7 @@ void GSVertexTrace::Update(const void* vertex, const uint32* index, int v_count,
 			}
 		}
 
-		switch (m_force_filter)
+		switch (GSConfig.TextureFiltering)
 		{
 			case BiFiltering::Nearest:
 				m_filter.opt_linear = 0;
@@ -148,8 +153,8 @@ void GSVertexTrace::Update(const void* vertex, const uint32* index, int v_count,
 	}
 }
 
-template <GS_PRIM_CLASS primclass, uint32 iip, uint32 tme, uint32 fst, uint32 color>
-void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int count)
+template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color, bool flat_swapped>
+void GSVertexTrace::FindMinMax(const void* vertex, const u32* index, int count)
 {
 	const GSDrawingContext* context = m_state->m_context;
 
@@ -184,8 +189,8 @@ void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int coun
 	{
 		if (color)
 		{
-			GSVector4i c0 = GSVector4i::load(v0.RGBAQ.u32[0]);
-			GSVector4i c1 = GSVector4i::load(v1.RGBAQ.u32[0]);
+			GSVector4i c0 = GSVector4i::load(v0.RGBAQ.U32[0]);
+			GSVector4i c1 = GSVector4i::load(v1.RGBAQ.U32[0]);
 			if (iip || finalVertex)
 			{
 				cmin = cmin.min_u8(c0.min_u8(c1));
@@ -280,16 +285,16 @@ void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int coun
 		int i = 0;
 		for (; i < (count - 3); i += 6)
 		{
-			processVertices(v[index[i + 0]], v[index[i + 3]], false);
+			processVertices(v[index[i + 0]], v[index[i + 3]], flat_swapped);
 			processVertices(v[index[i + 1]], v[index[i + 4]], false);
-			processVertices(v[index[i + 2]], v[index[i + 5]], true);
+			processVertices(v[index[i + 2]], v[index[i + 5]], !flat_swapped);
 		}
 		if (count & 1)
 		{
-			processVertices(v[index[i + 0]], v[index[i + 1]], false);
+			processVertices(v[index[i + 0]], v[index[i + 1]], flat_swapped);
 			// Compiler optimizations go!
 			// (And if they don't, it's only one vertex out of many)
-			processVertices(v[index[i + 2]], v[index[i + 2]], true);
+			processVertices(v[index[i + 2]], v[index[i + 2]], !flat_swapped);
 		}
 	}
 	else
@@ -304,8 +309,8 @@ void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int coun
 	m_max.p = (GSVector4(pmax) - o) * s;
 
 	// Fix signed int conversion
-	m_min.p = m_min.p.insert32<0, 2>(GSVector4::load((float)(uint32)pmin.extract32<2>()));
-	m_max.p = m_max.p.insert32<0, 2>(GSVector4::load((float)(uint32)pmax.extract32<2>()));
+	m_min.p = m_min.p.insert32<0, 2>(GSVector4::load((float)(u32)pmin.extract32<2>()));
+	m_max.p = m_max.p.insert32<0, 2>(GSVector4::load((float)(u32)pmax.extract32<2>()));
 
 	if (tme)
 	{
@@ -354,13 +359,13 @@ void GSVertexTrace::CorrectDepthTrace(const void* vertex, int count)
 
 
 	const GSVertex* RESTRICT v = (GSVertex*)vertex;
-	uint32 z = v[0].XYZ.Z;
+	u32 z = v[0].XYZ.Z;
 
 	// ought to check only 1/2 for sprite
 	if (z & 1)
 	{
 		// Check that first bit is always 1
-		for (int i = 0; i < count; i++)
+		for (int i = 0; i < count; ++i)
 		{
 			z &= v[i].XYZ.Z;
 		}
@@ -368,7 +373,7 @@ void GSVertexTrace::CorrectDepthTrace(const void* vertex, int count)
 	else
 	{
 		// Check that first bit is always 0
-		for (int i = 0; i < count; i++)
+		for (int i = 0; i < count; ++i)
 		{
 			z |= v[i].XYZ.Z;
 		}

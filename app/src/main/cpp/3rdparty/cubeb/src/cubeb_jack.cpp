@@ -67,14 +67,14 @@ enum devstream {
 static void
 s16ne_to_float(float * dst, const int16_t * src, size_t n)
 {
-  for (size_t i = 0; i < n; i++)
+  for (size_t i = 0; i < n; ++i)
     *(dst++) = (float)((float)*(src++) / 32767.0f);
 }
 
 static void
 float_to_s16ne(int16_t * dst, float * src, size_t n)
 {
-  for (size_t i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; ++i) {
     if (*src > 1.f) *src = 1.f;
     if (*src < -1.f) *src = -1.f;
     *(dst++) = (int16_t)((int16_t)(*(src++) * 32767));
@@ -323,7 +323,7 @@ cbjack_graph_order_callback(void * arg)
   jack_latency_range_t latency_range;
   jack_nframes_t port_latency, max_latency = 0;
 
-  for (int j = 0; j < MAX_STREAMS; j++) {
+  for (int j = 0; j < MAX_STREAMS; ++j) {
     cubeb_stream *stm = &ctx->streams[j];
 
     if (!stm->in_use)
@@ -356,7 +356,7 @@ cbjack_process(jack_nframes_t nframes, void * arg)
 
   ctx->jack_xruns = 0;
 
-  for (int j = 0; j < MAX_STREAMS; j++) {
+  for (int j = 0; j < MAX_STREAMS; ++j) {
     cubeb_stream *stm = &ctx->streams[j];
     float *bufs_out[stm->out_params.channels];
     float *bufs_in[stm->in_params.channels];
@@ -372,12 +372,12 @@ cbjack_process(jack_nframes_t nframes, void * arg)
 
     if (stm->devs & OUT_ONLY) {
       // get jack output buffers
-      for (i = 0; i < (int)stm->out_params.channels; i++)
+      for (i = 0; i < (int)stm->out_params.channels; ++i)
         bufs_out[i] = (float*)api_jack_port_get_buffer(stm->output_ports[i], nframes);
     }
     if (stm->devs & IN_ONLY) {
       // get jack input buffers
-      for (i = 0; i < (int)stm->in_params.channels; i++)
+      for (i = 0; i < (int)stm->in_params.channels; ++i)
         bufs_in[i] = (float*)api_jack_port_get_buffer(stm->input_ports[i], nframes);
     }
     if (stm->pause) {
@@ -726,7 +726,7 @@ cbjack_destroy(cubeb * context)
 static cubeb_stream *
 context_alloc_stream(cubeb * context, char const * stream_name)
 {
-  for (int i = 0; i < MAX_STREAMS; i++) {
+  for (int i = 0; i < MAX_STREAMS; ++i) {
     if (!context->streams[i].in_use) {
       cubeb_stream * stm = &context->streams[i];
       stm->in_use = true;

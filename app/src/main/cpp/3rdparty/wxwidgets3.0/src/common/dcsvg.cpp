@@ -337,7 +337,7 @@ void wxSVGFileDCImpl::DoDrawPolygon(int n, const wxPoint points[],
 
     s += wxT("\" \npoints=\"");
 
-    for (int i = 0; i < n;  i++)
+    for (int i = 0; i < n;  ++i)
     {
         sTmp.Printf ( wxT("%d,%d"), points [i].x+xoffset, points[i].y+yoffset );
         s += sTmp + wxT("\n");

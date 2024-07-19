@@ -213,7 +213,7 @@ public:
             wxU32CharBuffer buffer(n);
             wxChar32 *p = buffer.data();
             size_type i;
-            for (i = 0; i < n; i++)
+            for (i = 0; i < n; ++i)
             {
                *p = ch;
                p++;
@@ -306,7 +306,7 @@ public:
         wxCharBuffer buffer(n);
         char *p = buffer.data();
         size_type i;
-        for (i = 0; i < n; i++)
+        for (i = 0; i < n; ++i)
         {
            *p = ch;
            p++;
@@ -327,7 +327,7 @@ public:
         wxU16CharBuffer buffer(n);
         wxChar16 *p = buffer.data();
         size_type i;
-        for (i = 0; i < n; i++)
+        for (i = 0; i < n; ++i)
         {
            *p = ch;
            p++;
@@ -388,7 +388,7 @@ public:
             wxU32CharBuffer buffer(n);
             wxChar32 *p = buffer.data();
             size_type i;
-            for (i = 0; i < n; i++)
+            for (i = 0; i < n; ++i)
             {
                *p = c;
                p++;

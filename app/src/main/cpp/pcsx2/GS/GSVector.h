@@ -14,14 +14,14 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GS_types.h"
+#include "GSIntrin.h"
 
 #pragma once
 
 #ifdef _WIN32
-#  define gsforceinline __forceinline
+	#define gsforceinline __forceinline
 #else
-#  define gsforceinline __forceinline __inline__
+	#define gsforceinline __forceinline __inline__
 #endif
 
 enum Align_Mode
@@ -72,6 +72,16 @@ public:
 	{
 		return x != v.x || y != v.y;
 	}
+
+	constexpr GSVector2T operator*(const GSVector2T& v) const
+	{
+		return { x * v.x, y * v.y };
+	}
+
+	constexpr GSVector2T operator/(const GSVector2T& v) const
+	{
+		return { x / v.x, y / v.y };
+	}
 };
 
 typedef GSVector2T<float> GSVector2;
@@ -99,36 +109,36 @@ class GSVector8i;
 #undef _d
 
 // Position and order is important
-#ifdef _M_ARM64
-#include "GSVector4i_arm64.h"
-#include "GSVector4_arm64.h"
-#else
 #include "GSVector4i.h"
 #include "GSVector4.h"
 #include "GSVector8i.h"
 #include "GSVector8.h"
-#endif
 
-#include "common/Dependencies.h"
+#include "common/Pcsx2Defs.h"
 
 // conversion
 
 gsforceinline GSVector4i::GSVector4i(const GSVector4& v, bool truncate)
 {
-#ifndef _M_ARM64
 	m = truncate ? _mm_cvttps_epi32(v) : _mm_cvtps_epi32(v);
-#else
-	v4s = vcvtq_s32_f32(v.v4s);
-#endif
 }
 
 gsforceinline GSVector4::GSVector4(const GSVector4i& v)
 {
-#ifndef _M_ARM64
 	m = _mm_cvtepi32_ps(v);
-#else
-	v4s = vcvtq_f32_s32(v.v4s);
-#endif
+}
+
+gsforceinline void GSVector4i::sw32_inv(GSVector4i& a, GSVector4i& b, GSVector4i& c, GSVector4i& d)
+{
+	GSVector4 af = GSVector4::cast(a);
+	GSVector4 bf = GSVector4::cast(b);
+	GSVector4 cf = GSVector4::cast(c);
+	GSVector4 df = GSVector4::cast(d);
+
+	a = GSVector4i::cast(af.xzxz(cf));
+	b = GSVector4i::cast(af.ywyw(cf));
+	c = GSVector4i::cast(bf.xzxz(df));
+	d = GSVector4i::cast(bf.ywyw(df));
 }
 
 #if _M_SSE >= 0x501
@@ -143,26 +153,26 @@ gsforceinline GSVector8::GSVector8(const GSVector8i& v)
 	m = _mm256_cvtepi32_ps(v);
 }
 
+gsforceinline void GSVector8i::sw32_inv(GSVector8i& a, GSVector8i& b)
+{
+	GSVector8 af = GSVector8::cast(a);
+	GSVector8 bf = GSVector8::cast(b);
+	a = GSVector8i::cast(af.xzxz(bf));
+	b = GSVector8i::cast(af.ywyw(bf));
+}
+
 #endif
 
 // casting
 
 gsforceinline GSVector4i GSVector4i::cast(const GSVector4& v)
 {
-#ifndef _M_ARM64
 	return GSVector4i(_mm_castps_si128(v.m));
-#else
-	return GSVector4i(vreinterpretq_s32_f32(v.v4s));
-#endif
 }
 
 gsforceinline GSVector4 GSVector4::cast(const GSVector4i& v)
 {
-#ifndef _M_ARM64
 	return GSVector4(_mm_castsi128_ps(v.m));
-#else
-	return GSVector4(vreinterpretq_f32_s32(v.v4s));
-#endif
 }
 
 #if _M_SSE >= 0x500

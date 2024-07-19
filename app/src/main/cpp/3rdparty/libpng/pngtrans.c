@@ -271,7 +271,7 @@ png_do_invert(png_row_infop row_info, png_bytep row)
       png_size_t i;
       png_size_t istop = row_info->rowbytes;
 
-      for (i = 0; i < istop; i++)
+      for (i = 0; i < istop; ++i)
       {
          *rp = (png_byte)(~(*rp));
          rp++;

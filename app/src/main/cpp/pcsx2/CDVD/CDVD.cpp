@@ -106,7 +106,7 @@ static void cdvdSetIrq(uint id = (1 << Irq_CommandComplete))
 static int mg_BIToffset(u8* buffer)
 {
 	int i, ofs = 0x20;
-	for (i = 0; i < *(u16*)&buffer[0x1A]; i++)
+	for (i = 0; i < *(u16*)&buffer[0x1A]; ++i)
 		ofs += 0x10;
 
 	if (*(u16*)&buffer[0x18] & 1)
@@ -2487,7 +2487,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 					}
 
 					std::string zoneStr;
-					for (i = 0; i < 8; i++)
+					for (i = 0; i < 8; ++i)
 					{
 						if (cdvd.mg_buffer[0x1C] & (1 << i))
 							zoneStr += mg_zones[i];

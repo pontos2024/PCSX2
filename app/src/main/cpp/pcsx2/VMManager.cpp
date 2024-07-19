@@ -75,6 +75,7 @@ namespace VMManager
 	static void UpdateRunningGame(bool force);
 
 	static std::string GetCurrentSaveStateFileName(s32 slot);
+    static std::string GetCurrentSaveStateFileNameSerial(s32 slot);
 	static bool DoLoadState(const char* filename);
 	static bool DoSaveState(const char* filename, s32 slot_for_message);
 
@@ -102,36 +103,37 @@ static u32 s_mxcsr_saved;
 
 VMState VMManager::GetState()
 {
-	return s_state.load();
+    return s_state.load(std::memory_order_acquire);
 }
 
 void VMManager::SetState(VMState state)
 {
-	// Some state transitions aren't valid.
-	const VMState old_state = s_state.load();
-	SetTimerResolutionIncreased(state == VMState::Running);
-	s_state.store(state);
+    // Some state transitions aren't valid.
+    const VMState old_state = s_state.load(std::memory_order_acquire);
+    pxAssert(state != VMState::Initializing && state != VMState::Shutdown);
+    SetTimerResolutionIncreased(state == VMState::Running);
+    s_state.store(state, std::memory_order_release);
 
-	if (state == VMState::Paused || old_state == VMState::Paused)
-	{
-		if (state == VMState::Paused)
-		{
-			if (THREAD_VU1)
-				vu1Thread.WaitVU();
-			GetMTGS().WaitGS(true);
-		}
-		else
-		{
-			PerformanceMetrics::Reset();
-			frameLimitReset();
-		}
+    if (state != VMState::Stopping && (state == VMState::Paused || old_state == VMState::Paused))
+    {
+        if (state == VMState::Paused)
+        {
+            if (THREAD_VU1)
+                vu1Thread.WaitVU();
+            GetMTGS().WaitGS(false);
+        }
+        else
+        {
+            PerformanceMetrics::Reset();
+            frameLimitReset();
+        }
 	}
 }
 
 bool VMManager::HasValidVM()
 {
-	const VMState state = s_state.load();
-	return (state == VMState::Running || state == VMState::Paused);
+    const VMState state = s_state.load(std::memory_order_acquire);
+    return (state == VMState::Running || state == VMState::Paused);
 }
 
 std::string VMManager::GetDiscPath()
@@ -160,7 +162,10 @@ std::string VMManager::GetGameName()
 
 bool VMManager::InitializeMemory()
 {
-	pxAssert(!s_vm_memory && !s_cpu_provider_pack);
+	if(s_vm_memory && s_cpu_provider_pack) {
+        SetState(VMState::Stopping);
+        return false;
+    }
 
 #ifdef _M_X86
 	x86caps.Identify();
@@ -185,6 +190,8 @@ void VMManager::ReleaseMemory()
 	s_vm_memory->ReleaseAll();
 	s_vm_memory.reset();
 	s_cpu_provider_pack.reset();
+
+    vu1Thread.Detach();
 }
 
 SysMainMemory& GetVmMemory()
@@ -203,6 +210,7 @@ void VMManager::LoadSettings()
 	SettingsInterface* si = Host::GetSettingsInterface();
 	SettingsLoadWrapper slw(*si);
 	EmuConfig.LoadSave(slw);
+    EmuConfig2.LoadSave(slw);
 	PAD::LoadConfig(*si);
 
 	if (HasValidVM()) {
@@ -215,8 +223,9 @@ void VMManager::ApplyGameFixes()
 	s_active_game_fixes = 0;
 
 	const GameDatabaseSchema::GameEntry* game = GameDatabase::FindGame(s_game_serial);
-	if (!game)
-		return;
+	if (!game) {
+        return;
+    }
 
 	if (game->eeRoundMode != GameDatabaseSchema::RoundMode::Undefined)
 	{
@@ -274,7 +283,9 @@ void VMManager::ApplyGameFixes()
                 // are effectively booleans like the gamefixes
                 const bool mode = it.second != 0;
                 EmuConfig.Speedhacks.Set(id, mode);
+#ifdef PCSX2_DEBUG
                 PatchesCon->WriteLn("(GameDB) Setting Speedhack '%s' to [mode=%d]", EnumToString(id), mode);
+#endif
                 s_active_game_fixes++;
                 break;
             }
@@ -291,7 +302,9 @@ void VMManager::ApplyGameFixes()
             {
                 // if the fix is present, it is said to be enabled
                 EmuConfig.Gamefixes.Set(id, true);
+#ifdef PCSX2_DEBUG
                 PatchesCon->WriteLn("(GameDB) Enabled Gamefix: %s", EnumToString(id));
+#endif
                 s_active_game_fixes++;
 
                 // The LUT is only used for 1 game so we allocate it only when the gamefix is enabled (save 4MB)
@@ -317,11 +330,15 @@ bool VMManager::UpdateGameSettingsLayer()
 		const std::string filename(GetGameSettingsPath(s_game_crc));
 		if (FileSystem::FileExists(filename.c_str()))
 		{
+#ifdef PCSX2_DEBUG
 			Console.WriteLn("Loading game settings from '%s'...", filename.c_str());
+#endif
 			new_interface = std::make_unique<INISettingsInterface>(filename);
 			if (!new_interface->Load())
 			{
+#ifdef PCSX2_DEBUG
 				Console.Error("Failed to parse game settings ini '%s'", new_interface->GetFileName().c_str());
+#endif
 				new_interface.reset();
 			}
 		}
@@ -349,7 +366,9 @@ static void LoadPatches(const std::string& crc_string, bool show_messages, bool 
 		const GameDatabaseSchema::GameEntry* game = GameDatabase::FindGame(s_game_serial);
 		if (game && (patch_count = LoadPatchesFromGamesDB(crc_string, *game)) > 0)
 		{
+#ifdef PCSX2_DEBUG
 			PatchesCon->WriteLn(Color_Green, "(GameDB) Patches Loaded: %d", patch_count);
+#endif
 			message.Write("%u game patches", patch_count);
 		}
 	}
@@ -361,7 +380,9 @@ static void LoadPatches(const std::string& crc_string, bool show_messages, bool 
 		cheat_count = LoadPatchesFromDir(StringUtil::UTF8StringToWxString(crc_string), EmuFolders::Cheats, L"Cheats");
 		if (cheat_count > 0)
 		{
+#ifdef PCSX2_DEBUG
 			PatchesCon->WriteLn(Color_Green, "Cheats Loaded: %d", cheat_count);
+#endif
 			message.Write("%s%u cheat patches", (patch_count > 0) ? " and " : "", cheat_count);
 		}
 	}
@@ -372,7 +393,9 @@ static void LoadPatches(const std::string& crc_string, bool show_messages, bool 
 	{
 		if (ws_patch_count = LoadPatchesFromDir(StringUtil::UTF8StringToWxString(crc_string), EmuFolders::CheatsWS, L"Widescreen hacks"))
 		{
+#ifdef PCSX2_DEBUG
 			Console.WriteLn(Color_Gray, "Found widescreen patches in the cheats_ws folder --> skipping cheats_ws.zip");
+#endif
 		}
 		else
 		{
@@ -387,7 +410,9 @@ static void LoadPatches(const std::string& crc_string, bool show_messages, bool 
 			if (!s_widescreen_cheats_data.empty())
 			{
 				ws_patch_count = LoadPatchesFromZip(StringUtil::UTF8StringToWxString(crc_string), wxT("cheats_ws.zip"), new wxMemoryInputStream(s_widescreen_cheats_data.data(), s_widescreen_cheats_data.size()));
+#ifdef PCSX2_DEBUG
 				PatchesCon->WriteLn(Color_Green, "(Wide Screen Cheats DB) Patches Loaded: %d", ws_patch_count);
+#endif
 			}
 		}
 
@@ -463,7 +488,7 @@ void VMManager::ReloadPatches(bool verbose)
 
 static LimiterModeType GetInitialLimiterMode()
 {
-	return EmuConfig.GS.FrameLimitEnable ? LimiterModeType::Nominal : LimiterModeType::Unlimited;
+	return EmuConfig2.GS.FrameLimitEnable ? LimiterModeType::Nominal : LimiterModeType::Unlimited;
 }
 
 static void ApplyBootParameters(const VMBootParameters& params)
@@ -495,45 +520,45 @@ static void ApplyBootParameters(const VMBootParameters& params)
 bool VMManager::Initialize(const VMBootParameters& boot_params)
 {
 	const Common::Timer init_timer;
-	s_state.store(VMState::Starting);
+    s_state.store(VMState::Initializing, std::memory_order_release);
 
 	ScopedGuard close_state = [] {
-		s_state.store(VMState::Shutdown);
+        s_state.store(VMState::Shutdown, std::memory_order_release);
 	};
 
 	LoadSettings();
 	ApplyBootParameters(boot_params);
-	EmuConfig.LimiterMode = GetInitialLimiterMode();
+    EmuConfig2.LimiterMode = GetInitialLimiterMode();
 
+#ifdef PCSX2_DEBUG
 	Console.WriteLn("Allocating memory map...");
+#endif
 	s_vm_memory->CommitAll();
 
+#ifdef PCSX2_DEBUG
 	Console.WriteLn("Opening CDVD...");
+#endif
 	if (!DoCDVDopen())
 	{
 		return false;
 	}
 	ScopedGuard close_cdvd = [] { DoCDVDclose(); };
 
+#ifdef PCSX2_DEBUG
 	Console.WriteLn("Opening GS...");
+#endif
+    if (!GetMTGS().WaitForOpen())
+    {
+        // we assume GS is going to report its own error
+        Console.WriteLn("Failed to open GS.");
+        return false;
+    }
 
-	// TODO: Get rid of thread state nonsense and just make it a "normal" thread.
-	static bool gs_initialized = false;
-	if (!gs_initialized)
-	{
-		if (GSinit() != 0)
-		{
-			Console.WriteLn("Failed to initialize GS.");
-			return false;
-		}
+    ScopedGuard close_gs = []() { GetMTGS().WaitForClose(); };
 
-		gs_initialized = true;
-	}
-	GetMTGS().WaitForOpen();
-
-	ScopedGuard close_gs = []() { GetMTGS().Suspend(); };
-
+#ifdef PCSX2_DEBUG
 	Console.WriteLn("Opening SPU2...");
+#endif
 	if (SPU2init() != 0 || SPU2open() != 0)
 	{
 		SPU2shutdown();
@@ -544,7 +569,9 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 		SPU2shutdown();
 	};
 
+#ifdef PCSX2_DEBUG
 	Console.WriteLn("Opening PAD...");
+#endif
 	if (PADinit() != 0 || PADopen(Host::GetHostDisplay()->GetWindowInfo()) != 0)
 	{
 		return false;
@@ -554,7 +581,9 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 		PADshutdown();
 	};
 
+#ifdef PCSX2_DEBUG
 	Console.WriteLn("Opening DEV9...");
+#endif
 	if (DEV9init() != 0 || DEV9open() != 0)
 	{
 		return false;
@@ -564,7 +593,9 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 		DEV9shutdown();
 	};
 
+#ifdef PCSX2_DEBUG
 	Console.WriteLn("Opening USB...");
+#endif
 	if (USBinit() != 0 || USBopen(Host::GetHostDisplay()->GetWindowInfo()) != 0)
 	{
 		return false;
@@ -574,7 +605,9 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 		USBshutdown();
 	};
 
+#ifdef PCSX2_DEBUG
 	Console.WriteLn("Opening FW...");
+#endif
 	if (FWopen() != 0)
 	{
 		return false;
@@ -604,17 +637,20 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 	memBindConditionalHandlers();
 
 	ForgetLoadedPatches();
-	gsUpdateFrequency(EmuConfig);
+	gsUpdateFrequency(EmuConfig2);
 	frameLimitReset();
 	cpuReset();
 
-	UpdateRunningGame(true);
-
-	SetEmuThreadAffinities(true);
-
-	PerformanceMetrics::Clear();
+#ifdef PCSX2_DEBUG
 	Console.WriteLn("VM subsystems initialized in %.2f ms", init_timer.GetTimeMilliseconds());
-	s_state.store(VMState::Paused);
+#endif
+    s_state.store(VMState::Paused, std::memory_order_release);
+
+    UpdateRunningGame(true);
+
+    SetEmuThreadAffinities(true);
+
+    PerformanceMetrics::Clear();
 
 	// do we want to load state?
 	if (!boot_params.save_state.empty())
@@ -631,6 +667,8 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 
 void VMManager::Shutdown(bool allow_save_resume_state /* = true */)
 {
+    s_state.store(VMState::Stopping, std::memory_order_release);
+
 	SetTimerResolutionIncreased(false);
 
 	// sync everything
@@ -642,8 +680,11 @@ void VMManager::Shutdown(bool allow_save_resume_state /* = true */)
 	if (allow_save_resume_state && ShouldSaveResumeState())
 	{
 		std::string resume_file_name(GetCurrentSaveStateFileName(-1));
-		if (!resume_file_name.empty() && !DoSaveState(resume_file_name.c_str(), -1))
-			Console.Error("Failed to save resume state");
+		if (!resume_file_name.empty() && !DoSaveState(resume_file_name.c_str(), -1)) {
+#ifdef PCSX2_DEBUG
+            Console.Error("Failed to save resume state");
+#endif
+        }
 	}
 
 	{
@@ -673,19 +714,16 @@ void VMManager::Shutdown(bool allow_save_resume_state /* = true */)
 	DoCDVDclose();
 	FWclose();
 	FileMcd_EmuClose();
-	GetMTGS().Suspend();
+    GetMTGS().ShutdownThread();
 	USBshutdown();
 	SPU2shutdown();
 	PADshutdown();
 	DEV9shutdown();
-
-	// GS mess here...
-	GetMTGS().Cancel();
 	GSshutdown();
 
 	s_vm_memory->DecommitAll();
 
-	s_state.store(VMState::Shutdown);
+    s_state.store(VMState::Shutdown, std::memory_order_release);
 }
 
 void VMManager::Reset()
@@ -722,9 +760,32 @@ std::string VMManager::GetSaveStateFileName(const char* game_serial, u32 game_cr
 	return Path::CombineStdString(EmuFolders::Savestates, filename);
 }
 
+std::string VMManager::GetSaveStateFileNameSerial(const char* game_serial, u32 game_crc, s32 slot)
+{
+    if (!game_serial || game_serial[0] == '\0')
+        return {};
+
+    std::string _folder = Path::CombineStdString(EmuFolders::Savestates, game_serial);
+    if(!FileSystem::DirectoryExists(_folder.c_str())) {
+        FileSystem::CreateDirectoryPath(_folder.c_str(), false);
+    }
+    std::string _filename;
+    if (slot < 0) {
+        _filename = StringUtil::StdStringFromFormat("%s (%08X).resume.p2s", game_serial, game_crc);
+    } else {
+        _filename = StringUtil::StdStringFromFormat("%s (%08X).%02d.p2s", game_serial, game_crc, slot);
+    }
+    return Path::CombineStdString(_folder, _filename);
+}
+
 bool VMManager::HasSaveStateInSlot(const char* game_serial, u32 game_crc, s32 slot)
 {
-	std::string filename(GetSaveStateFileName(game_serial, game_crc, slot));
+	std::string filename(GetSaveStateFileNameSerial(game_serial, game_crc, slot));
+    if(!filename.empty() && FileSystem::FileExists(filename.c_str())) {
+        return true;
+    } else {
+        filename = GetSaveStateFileName(game_serial, game_crc, slot);
+    }
 	return (!filename.empty() && FileSystem::FileExists(filename.c_str()));
 }
 
@@ -732,6 +793,12 @@ std::string VMManager::GetCurrentSaveStateFileName(s32 slot)
 {
 	std::unique_lock lock(s_info_mutex);
 	return GetSaveStateFileName(s_game_serial.c_str(), s_game_crc, slot);
+}
+
+std::string VMManager::GetCurrentSaveStateFileNameSerial(s32 slot)
+{
+    std::unique_lock lock(s_info_mutex);
+    return GetSaveStateFileNameSerial(s_game_serial.c_str(), s_game_crc, slot);
 }
 
 bool VMManager::DoLoadState(const char* filename)
@@ -776,12 +843,16 @@ bool VMManager::LoadState(const char* filename)
 
 bool VMManager::LoadStateFromSlot(s32 slot)
 {
-	const std::string filename(GetCurrentSaveStateFileName(slot));
+	std::string filename(GetCurrentSaveStateFileNameSerial(slot));
 	if (filename.empty())
 	{
 		Host::AddKeyedFormattedOSDMessage("LoadStateFromSlot", 5.0f, "There is no save state in slot %d.", slot);
 		return false;
 	}
+
+    if(!FileSystem::FileExists(filename.c_str())) {
+        filename = GetCurrentSaveStateFileName(slot);
+    }
 
 	Host::AddKeyedFormattedOSDMessage("LoadStateFromSlot", 5.0f, "Loading state from slot %d...", slot);
 	return DoLoadState(filename.c_str());
@@ -794,7 +865,7 @@ bool VMManager::SaveState(const char* filename)
 
 bool VMManager::SaveStateToSlot(s32 slot)
 {
-	const std::string filename(GetCurrentSaveStateFileName(slot));
+	const std::string filename(GetCurrentSaveStateFileNameSerial(slot));
 	if (filename.empty())
 		return false;
 
@@ -805,12 +876,12 @@ bool VMManager::SaveStateToSlot(s32 slot)
 
 void VMManager::SetLimiterMode(LimiterModeType type)
 {
-	if (EmuConfig.LimiterMode == type)
+	if (EmuConfig2.LimiterMode == type)
 		return;
 
-	EmuConfig.LimiterMode = type;
-	gsUpdateFrequency(EmuConfig);
-	GetMTGS().SetVSync(EmuConfig.GetEffectiveVsyncMode(), 1.0f);
+    EmuConfig2.LimiterMode = type;
+	gsUpdateFrequency(EmuConfig2);
+	GetMTGS().SetVSync(EmuConfig2.GetEffectiveVsyncMode());
 }
 
 bool VMManager::ChangeDisc(std::string path)
@@ -883,7 +954,9 @@ void VMManager::SetPaused(bool paused)
 	if (!HasValidVM())
 		return;
 
+#ifdef PCSX2_DEBUG
 	Console.WriteLn(paused ? "(VMManager) Pausing..." : "(VMManager) Resuming...");
+#endif
 	SetState(paused ? VMState::Paused : VMState::Running);
 }
 
@@ -894,7 +967,7 @@ const std::string& VMManager::Internal::GetElfOverride()
 
 bool VMManager::Internal::IsExecutionInterrupted()
 {
-	return s_state.load() != VMState::Running;
+    return s_state.load(std::memory_order_relaxed) != VMState::Running;
 }
 
 void VMManager::Internal::GameStartingOnCPUThread()
@@ -923,14 +996,16 @@ void VMManager::Internal::VSyncOnCPUThread()
 void VMManager::CheckForCPUConfigChanges(const Pcsx2Config& old_config)
 {
 	if (EmuConfig.Cpu == old_config.Cpu &&
-		EmuConfig.Gamefixes == old_config.Gamefixes &&
-		EmuConfig.Speedhacks == old_config.Speedhacks &&
-		EmuConfig.Profiler == old_config.Profiler)
+            EmuConfig.Gamefixes == old_config.Gamefixes &&
+            EmuConfig.Speedhacks == old_config.Speedhacks &&
+            EmuConfig.Profiler == old_config.Profiler)
 	{
 		return;
 	}
 
+#ifdef PCSX2_DEBUG
 	Console.WriteLn("Updating CPU configuration...");
+#endif
 	SetCPUState(EmuConfig.Cpu.sseMXCSR, EmuConfig.Cpu.sseVUMXCSR);
 	SysClearExecutionCache();
 	memBindConditionalHandlers();
@@ -941,16 +1016,15 @@ void VMManager::CheckForGSConfigChanges(const Pcsx2Config& old_config)
 	if (EmuConfig.GS == old_config.GS)
 		return;
 
+#ifdef PCSX2_DEBUG
 	Console.WriteLn("Updating GS configuration...");
+#endif
 
-	if (EmuConfig.GS.FrameLimitEnable != old_config.GS.FrameLimitEnable)
-		EmuConfig.LimiterMode = GetInitialLimiterMode();
-
-	gsUpdateFrequency(EmuConfig);
+	gsUpdateFrequency(EmuConfig2);
 	UpdateVSyncRate();
 	frameLimitReset();
 	GetMTGS().ApplySettings();
-	GetMTGS().SetVSync(EmuConfig.GetEffectiveVsyncMode(), 1.0f);
+	GetMTGS().SetVSync(EmuConfig2.GetEffectiveVsyncMode());
 }
 
 void VMManager::CheckForFramerateConfigChanges(const Pcsx2Config& old_config)
@@ -958,18 +1032,20 @@ void VMManager::CheckForFramerateConfigChanges(const Pcsx2Config& old_config)
 	if (EmuConfig.Framerate == old_config.Framerate)
 		return;
 
+#ifdef PCSX2_DEBUG
 	Console.WriteLn("Updating frame rate configuration");
-	gsUpdateFrequency(EmuConfig);
+#endif
+	gsUpdateFrequency(EmuConfig2);
 	UpdateVSyncRate();
 	frameLimitReset();
-	GetMTGS().SetVSync(EmuConfig.GetEffectiveVsyncMode(), 1.0f);
+	GetMTGS().SetVSync(EmuConfig2.GetEffectiveVsyncMode());
 }
 
 void VMManager::CheckForPatchConfigChanges(const Pcsx2Config& old_config)
 {
 	if (EmuConfig.EnableCheats == old_config.EnableCheats &&
-		EmuConfig.EnableWideScreenPatches == old_config.EnableWideScreenPatches &&
-		EmuConfig.EnablePatches == old_config.EnablePatches)
+            EmuConfig.EnableWideScreenPatches == old_config.EnableWideScreenPatches &&
+            EmuConfig.EnablePatches == old_config.EnablePatches)
 	{
 		return;
 	}
@@ -983,14 +1059,16 @@ void VMManager::CheckForSPU2ConfigChanges(const Pcsx2Config& old_config)
 		return;
 
 	// TODO: Don't reinit on volume changes.
-
+#ifdef PCSX2_DEBUG
 	Console.WriteLn("Updating SPU2 configuration");
-
+#endif
 	// kinda lazy, but until we move spu2 over...
 	freezeData fd = {};
 	if (SPU2freeze(FreezeAction::Size, &fd) != 0)
 	{
+#ifdef PCSX2_DEBUG
 		Console.Error("(CheckForSPU2ConfigChanges) Failed to get SPU2 freeze size");
+#endif
 		return;
 	}
 
@@ -998,7 +1076,9 @@ void VMManager::CheckForSPU2ConfigChanges(const Pcsx2Config& old_config)
 	fd.data = fd_data.get();
 	if (SPU2freeze(FreezeAction::Save, &fd) != 0)
 	{
+#ifdef PCSX2_DEBUG
 		Console.Error("(CheckForSPU2ConfigChanges) Failed to freeze SPU2");
+#endif
 		return;
 	}
 
@@ -1006,13 +1086,17 @@ void VMManager::CheckForSPU2ConfigChanges(const Pcsx2Config& old_config)
 	SPU2shutdown();
 	if (SPU2init() != 0 || SPU2open() != 0)
 	{
+#ifdef PCSX2_DEBUG
 		Console.Error("(CheckForSPU2ConfigChanges) Failed to reopen SPU2, we'll probably crash :(");
+#endif
 		return;
 	}
 
 	if (SPU2freeze(FreezeAction::Load, &fd) != 0)
 	{
+#ifdef PCSX2_DEBUG
 		Console.Error("(CheckForSPU2ConfigChanges) Failed to unfreeze SPU2");
+#endif
 		return;
 	}
 }
@@ -1045,7 +1129,9 @@ void VMManager::CheckForMemoryCardConfigChanges(const Pcsx2Config& old_config)
 	if (!changed)
 		return;
 
+#ifdef PCSX2_DEBUG
 	Console.WriteLn("Updating memory card configuration");
+#endif
 
 	FileMcd_EmuClose();
 	FileMcd_EmuOpen();
@@ -1078,10 +1164,11 @@ void VMManager::CheckForConfigChanges(const Pcsx2Config& old_config)
 
 void VMManager::ApplySettings()
 {
+#ifdef PCSX2_DEBUG
 	Console.WriteLn("Applying settings...");
-
+#endif
 	// if we're running, ensure the threads are synced
-	const bool running = (s_state.load() == VMState::Running);
+    const bool running = (s_state.load(std::memory_order_acquire) == VMState::Running);
 	if (running)
 	{
 		if (THREAD_VU1)
@@ -1107,11 +1194,11 @@ void VMManager::ReloadGameSettings()
 
 static void HotkeyAdjustTargetSpeed(double delta)
 {
-	EmuConfig.Framerate.NominalScalar = EmuConfig.GS.LimitScalar + delta;
+    EmuConfig2.Framerate.NominalScalar = EmuConfig2.GS.LimitScalar + delta;
 	VMManager::SetLimiterMode(LimiterModeType::Nominal);
-	gsUpdateFrequency(EmuConfig);
-	GetMTGS().SetVSync(EmuConfig.GetEffectiveVsyncMode(), 1.0f);
-	Host::AddKeyedFormattedOSDMessage("SpeedChanged", 5.0f, "Target speed set to %.0f%%.", std::round(EmuConfig.Framerate.NominalScalar * 100.0));
+	gsUpdateFrequency(EmuConfig2);
+	GetMTGS().SetVSync(EmuConfig2.GetEffectiveVsyncMode());
+	Host::AddKeyedFormattedOSDMessage("SpeedChanged", 5.0f, "Target speed set to %.0f%%.", std::round(EmuConfig2.Framerate.NominalScalar * 100.0));
 }
 
 static constexpr s32 CYCLE_SAVE_STATE_SLOTS = 10;
@@ -1181,5 +1268,7 @@ void VMManager::SetTimerResolutionIncreased(bool enabled)
 
 void VMManager::SetEmuThreadAffinities(bool force)
 {
+#ifdef PCSX2_DEBUG
 	Console.Error("(SetEmuThreadAffinities) Not implemented");
+#endif
 }

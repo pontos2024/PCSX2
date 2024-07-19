@@ -26,12 +26,12 @@ WindowsMouse::WindowsMouse(DeviceAPI api, int hWheel, wchar_t* displayName, wcha
 	: Device(api, MOUSE, displayName, instanceID, deviceID)
 {
 	int i;
-	for (i = 0; i < 5; i++)
+	for (i = 0; i < 5; ++i)
 	{
 		AddPhysicalControl(PSHBTN, i, i);
 	}
 
-	for (i = 0; i < 3 + hWheel; i++)
+	for (i = 0; i < 3 + hWheel; ++i)
 	{
 		AddPhysicalControl(RELAXIS, i + 5, i + 5);
 	}

@@ -914,7 +914,7 @@ jinit_arith_encoder (j_compress_ptr cinfo)
   entropy->pub.finish_pass = finish_pass;
 
   /* Mark tables unallocated */
-  for (i = 0; i < NUM_ARITH_TBLS; i++) {
+  for (i = 0; i < NUM_ARITH_TBLS; ++i) {
     entropy->dc_stats[i] = NULL;
     entropy->ac_stats[i] = NULL;
   }

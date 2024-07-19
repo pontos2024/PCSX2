@@ -1053,7 +1053,7 @@ wxNativeFont wxLoadQueryNearestFont(int pointSize,
         wxStringTokenizer tokenizer(*xFontName, wxT("-"), wxTOKEN_RET_DELIMS);
         wxString newFontName;
 
-        for(int i = 0; i < 8; i++)
+        for(int i = 0; i < 8; ++i)
           newFontName += tokenizer.NextToken();
 
         (void) tokenizer.NextToken();

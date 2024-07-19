@@ -114,11 +114,17 @@ static __fi bool PERF_ShouldCountEvent( uint evt )
 // might save some debugging effort. :)
 void COP0_DiagnosticPCCR()
 {
-	if( cpuRegs.PERF.n.pccr.b.Event0 >= 7 && cpuRegs.PERF.n.pccr.b.Event0 <= 10 )
-		Console.Warning( "PERF/PCR0 Unsupported Update Event Mode = 0x%x", cpuRegs.PERF.n.pccr.b.Event0 );
+#ifdef PCSX2_DEBUG
+	if( cpuRegs.PERF.n.pccr.b.Event0 >= 7 && cpuRegs.PERF.n.pccr.b.Event0 <= 10 ) {
+		Console.Warning("PERF/PCR0 Unsupported Update Event Mode = 0x%x",
+						cpuRegs.PERF.n.pccr.b.Event0);
+	}
 
-	if( cpuRegs.PERF.n.pccr.b.Event1 >= 7 && cpuRegs.PERF.n.pccr.b.Event1 <= 10 )
-		Console.Warning( "PERF/PCR1 Unsupported Update Event Mode = 0x%x", cpuRegs.PERF.n.pccr.b.Event1 );
+	if( cpuRegs.PERF.n.pccr.b.Event1 >= 7 && cpuRegs.PERF.n.pccr.b.Event1 <= 10 ) {
+		Console.Warning("PERF/PCR1 Unsupported Update Event Mode = 0x%x",
+						cpuRegs.PERF.n.pccr.b.Event1);
+	}
+#endif
 }
 extern int branch;
 __fi void COP0_UpdatePCCR()
@@ -243,9 +249,11 @@ void MapTLB(int i)
 	u32 mask, addr;
 	u32 saddr, eaddr;
 
+#ifdef PCSX2_DEBUG
 	COP0_LOG("MAP TLB %d: 0x%08X-> [0x%08X 0x%08X] S=%d G=%d ASID=%d Mask=0x%03X EntryLo0 PFN=%x EntryLo0 Cache=%x EntryLo1 PFN=%x EntryLo1 Cache=%x VPN2=%x",
 		i, tlb[i].VPN2, tlb[i].PFN0, tlb[i].PFN1, tlb[i].S >> 31, tlb[i].G, tlb[i].ASID,
 		tlb[i].Mask, tlb[i].EntryLo0 >> 6, (tlb[i].EntryLo0 & 0x38) >> 3, tlb[i].EntryLo1 >> 6, (tlb[i].EntryLo1 & 0x38) >> 3, tlb[i].VPN2);
+#endif
 
 	if (tlb[i].S)
 	{
@@ -258,7 +266,7 @@ void MapTLB(int i)
 		saddr = tlb[i].VPN2 >> 12;
 		eaddr = saddr + tlb[i].Mask + 1;
 
-		for (addr=saddr; addr<eaddr; addr++) {
+		for (addr=saddr; addr<eaddr; ++addr) {
 			if ((addr & mask) == ((tlb[i].VPN2 >> 12) & mask)) { //match
 				memSetPageAddr(addr << 12, tlb[i].PFN0 + ((addr - saddr) << 12));
 				Cpu->Clear(addr << 12, 0x400);
@@ -271,7 +279,7 @@ void MapTLB(int i)
 		saddr = (tlb[i].VPN2 >> 12) + tlb[i].Mask + 1;
 		eaddr = saddr + tlb[i].Mask + 1;
 
-		for (addr=saddr; addr<eaddr; addr++) {
+		for (addr=saddr; addr<eaddr; ++addr) {
 			if ((addr & mask) == ((tlb[i].VPN2 >> 12) & mask)) { //match
 				memSetPageAddr(addr << 12, tlb[i].PFN1 + ((addr - saddr) << 12));
 				Cpu->Clear(addr << 12, 0x400);
@@ -298,7 +306,7 @@ void UnmapTLB(int i)
 		saddr = tlb[i].VPN2 >> 12;
 		eaddr = saddr + tlb[i].Mask + 1;
 	//	Console.WriteLn("Clear TLB: %08x ~ %08x",saddr,eaddr-1);
-		for (addr=saddr; addr<eaddr; addr++) {
+		for (addr=saddr; addr<eaddr; ++addr) {
 			if ((addr & mask) == ((tlb[i].VPN2 >> 12) & mask)) { //match
 				memClearPageAddr(addr << 12);
 				Cpu->Clear(addr << 12, 0x400);
@@ -311,7 +319,7 @@ void UnmapTLB(int i)
 		saddr = (tlb[i].VPN2 >> 12) + tlb[i].Mask + 1;
 		eaddr = saddr + tlb[i].Mask + 1;
 	//	Console.WriteLn("Clear TLB: %08x ~ %08x",saddr,eaddr-1);
-		for (addr=saddr; addr<eaddr; addr++) {
+		for (addr=saddr; addr<eaddr; ++addr) {
 			if ((addr & mask) == ((tlb[i].VPN2 >> 12) & mask)) { //match
 				memClearPageAddr(addr << 12);
 				Cpu->Clear(addr << 12, 0x400);
@@ -345,9 +353,11 @@ namespace OpcodeImpl {
 namespace COP0 {
 
 void TLBR() {
+#ifdef PCSX2_DEBUG
 	COP0_LOG("COP0_TLBR %d:%x,%x,%x,%x",
 			cpuRegs.CP0.n.Index,   cpuRegs.CP0.n.PageMask, cpuRegs.CP0.n.EntryHi,
 			cpuRegs.CP0.n.EntryLo0, cpuRegs.CP0.n.EntryLo1);
+#endif
 
 	int i = cpuRegs.CP0.n.Index & 0x3f;
 
@@ -361,11 +371,11 @@ void TLBWI() {
 	int j = cpuRegs.CP0.n.Index & 0x3f;
 
 	//if (j > 48) return;
-
+#ifdef PCSX2_DEBUG
 	COP0_LOG("COP0_TLBWI %d:%x,%x,%x,%x",
 			cpuRegs.CP0.n.Index,    cpuRegs.CP0.n.PageMask, cpuRegs.CP0.n.EntryHi,
 			cpuRegs.CP0.n.EntryLo0, cpuRegs.CP0.n.EntryLo1);
-
+#endif
 	UnmapTLB(j);
 	tlb[j].PageMask = cpuRegs.CP0.n.PageMask;
 	tlb[j].EntryHi = cpuRegs.CP0.n.EntryHi;
@@ -378,11 +388,11 @@ void TLBWR() {
 	int j = cpuRegs.CP0.n.Random & 0x3f;
 
 	//if (j > 48) return;
-
+#ifdef PCSX2_DEBUG
 DevCon.Warning("COP0_TLBWR %d:%x,%x,%x,%x\n",
 			cpuRegs.CP0.n.Random,   cpuRegs.CP0.n.PageMask, cpuRegs.CP0.n.EntryHi,
 			cpuRegs.CP0.n.EntryLo0, cpuRegs.CP0.n.EntryLo1);
-
+#endif
 	//if (j > 48) return;
 
 	UnmapTLB(j);
@@ -409,7 +419,7 @@ void TLBP() {
 	EntryHi32.u = cpuRegs.CP0.n.EntryHi;
 
 	cpuRegs.CP0.n.Index=0xFFFFFFFF;
-	for(i=0;i<48;i++){
+	for(i=0; i<48; ++i){
 		if (tlb[i].VPN2 == ((~tlb[i].Mask) & (EntryHi32.s.VPN2))
 		&& ((tlb[i].G&1) || ((tlb[i].ASID & 0xff) == EntryHi32.s.ASID))) {
 			cpuRegs.CP0.n.Index = i;
@@ -451,7 +461,9 @@ void MFC0()
 		break;
 
 		case 24:
+#ifdef PCSX2_DEBUG
 			COP0_LOG("MFC0 Breakpoint debug Registers code = %x", cpuRegs.code & 0x3FF);
+#endif
 		break;
 
 		case 9:
@@ -488,7 +500,9 @@ void MTC0()
 		break;
 
 		case 24:
+#ifdef PCSX2_DEBUG
 			COP0_LOG("MTC0 Breakpoint debug Registers code = %x", cpuRegs.code & 0x3FF);
+#endif
 		break;
 
 		case 25:

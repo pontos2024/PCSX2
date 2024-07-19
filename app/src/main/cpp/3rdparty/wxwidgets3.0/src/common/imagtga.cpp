@@ -139,7 +139,7 @@ int DecodeRLE(unsigned char* imageData, unsigned long imageSize,
             if ( !stream.Read(buf, pixelSize) )
                 return wxTGA_IOERR;
 
-            for (unsigned int i = 0; i < length; i++)
+            for (unsigned int i = 0; i < length; ++i)
             {
                 memcpy(imageData, buf, pixelSize);
 
@@ -266,7 +266,7 @@ int ReadTGA(wxImage* image, wxInputStream& stream)
 
         palette = (unsigned char *) malloc(paletteLength * 3);
 
-        for (unsigned int i = 0; i < paletteLength; i++)
+        for (unsigned int i = 0; i < paletteLength; ++i)
         {
             stream.Read(buf, 3);
 

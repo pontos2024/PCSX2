@@ -120,6 +120,28 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //////
+        // RENDERER
+
+        MaterialButton btn_ogl = findViewById(R.id.btn_ogl);
+        if(btn_ogl != null) {
+            btn_ogl.setOnClickListener(v -> {
+                NativeApp.renderGpu(12);
+            });
+        }
+        MaterialButton btn_vulkan = findViewById(R.id.btn_vulkan);
+        if(btn_vulkan != null) {
+            btn_vulkan.setOnClickListener(v -> {
+                NativeApp.renderGpu(14);
+            });
+        }
+        MaterialButton btn_sw = findViewById(R.id.btn_sw);
+        if(btn_sw != null) {
+            btn_sw.setOnClickListener(v -> {
+                NativeApp.renderGpu(13);
+            });
+        }
+
+        //////
         // PAD
 
         MaterialButton btn_pad_select = findViewById(R.id.btn_pad_select);
@@ -498,7 +520,11 @@ public class MainActivity extends AppCompatActivity {
         FileOutputStream os = null;
         try {
             is = assetMgr.open(srcFile);
-            if (!new File(destFile).exists())
+            boolean _exists = new File(destFile).exists();
+            if(srcFile.contains("shaders")) {
+                _exists = false;
+            }
+            if(!_exists)
             {
                 os = new FileOutputStream(destFile);
 

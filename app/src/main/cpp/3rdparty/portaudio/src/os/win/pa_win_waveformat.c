@@ -156,7 +156,7 @@ PaWinWaveFormatChannelMask PaWin_DefaultChannelMask( int numChannels )
         }
         else {
             pwfFormat->dwChannelMask = 0;
-            for(i=0; i<nChannels; i++)
+            for(i=0; i<nChannels; ++i)
                 pwfFormat->dwChannelMask = (pwfFormat->dwChannelMask << 1) | 0x1;
         }
     */

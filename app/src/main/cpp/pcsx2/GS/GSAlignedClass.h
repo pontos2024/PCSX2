@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "common/AlignedMalloc.h"
+
 template <int i>
 class GSAlignedClass
 {
@@ -36,6 +38,12 @@ public:
 	void* operator new(size_t size, void* ptr)
 	{
 		return ptr;
+	}
+
+	void operator delete(void* ptr, void* placement_ptr)
+	{
+		// Just here to satisfy compilers
+		// Person who calls in-place placement new must handle error case
 	}
 
 	void* operator new[](size_t size)

@@ -133,7 +133,7 @@ static const UInt32 kVendors[][3] =
 int x86cpuid_GetFirm(const Cx86cpuid *p)
 {
   unsigned i;
-  for (i = 0; i < sizeof(kVendors) / sizeof(kVendors[i]); i++)
+  for (i = 0; i < sizeof(kVendors) / sizeof(kVendors[i]); ++i)
   {
     const UInt32 *v = kVendors[i];
     if (v[0] == p->vendor[0] &&

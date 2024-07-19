@@ -131,7 +131,7 @@ float addToAvg(float val)
 	// Few gotchas: val overwrites first-1, handling actualWindow changes, etc.
 	// However, this isn't hot code, so unless proven otherwise, we can live with unoptimized code.
 	float sum = 0;
-	for (unsigned int i = first; i < first + actualWindow; i++)
+	for (unsigned int i = first; i < first + actualWindow; ++i)
 	{
 		sum += avg_fullness[i % AVERAGING_BUFFER_SIZE];
 	}

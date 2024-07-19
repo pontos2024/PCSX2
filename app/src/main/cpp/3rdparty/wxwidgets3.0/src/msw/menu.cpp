@@ -1272,12 +1272,12 @@ int wxMenuBar::MSWPositionForWxMenu(wxMenu *menu, int wxpos)
 #endif
 
     int i; // For old C++ compatibility
-    for(i=wxpos; i<totalMSWItems; i++)
+    for(i=wxpos; i<totalMSWItems; ++i)
     {
         if(GetSubMenu((HMENU)m_hMenu,i)==(HMENU)menu->GetHMenu())
             return i;
     }
-    for(i=0; i<wxpos; i++)
+    for(i=0; i<wxpos; ++i)
     {
         if(GetSubMenu((HMENU)m_hMenu,i)==(HMENU)menu->GetHMenu())
             return i;

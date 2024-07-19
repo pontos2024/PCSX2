@@ -71,7 +71,7 @@ namespace GL
 		if (!m_supports_surfaceless)
 			Console.Warning("EGL implementation does not support surfaceless contexts, emulating with pbuffers");
 
-		for (size_t i = 0; i < num_versions_to_try; i++)
+		for (size_t i = 0; i < num_versions_to_try; ++i)
 		{
 			if (CreateContextAndSurface(versions_to_try[i], nullptr, true))
 				return true;

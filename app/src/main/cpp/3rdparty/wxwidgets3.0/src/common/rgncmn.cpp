@@ -90,13 +90,13 @@ static bool DoRegionUnion(wxRegionBase& region,
     // rectangles to add to the region.
     int width = image.GetWidth();
     int height = image.GetHeight();
-    for (int y=0; y < height; y++)
+    for (int y=0; y < height; ++y)
     {
         wxRect rect;
         rect.y = y;
         rect.height = 1;
 
-        for (int x=0; x < width; x++)
+        for (int x=0; x < width; ++x)
         {
             // search for a continuous range of non-transparent pixels
             int x0 = x;

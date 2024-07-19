@@ -61,14 +61,18 @@ bool ShaderCache::Open(bool is_gles, std::string_view base_path, u32 version)
 		// check that there's at least one format and the extension isn't being "faked"
 		GLint num_formats = 0;
 		glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &num_formats);
+#ifdef PCSX2_DEBUG
 		Console.WriteLn("%u program binary formats supported by driver", num_formats);
+#endif
 		m_program_binary_supported = (num_formats > 0);
 	}
 
 	if (!m_program_binary_supported)
 	{
+#ifdef PCSX2_DEBUG
 		Console.Warning("Your GL driver does not support program binaries. Hopefully it has a built-in cache, otherwise "
 						"startup will be slow due to compiling shaders.");
+#endif
 		return true;
 	}
 
@@ -77,8 +81,8 @@ bool ShaderCache::Open(bool is_gles, std::string_view base_path, u32 version)
 		const std::string index_filename = GetIndexFileName();
 		const std::string blob_filename = GetBlobFileName();
 
-		if (ReadExisting(index_filename, blob_filename))
-			return true;
+//		if (ReadExisting(index_filename, blob_filename))
+//			return true;
 
 		return CreateNew(index_filename, blob_filename);
 	}
@@ -90,19 +94,25 @@ bool ShaderCache::CreateNew(const std::string& index_filename, const std::string
 {
 	if (FileSystem::FileExists(index_filename.c_str()))
 	{
+#ifdef PCSX2_DEBUG
 		Console.Warning("Removing existing index file '%s'", index_filename.c_str());
+#endif
 		FileSystem::DeleteFilePath(index_filename.c_str());
 	}
 	if (FileSystem::FileExists(blob_filename.c_str()))
 	{
+#ifdef PCSX2_DEBUG
 		Console.Warning("Removing existing blob file '%s'", blob_filename.c_str());
+#endif
 		FileSystem::DeleteFilePath(blob_filename.c_str());
 	}
 
 	m_index_file = FileSystem::OpenCFile(index_filename.c_str(), "wb");
 	if (!m_index_file)
 	{
+#ifdef PCSX2_DEBUG
 		Console.Error("Failed to open index file '%s' for writing", index_filename.c_str());
+#endif
 		return false;
 	}
 
@@ -110,7 +120,9 @@ bool ShaderCache::CreateNew(const std::string& index_filename, const std::string
 	if (std::fwrite(&index_version, sizeof(index_version), 1, m_index_file) != 1 ||
 		std::fwrite(&m_version, sizeof(m_version), 1, m_index_file) != 1)
 	{
+#ifdef PCSX2_DEBUG
 		Console.Error("Failed to write version to index file '%s'", index_filename.c_str());
+#endif
 		std::fclose(m_index_file);
 		m_index_file = nullptr;
 		FileSystem::DeleteFilePath(index_filename.c_str());
@@ -120,7 +132,9 @@ bool ShaderCache::CreateNew(const std::string& index_filename, const std::string
 	m_blob_file = FileSystem::OpenCFile(blob_filename.c_str(), "w+b");
 	if (!m_blob_file)
 	{
+#ifdef PCSX2_DEBUG
 		Console.Error("Failed to open blob file '%s' for writing", blob_filename.c_str());
+#endif
 		std::fclose(m_index_file);
 		m_index_file = nullptr;
 		FileSystem::DeleteFilePath(index_filename.c_str());
@@ -141,7 +155,9 @@ bool ShaderCache::ReadExisting(const std::string& index_filename, const std::str
 	if (std::fread(&file_version, sizeof(file_version), 1, m_index_file) != 1 || file_version != FILE_VERSION ||
 		std::fread(&data_version, sizeof(data_version), 1, m_index_file) != 1 || data_version != m_version)
 	{
+#ifdef PCSX2_DEBUG
 		Console.Error("Bad file/data version in '%s'", index_filename.c_str());
+#endif
 		std::fclose(m_index_file);
 		m_index_file = nullptr;
 		return false;
@@ -150,7 +166,9 @@ bool ShaderCache::ReadExisting(const std::string& index_filename, const std::str
 	m_blob_file = FileSystem::OpenCFile(blob_filename.c_str(), "a+b");
 	if (!m_blob_file)
 	{
+#ifdef PCSX2_DEBUG
 		Console.Error("Blob file '%s' is missing", blob_filename.c_str());
+#endif
 		std::fclose(m_index_file);
 		m_index_file = nullptr;
 		return false;
@@ -161,14 +179,15 @@ bool ShaderCache::ReadExisting(const std::string& index_filename, const std::str
 
 	for (;;)
 	{
-		CacheIndexEntry entry;
+		CacheIndexEntry entry{};
 		if (std::fread(&entry, sizeof(entry), 1, m_index_file) != 1 ||
 			(entry.file_offset + entry.blob_size) > blob_file_size)
 		{
 			if (std::feof(m_index_file))
 				break;
-
+#ifdef PCSX2_DEBUG
 			Console.Error("Failed to read entry from '%s', corrupt file?", index_filename.c_str());
+#endif
 			m_index.clear();
 			std::fclose(m_blob_file);
 			m_blob_file = nullptr;
@@ -184,8 +203,9 @@ bool ShaderCache::ReadExisting(const std::string& index_filename, const std::str
 		const CacheIndexData data{entry.file_offset, entry.blob_size, entry.blob_format};
 		m_index.emplace(key, data);
 	}
-
+#ifdef PCSX2_DEBUG
 	Console.WriteLn("Read %zu entries from '%s'", m_index.size(), index_filename.c_str());
+#endif
 	return true;
 }
 
@@ -278,16 +298,19 @@ std::optional<Program> ShaderCache::GetProgram(const std::string_view vertex_sha
 	if (std::fseek(m_blob_file, iter->second.file_offset, SEEK_SET) != 0 ||
 		std::fread(data.data(), 1, iter->second.blob_size, m_blob_file) != iter->second.blob_size)
 	{
+#ifdef PCSX2_DEBUG
 		Console.Error("Read blob from file failed");
+#endif
 		return {};
 	}
 
 	Program prog;
 	if (prog.CreateFromBinary(data.data(), static_cast<u32>(data.size()), iter->second.blob_format))
 		return std::optional<Program>(std::move(prog));
-
+#ifdef PCSX2_DEBUG
 	Console.Warning(
 		"Failed to create program from binary, this may be due to a driver or GPU Change. Recreating cache.");
+#endif
 	if (!Recreate())
 		return CompileProgram(vertex_shader, geometry_shader, fragment_shader, callback, false);
 	else
@@ -345,7 +368,7 @@ std::optional<Program> ShaderCache::CompileAndAddProgram(const CacheIndexKey& ke
 	if (!m_blob_file || std::fseek(m_blob_file, 0, SEEK_END) != 0)
 		return prog;
 
-	CacheIndexData data;
+	CacheIndexData data{};
 	data.file_offset = static_cast<u32>(std::ftell(m_blob_file));
 	data.blob_size = static_cast<u32>(prog_data.size());
 	data.blob_format = prog_format;
@@ -368,7 +391,9 @@ std::optional<Program> ShaderCache::CompileAndAddProgram(const CacheIndexKey& ke
 		std::fflush(m_blob_file) != 0 || std::fwrite(&entry, sizeof(entry), 1, m_index_file) != 1 ||
 		std::fflush(m_index_file) != 0)
 	{
+#ifdef PCSX2_DEBUG
 		Console.Error("Failed to write shader blob to file");
+#endif
 		return prog;
 	}
 

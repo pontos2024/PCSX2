@@ -240,7 +240,9 @@ void IniLoader::_EnumEntry(const wxString& var, int& value, const wxChar* const*
 	const int cnt = _calcEnumLength(enumArray);
 	if (!IndexBoundsCheck(L"IniLoader EnumDefaultValue", defvalue, cnt))
 	{
+#ifdef PCSX2_DEBUG
 		Console.Error("(LoadSettings) Default enumeration index is out of bounds. Truncating.");
+#endif
 		defvalue = cnt - 1;
 	}
 
@@ -261,8 +263,10 @@ void IniLoader::_EnumEntry(const wxString& var, int& value, const wxChar* const*
 
 	if (enumArray[i] == NULL)
 	{
+#ifdef PCSX2_DEBUG
 		Console.Warning(L"(LoadSettings) Warning: Unrecognized value '%s' on key '%s'\n\tUsing the default setting of '%s'.",
 			WX_STR(retval), WX_STR(var), enumArray[defvalue]);
+#endif
 		value = defvalue;
 	}
 	else
@@ -415,7 +419,9 @@ void IniSaver::_EnumEntry(const wxString& var, int& value, const wxChar* const* 
 
 	if (!IndexBoundsCheck(L"IniSaver EnumDefaultValue", defvalue, cnt))
 	{
+#ifdef PCSX2_DEBUG
 		Console.Error("(SaveSettings) Default enumeration index is out of bounds. Truncating.");
+#endif
 		defvalue = cnt - 1;
 	}
 
@@ -424,12 +430,13 @@ void IniSaver::_EnumEntry(const wxString& var, int& value, const wxChar* const* 
 
 	if (value >= cnt)
 	{
+#ifdef PCSX2_DEBUG
 		Console.Warning(L"(SaveSettings) An illegal enumerated index was detected when saving '%s'", WX_STR(var));
 		Console.Indent().Warning(
 			L"Illegal Value: %d\n"
 			L"Using Default: %d (%s)\n",
 			value, defvalue, enumArray[defvalue]);
-
+#endif
 		// Cause a debug assertion, since this is a fully recoverable error.
 		pxAssert(value < cnt);
 

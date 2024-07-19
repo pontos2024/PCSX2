@@ -375,7 +375,7 @@ transencode_coef_controller (j_compress_ptr cinfo,
     (*cinfo->mem->alloc_large) ((j_common_ptr) cinfo, JPOOL_IMAGE,
 				C_MAX_BLOCKS_IN_MCU * SIZEOF(JBLOCK));
   jzero_far((void FAR *) buffer, C_MAX_BLOCKS_IN_MCU * SIZEOF(JBLOCK));
-  for (i = 0; i < C_MAX_BLOCKS_IN_MCU; i++) {
+  for (i = 0; i < C_MAX_BLOCKS_IN_MCU; ++i) {
     coef->dummy_buffer[i] = buffer + i;
   }
 }

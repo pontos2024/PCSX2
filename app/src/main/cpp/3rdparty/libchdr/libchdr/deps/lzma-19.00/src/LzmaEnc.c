@@ -60,7 +60,7 @@ void LzmaEncProps_Normalize(CLzmaEncProps *p)
   {
     unsigned i;
     UInt32 reduceSize = (UInt32)p->reduceSize;
-    for (i = 11; i <= 30; i++)
+    for (i = 11; i <= 30; ++i)
     {
       if (reduceSize <= ((UInt32)2 << i)) { p->dictSize = ((UInt32)2 << i); break; }
       if (reduceSize <= ((UInt32)3 << i)) { p->dictSize = ((UInt32)3 << i); break; }
@@ -131,7 +131,7 @@ static void LzmaEnc_FastPosInit(Byte *g_FastPos)
   {
     size_t k = ((size_t)1 << ((slot >> 1) - 1));
     size_t j;
-    for (j = 0; j < k; j++)
+    for (j = 0; j < k; ++j)
       g_FastPos[j] = (Byte)slot;
     g_FastPos += k;
   }
@@ -564,7 +564,7 @@ MY_NO_INLINE static void MY_FAST_CALL RangeEnc_ShiftLow(CRangeEnc *p)
 static void RangeEnc_FlushData(CRangeEnc *p)
 {
   int i;
-  for (i = 0; i < 5; i++)
+  for (i = 0; i < 5; ++i)
     RangeEnc_ShiftLow(p);
 }
 
@@ -653,13 +653,13 @@ static void LitEnc_Encode(CRangeEnc *p, CLzmaProb *probs, UInt32 sym)
 static void LzmaEnc_InitPriceTables(CProbPrice *ProbPrices)
 {
   UInt32 i;
-  for (i = 0; i < (kBitModelTotal >> kNumMoveReducingBits); i++)
+  for (i = 0; i < (kBitModelTotal >> kNumMoveReducingBits); ++i)
   {
     const unsigned kCyclesBits = kNumBitPriceShiftBits;
     UInt32 w = (i << kNumMoveReducingBits) + (1 << (kNumMoveReducingBits - 1));
     unsigned bitCount = 0;
     unsigned j;
-    for (j = 0; j < kCyclesBits; j++)
+    for (j = 0; j < kCyclesBits; ++j)
     {
       w = w * w;
       bitCount <<= 1;
@@ -724,9 +724,9 @@ static UInt32 LitEnc_Matched_GetPrice(const CLzmaProb *probs, UInt32 sym, UInt32
 static void LenEnc_Init(CLenEnc *p)
 {
   unsigned i;
-  for (i = 0; i < (LZMA_NUM_PB_STATES_MAX << (kLenNumLowBits + 1)); i++)
+  for (i = 0; i < (LZMA_NUM_PB_STATES_MAX << (kLenNumLowBits + 1)); ++i)
     p->low[i] = kProbInitValue;
-  for (i = 0; i < kLenNumHighSymbols; i++)
+  for (i = 0; i < kLenNumHighSymbols; ++i)
     p->high[i] = kProbInitValue;
 }
 
@@ -810,11 +810,11 @@ MY_NO_INLINE static void MY_FAST_CALL LenPriceEnc_UpdateTables(
     unsigned i;
     UInt32 b;
     a = GET_PRICEa_0(enc->low[0]);
-    for (i = 0; i < kLenNumLowSymbols; i++)
+    for (i = 0; i < kLenNumLowSymbols; ++i)
       p->prices2[i] = a;
     a = GET_PRICEa_1(enc->low[0]);
     b = a + GET_PRICEa_0(enc->low[kLenNumLowSymbols]);
-    for (i = kLenNumLowSymbols; i < kLenNumLowSymbols * 2; i++)
+    for (i = kLenNumLowSymbols; i < kLenNumLowSymbols * 2; ++i)
       p->prices2[i] = b;
     a += GET_PRICEa_1(enc->low[kLenNumLowSymbols]);
   }
@@ -943,7 +943,7 @@ MY_NO_INLINE static void FillAlignPrices(CLzmaEnc *p)
   const CProbPrice *ProbPrices = p->ProbPrices;
   const CLzmaProb *probs = p->posAlignEncoder;
   // p->alignPriceCount = 0;
-  for (i = 0; i < kAlignTableSize / 2; i++)
+  for (i = 0; i < kAlignTableSize / 2; ++i)
   {
     UInt32 price = 0;
     unsigned sym = i;
@@ -963,7 +963,7 @@ MY_NO_INLINE static void FillAlignPrices(CLzmaEnc *p)
 
 MY_NO_INLINE static void FillDistancesPrices(CLzmaEnc *p)
 {
-  // int y; for (y = 0; y < 100; y++) {
+  // int y; for (y = 0; y < 100; ++y) {
 
   UInt32 tempPrices[kNumFullDistances];
   unsigned i, lps;
@@ -971,7 +971,7 @@ MY_NO_INLINE static void FillDistancesPrices(CLzmaEnc *p)
   const CProbPrice *ProbPrices = p->ProbPrices;
   p->matchPriceCount = 0;
 
-  for (i = kStartPosModelIndex / 2; i < kNumFullDistances / 2; i++)
+  for (i = kStartPosModelIndex / 2; i < kNumFullDistances / 2; ++i)
   {
     unsigned posSlot = GetPosSlot1(i);
     unsigned footerBits = (posSlot >> 1) - 1;
@@ -1185,13 +1185,13 @@ void LzmaEnc_Init(CLzmaEnc *p)
 
   RangeEnc_Init(&p->rc);
 
-  for (i = 0; i < (1 << kNumAlignBits); i++)
+  for (i = 0; i < (1 << kNumAlignBits); ++i)
     p->posAlignEncoder[i] = kProbInitValue;
 
-  for (i = 0; i < kNumStates; i++)
+  for (i = 0; i < kNumStates; ++i)
   {
     unsigned j;
-    for (j = 0; j < LZMA_NUM_PB_STATES_MAX; j++)
+    for (j = 0; j < LZMA_NUM_PB_STATES_MAX; ++j)
     {
       p->isMatch[i][j] = kProbInitValue;
       p->isRep0Long[i][j] = kProbInitValue;
@@ -1203,16 +1203,16 @@ void LzmaEnc_Init(CLzmaEnc *p)
   }
 
   {
-    for (i = 0; i < kNumLenToPosStates; i++)
+    for (i = 0; i < kNumLenToPosStates; ++i)
     {
       CLzmaProb *probs = p->posSlotEncoder[i];
       unsigned j;
-      for (j = 0; j < (1 << kNumPosSlotBits); j++)
+      for (j = 0; j < (1 << kNumPosSlotBits); ++j)
         probs[j] = kProbInitValue;
     }
   }
   {
-    for (i = 0; i < kNumFullDistances; i++)
+    for (i = 0; i < kNumFullDistances; ++i)
       p->posEncoders[i] = kProbInitValue;
   }
 
@@ -1232,7 +1232,7 @@ void LzmaEnc_Init(CLzmaEnc *p)
   p->optCur = 0;
 
   {
-    for (i = 0; i < kNumOpts; i++)
+    for (i = 0; i < kNumOpts; ++i)
       p->opt[i].price = kInfinityPrice;
   }
 
@@ -1314,13 +1314,13 @@ SRes LzmaEnc_WriteProperties(CLzmaEncHandle pp, Byte *props, SizeT *size)
     if (dictSize < (UInt32)0xFFFFFFFF - kDictMask)
       dictSize = (dictSize + kDictMask) & ~kDictMask;
   }
-  else for (i = 11; i <= 30; i++)
+  else for (i = 11; i <= 30; ++i)
   {
     if (dictSize <= ((UInt32)2 << i)) { dictSize = (2 << i); break; }
     if (dictSize <= ((UInt32)3 << i)) { dictSize = (3 << i); break; }
   }
 
-  for (i = 0; i < 4; i++)
+  for (i = 0; i < 4; ++i)
     props[1 + i] = (Byte)(dictSize >> (8 * i));
   return SZ_OK;
 }

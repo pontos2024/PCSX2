@@ -46,7 +46,7 @@ void cpuinfo_x86_detect_cache(
 		uint32_t iterations = (uint8_t) descriptors.as_bytes[0];
 		if (iterations != 0) {
 iterate_descriptors:
-			for (uint32_t i = 1 /* note: not 0 */; i < 16; i++) {
+			for (uint32_t i = 1 /* note: not 0 */; i < 16; ++i) {
 				const uint8_t descriptor = descriptors.as_bytes[i];
 				if (descriptor != 0) {
 					cpuinfo_x86_decode_cache_descriptor(

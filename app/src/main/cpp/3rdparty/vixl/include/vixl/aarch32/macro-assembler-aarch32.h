@@ -143,7 +143,7 @@ class MacroAssembler : public Assembler, public MacroAssemblerInterface {
             "Recursion limit reached; unable to resolve macro assembler "
             "call.\n");
         printf("Macro assembler context stack:\n");
-        for (unsigned i = 0; i < kMaxRecursion; i++) {
+        for (unsigned i = 0; i < kMaxRecursion; ++i) {
           printf("%10s %s\n", (i == 0) ? "oldest -> " : "", location_stack_[i]);
         }
         VIXL_ABORT();

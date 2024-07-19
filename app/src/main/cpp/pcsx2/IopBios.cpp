@@ -57,10 +57,14 @@ static std::string hostRoot;
 
 void Hle_SetElfPath(const char* elfFileName)
 {
+#ifdef PCSX2_DEBUG
 	DevCon.WriteLn("HLE Host: Will load ELF: %s\n", elfFileName);
+#endif
 	ghc::filesystem::path elf_path{elfFileName};
 	hostRoot = elf_path.parent_path().concat("/").string();
+#ifdef PCSX2_DEBUG
 	Console.WriteLn("HLE Host: Set 'host:' root path to: %s\n", hostRoot.c_str());
+#endif
 }
 
 namespace R3000A
@@ -415,7 +419,7 @@ namespace R3000A
 		template <typename T>
 		int allocfd(T* obj)
 		{
-			for (int i = 0; i < maxfds; i++)
+			for (int i = 0; i < maxfds; ++i)
 			{
 				if (!fds[i])
 				{
@@ -440,7 +444,7 @@ namespace R3000A
 
 		void reset()
 		{
-			for (int i = 0; i < maxfds; i++)
+			for (int i = 0; i < maxfds; ++i)
 			{
 				if (fds[i])
 					fds[i].close();
@@ -567,7 +571,7 @@ namespace R3000A
 				char buf[sizeof(fio_dirent_t)];
 				v0 = dir->read(&buf); /* Flawfinder: ignore */
 
-				for (s32 i = 0; i < (s32)sizeof(fio_dirent_t); i++)
+				for (s32 i = 0; i < (s32)sizeof(fio_dirent_t); ++i)
 					iopMemWrite8(data + i, buf[i]);
 
 				pc = ra;
@@ -588,7 +592,7 @@ namespace R3000A
 				char buf[sizeof(fio_stat_t)];
 				v0 = host_stat(full_path, (fio_stat_t*)&buf);
 
-				for (s32 i = 0; i < (s32)sizeof(fio_stat_t); i++)
+				for (s32 i = 0; i < (s32)sizeof(fio_stat_t); ++i)
 					iopMemWrite8(data + i, buf[i]);
 
 				pc = ra;
@@ -658,7 +662,7 @@ namespace R3000A
 
 				v0 = file->read(buf.get(), count);
 
-				for (s32 i = 0; i < (s32)v0; i++)
+				for (s32 i = 0; i < (s32)v0; ++i)
 					iopMemWrite8(data + i, buf[i]);
 
 				pc = ra;
@@ -703,7 +707,7 @@ namespace R3000A
 			{
 				auto buf = std::make_unique<char[]>(count);
 
-				for (u32 i = 0; i < count; i++)
+				for (u32 i = 0; i < count; ++i)
 					buf[i] = iopMemRead8(data + i);
 
 				v0 = file->write(buf.get(), count);
@@ -836,7 +840,9 @@ namespace R3000A
 		void RegisterLibraryEntries_DEBUG()
 		{
 			const std::string modname = iopMemReadString(a0 + 12);
+#ifdef PCSX2_DEBUG
 			DevCon.WriteLn(Color_Gray, "RegisterLibraryEntries: %8.8s version %x.%02x", modname.data(), (unsigned)iopMemRead8(a0 + 9), (unsigned)iopMemRead8(a0 + 8));
+#endif
 		}
 	} // namespace loadcore
 
@@ -866,6 +872,7 @@ namespace R3000A
 
 		void RegisterIntrHandler_DEBUG()
 		{
+#ifdef PCSX2_DEBUG
 			if(a0 < std::size(intrname) - 1)
 			{
 				DevCon.WriteLn(Color_Gray, "RegisterIntrHandler: intr %s, handler %x", intrname[a0], a2);
@@ -874,6 +881,7 @@ namespace R3000A
 			{
 				DevCon.WriteLn(Color_Gray, "RegisterIntrHandler: intr UNKNOWN (%d), handler %x",a0,a2);
 			}
+#endif
 		}
 	} // namespace intrman
 
@@ -881,7 +889,9 @@ namespace R3000A
 	{
 		void sceSifRegisterRpc_DEBUG()
 		{
+#ifdef PCSX2_DEBUG
 			DevCon.WriteLn(Color_Gray, "sifcmd sceSifRegisterRpc: rpc_id %x", a1);
+#endif
 		}
 	} // namespace sifcmd
 
@@ -986,9 +996,11 @@ namespace R3000A
 
 	void irxImportLog(const std::string& libname, u16 index, const char* funcname)
 	{
+#ifdef PCSX2_DEBUG
 		PSXBIOS_LOG("%8.8s.%03d: %s (%x, %x, %x, %x)",
 			libname.data(), index, funcname ? funcname : "unknown",
 			a0, a1, a2, a3);
+#endif
 	}
 
 	void __fastcall irxImportLog_rec(u32 import_table, u16 index, const char* funcname)

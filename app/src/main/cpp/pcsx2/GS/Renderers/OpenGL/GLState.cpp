@@ -22,12 +22,15 @@ namespace GLState
 	GSVector2i viewport;
 	GSVector4i scissor;
 
+	bool point_size = false;
+	float line_width = 1.0f;
+
 	bool blend;
-	uint16 eq_RGB;
-	uint16 f_sRGB;
-	uint16 f_dRGB;
-	uint8 bf;
-	uint32 wrgba;
+	u16 eq_RGB;
+	u16 f_sRGB;
+	u16 f_dRGB;
+	u8 bf;
+	u8 wrgba;
 
 	bool depth;
 	GLenum depth_func;
@@ -44,7 +47,7 @@ namespace GLState
 	GLuint tex_unit[8];
 	GLuint64 tex_handle[8];
 
-	int64 available_vram;
+	s64 available_vram;
 
 	void Clear()
 	{
@@ -71,10 +74,8 @@ namespace GLState
 
 		rt = 0;
 		ds = 0;
-		for (size_t i = 0; i < countof(tex_unit); i++)
-			tex_unit[i] = 0;
-		for (size_t i = 0; i < countof(tex_handle); i++)
-			tex_handle[i] = 0;
+		std::fill(std::begin(tex_unit), std::end(tex_unit), 0);
+		std::fill(std::begin(tex_handle), std::end(tex_handle), 0);
 
 		// Set a max vram limit for texture allocation
 		// (256MB are reserved for PBO/IBO/VBO/UBO buffers)

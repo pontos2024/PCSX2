@@ -793,7 +793,7 @@ namespace usb_mic
 			UINT count;
 			if (SUCCEEDED(collection->GetCount(&count)))
 			{
-				for (UINT i = 0; i < count; i++)
+				for (UINT i = 0; i < count; ++i)
 				{
 					IMMDevice* device;
 					if (SUCCEEDED(collection->Item(i, &device)))
@@ -923,7 +923,7 @@ namespace usb_mic
 					SendDlgItemMessage(hW, IDC_SLIDER2_USB, TBM_SETPOS, TRUE, buffering);
 					SetDlgItemInt(hW, IDC_BUFFER2_USB, buffering, FALSE);
 
-					for (int i = 0; i < 2; i++)
+					for (int i = 0; i < 2; ++i)
 					{
 						LoadSetting(s->dev_type, s->port, APINAME, (i ? N_AUDIO_SOURCE1 : N_AUDIO_SOURCE0), s->selectedDev[i]);
 					}
@@ -980,7 +980,7 @@ namespace usb_mic
 									p[1] = SendDlgItemMessage(hW, IDC_COMBO2_USB, CB_GETCURSEL, 0, 0);
 									p[2] = SendDlgItemMessage(hW, IDC_COMBO3_USB, CB_GETCURSEL, 0, 0);
 
-									for (int i = 0; i < 3; i++)
+									for (int i = 0; i < 3; ++i)
 									{
 										s->selectedDev[i].clear();
 
@@ -989,7 +989,7 @@ namespace usb_mic
 									}
 
 									const wchar_t* n[] = {N_AUDIO_SOURCE0, N_AUDIO_SOURCE1, N_AUDIO_SINK0};
-									for (int i = 0; i < 3; i++)
+									for (int i = 0; i < 3; ++i)
 									{
 										if (!SaveSetting(s->dev_type, s->port, APINAME, n[i], s->selectedDev[i]))
 											res = RESULT_FAILED;

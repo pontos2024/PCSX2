@@ -74,7 +74,7 @@ namespace GL
 		if (!CreateAnyContext(nullptr, true))
 			return false;
 
-		for (size_t i = 0; i < num_versions_to_try; i++)
+		for (size_t i = 0; i < num_versions_to_try; ++i)
 		{
 			const Version& cv = versions_to_try[i];
 			if (cv.profile == Profile::NoProfile)

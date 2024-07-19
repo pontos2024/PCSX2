@@ -559,7 +559,7 @@ select_colors (j_decompress_ptr cinfo, int desired_colors)
   /* Perform median-cut to produce final box list */
   numboxes = median_cut(cinfo, boxlist, numboxes, desired_colors);
   /* Compute the representative color for each box, fill colormap */
-  for (i = 0; i < numboxes; i++)
+  for (i = 0; i < numboxes; ++i)
     compute_color(cinfo, & boxlist[i], i);
   cinfo->actual_number_of_colors = numboxes;
   TRACEMS1(cinfo, 1, JTRC_QUANT_SELECTED, numboxes);
@@ -684,7 +684,7 @@ find_nearby_colors (j_decompress_ptr cinfo, int minc0, int minc1, int minc2,
    */
   minmaxdist = 0x7FFFFFFFL;
 
-  for (i = 0; i < numcolors; i++) {
+  for (i = 0; i < numcolors; ++i) {
     /* We compute the squared-c0-distance term, then add in the other two. */
     x = GETJSAMPLE(cinfo->colormap[0][i]);
     if (x < minc0) {
@@ -763,7 +763,7 @@ find_nearby_colors (j_decompress_ptr cinfo, int minc0, int minc1, int minc2,
    * within minmaxdist of some part of the box need be considered.
    */
   ncolors = 0;
-  for (i = 0; i < numcolors; i++) {
+  for (i = 0; i < numcolors; ++i) {
     if (mindist[i] <= minmaxdist)
       colorlist[ncolors++] = (JSAMPLE) i;
   }
@@ -808,7 +808,7 @@ find_best_colors (j_decompress_ptr cinfo, int minc0, int minc1, int minc2,
 #define STEP_C1  ((1 << C1_SHIFT) * C1_SCALE)
 #define STEP_C2  ((1 << C2_SHIFT) * C2_SCALE)
 
-  for (i = 0; i < numcolors; i++) {
+  for (i = 0; i < numcolors; ++i) {
     icolor = GETJSAMPLE(colorlist[i]);
     /* Compute (square of) distance from minc0/c1/c2 to this color */
     inc0 = (minc0 - GETJSAMPLE(cinfo->colormap[0][icolor])) * C0_SCALE;
@@ -1213,7 +1213,7 @@ start_pass_2_quant (j_decompress_ptr cinfo, boolean is_pre_scan)
   }
   /* Zero the histogram or inverse color map, if necessary */
   if (cquantize->needs_zeroed) {
-    for (i = 0; i < HIST_C0_ELEMS; i++) {
+    for (i = 0; i < HIST_C0_ELEMS; ++i) {
       jzero_far((void FAR *) histogram[i],
 		HIST_C1_ELEMS*HIST_C2_ELEMS * SIZEOF(histcell));
     }
@@ -1262,7 +1262,7 @@ jinit_2pass_quantizer (j_decompress_ptr cinfo)
   /* Allocate the histogram/inverse colormap storage */
   cquantize->histogram = (hist3d) (*cinfo->mem->alloc_small)
     ((j_common_ptr) cinfo, JPOOL_IMAGE, HIST_C0_ELEMS * SIZEOF(hist2d));
-  for (i = 0; i < HIST_C0_ELEMS; i++) {
+  for (i = 0; i < HIST_C0_ELEMS; ++i) {
     cquantize->histogram[i] = (hist2d) (*cinfo->mem->alloc_large)
       ((j_common_ptr) cinfo, JPOOL_IMAGE,
        HIST_C1_ELEMS*HIST_C2_ELEMS * SIZEOF(histcell));

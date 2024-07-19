@@ -125,13 +125,13 @@ void psxRcntInit()
 
 	memzero(psxCounters);
 
-	for (i = 0; i < 3; i++)
+	for (i = 0; i < 3; ++i)
 	{
 		psxCounters[i].rate = 1;
 		psxCounters[i].mode |= 0x0400;
 		psxCounters[i].target = IOPCNT_FUTURE_TARGET;
 	}
-	for (i = 3; i < 6; i++)
+	for (i = 3; i < 6; ++i)
 	{
 		psxCounters[i].rate = 1;
 		psxCounters[i].mode |= 0x0400;
@@ -154,7 +154,7 @@ void psxRcntInit()
 	psxCounters[7].CycleT = psxCounters[7].rate;
 	psxCounters[7].mode = 0x8;
 
-	for (i = 0; i < 8; i++)
+	for (i = 0; i < 8; ++i)
 		psxCounters[i].sCycleT = psxRegs.cycle;
 
 	// Tell the IOP to branch ASAP, so that timers can get
@@ -200,10 +200,10 @@ static void __fastcall _rcntTestTarget(int i)
 {
 	if (psxCounters[i].count < psxCounters[i].target)
 		return;
-
+#ifdef PCSX2_DEBUG
 	PSXCNT_LOG("IOP Counter[%d] target 0x%I64x >= 0x%I64x (mode: %x)",
 			   i, psxCounters[i].count, psxCounters[i].target, psxCounters[i].mode);
-
+#endif
 	if (psxCounters[i].mode & IOPCNT_INT_TARGET)
 	{
 		// Target interrupt
@@ -227,9 +227,10 @@ static __fi void _rcntTestOverflow(int i)
 	u64 maxTarget = (i < 3) ? 0xffff : 0xfffffffful;
 	if (psxCounters[i].count <= maxTarget)
 		return;
-
+#ifdef PCSX2_DEBUG
 	PSXCNT_LOG("IOP Counter[%d] overflow 0x%I64x >= 0x%I64x (mode: %x)",
 			   i, psxCounters[i].count, maxTarget, psxCounters[i].mode);
+#endif
 	if (!(psxCounters[i].mode & 0x40)) //One shot, whichever condition is met first
 	{
 		if (psxCounters[i].target < IOPCNT_FUTURE_TARGET)
@@ -446,7 +447,7 @@ void psxRcntUpdate()
 	psxNextCounter = 0x7fffffff;
 	psxNextsCounter = psxRegs.cycle;
 
-	for (i = 0; i <= 5; i++)
+	for (i = 0; i <= 5; ++i)
 	{
 		s32 change = psxRegs.cycle - psxCounters[i].sCycleT;
 
@@ -482,7 +483,7 @@ void psxRcntUpdate()
 	// Optimization Note: This approach is very sound.  Please do not try to unroll it
 	// as the size of the Test functions will cause code cache clutter and slowness.
 
-	for (i = 0; i < 6; i++)
+	for (i = 0; i < 6; ++i)
 	{
 		// don't do target/oveflow checks for hblankers.  Those
 		// checks are done when the counters are updated.
@@ -529,7 +530,7 @@ void psxRcntUpdate()
     if (cusb < psxNextCounter)
 		psxNextCounter = cusb;
 
-	for (i = 0; i < 6; i++)
+	for (i = 0; i < 6; ++i)
 		_rcntSet(i);
 }
 
@@ -571,8 +572,9 @@ void psxRcntWcount32(int index, u32 value)
 	u32 change;
 
 	pxAssert(index >= 3 && index < 6);
+#ifdef PCSX2_DEBUG
 	PSXCNT_LOG("32bit IOP Counter[%d] writeCount32 = %x", index, value);
-
+#endif
 	if (psxCounters[index].rate != PSXHBLANK)
 	{
 		// Re-adjust the sCycleT to match where the counter is currently
@@ -600,8 +602,9 @@ void psxRcntWcount32(int index, u32 value)
 __fi void psxRcntWmode16(int index, u32 value)
 {
 	int irqmode = 0;
+#ifdef PCSX2_DEBUG
 	PSXCNT_LOG("16bit IOP Counter[%d] writeMode = 0x%04X", index, value);
-
+#endif
 	pxAssume(index >= 0 && index < 3);
 	psxCounter& counter = psxCounters[index];
 
@@ -616,6 +619,8 @@ __fi void psxRcntWmode16(int index, u32 value)
 	{
 		irqmode += 2;
 	}
+
+#ifdef PCSX2_DEBUG
 	if (value & (1 << 7))
 	{
 		PSXCNT_LOG("16 Counter %d Toggle IRQ on %s", index, (irqmode & 3) == 1 ? "Target" : ((irqmode & 3) == 2 ? "Overflow" : "Target and Overflow"));
@@ -624,6 +629,7 @@ __fi void psxRcntWmode16(int index, u32 value)
 	{
 		PSXCNT_LOG("16 Counter %d Pulsed IRQ on %s", index, (irqmode & 3) == 1 ? "Target" : ((irqmode & 3) == 2 ? "Overflow" : "Target and Overflow"));
 	}
+
 	if (!(value & (1 << 6)))
 	{
 		PSXCNT_LOG("16 Counter %d One Shot", index);
@@ -632,6 +638,8 @@ __fi void psxRcntWmode16(int index, u32 value)
 	{
 		PSXCNT_LOG("16 Counter %d Repeat", index);
 	}
+#endif
+
 	if (index == 2)
 	{
 		switch (value & 0x200)
@@ -663,7 +671,9 @@ __fi void psxRcntWmode16(int index, u32 value)
 			// gated counters are added up as per the h/vblank timers.
 			// (the PIXEL alt source becomes a vsync gate)
 			counter.mode |= IOPCNT_STOPPED;
+#ifdef PCSX2_DEBUG
 			PSXCNT_LOG("IOP Counter[%d] Gate Check set, value = 0x%04X", index, value);
+#endif
 			if (index == 0)
 				psxhblankgate |= 1; // fixme: these gate flags should be one var >_<
 			else
@@ -690,7 +700,9 @@ __fi void psxRcntWmode16(int index, u32 value)
 //
 __fi void psxRcntWmode32(int index, u32 value)
 {
+#ifdef PCSX2_DEBUG
 	PSXCNT_LOG("32bit IOP Counter[%d] writeMode = 0x%04x", index, value);
+#endif
 	int irqmode = 0;
 	pxAssume(index >= 3 && index < 6);
 	psxCounter& counter = psxCounters[index];
@@ -706,6 +718,8 @@ __fi void psxRcntWmode32(int index, u32 value)
 	{
 		irqmode += 2;
 	}
+
+#ifdef PCSX2_DEBUG
 	if (value & (1 << 7))
 	{
 		PSXCNT_LOG("32 Counter %d Toggle IRQ on %s", index, (irqmode & 3) == 1 ? "Target" : ((irqmode & 3) == 2 ? "Overflow" : "Target and Overflow"));
@@ -722,6 +736,8 @@ __fi void psxRcntWmode32(int index, u32 value)
 	{
 		PSXCNT_LOG("32 Counter %d Repeat", index);
 	}
+#endif
+
 	if (index == 3)
 	{
 		// Counter 3 has the HBlank as an alternate source.
@@ -731,7 +747,9 @@ __fi void psxRcntWmode32(int index, u32 value)
 
 		if (counter.mode & IOPCNT_ENABLE_GATE)
 		{
+#ifdef PCSX2_DEBUG
 			PSXCNT_LOG("IOP Counter[3] Gate Check set, value = %x", value);
+#endif
 			counter.mode |= IOPCNT_STOPPED;
 			psxvblankgate |= 1 << 3;
 		}
@@ -813,9 +831,9 @@ u16 psxRcntRcount16(int index)
 	u32 retval = (u32)psxCounters[index].count;
 
 	pxAssert(index < 3);
-
+#ifdef PCSX2_DEBUG
 	PSXCNT_LOG("IOP Counter[%d] readCount16 = %lx", index, (u16)retval);
-
+#endif
 	// Don't count HBLANK timers
 	// Don't count stopped gates either.
 
@@ -824,7 +842,9 @@ u16 psxRcntRcount16(int index)
 	{
 		u32 delta = (u32)((psxRegs.cycle - psxCounters[index].sCycleT) / psxCounters[index].rate);
 		retval += delta;
+#ifdef PCSX2_DEBUG
 		PSXCNT_LOG("              (delta = %lx)", delta);
+#endif
 	}
 
 	return (u16)retval;
@@ -835,15 +855,17 @@ u32 psxRcntRcount32(int index)
 	u32 retval = (u32)psxCounters[index].count;
 
 	pxAssert(index >= 3 && index < 6);
-
+#ifdef PCSX2_DEBUG
 	PSXCNT_LOG("IOP Counter[%d] readCount32 = %lx", index, retval);
-
+#endif
 	if (!(psxCounters[index].mode & IOPCNT_STOPPED) &&
 		(psxCounters[index].rate != PSXHBLANK))
 	{
 		u32 delta = (u32)((psxRegs.cycle - psxCounters[index].sCycleT) / psxCounters[index].rate);
 		retval += delta;
+#ifdef PCSX2_DEBUG
 		PSXCNT_LOG("               (delta = %lx)", delta);
+#endif
 	}
 
 	return retval;

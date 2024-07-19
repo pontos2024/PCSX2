@@ -302,7 +302,7 @@ void wxEditableListBox::SetStrings(const wxArrayString& strings)
     m_listCtrl->DeleteAllItems();
     size_t i;
 
-    for (i = 0; i < strings.GetCount(); i++)
+    for (i = 0; i < strings.GetCount(); ++i)
         m_listCtrl->InsertItem(i, strings[i]);
 
     m_listCtrl->InsertItem(strings.GetCount(), wxEmptyString);
@@ -313,7 +313,7 @@ void wxEditableListBox::GetStrings(wxArrayString& strings) const
 {
     strings.Clear();
 
-    for (int i = 0; i < m_listCtrl->GetItemCount()-1; i++)
+    for (int i = 0; i < m_listCtrl->GetItemCount()-1; ++i)
         strings.Add(m_listCtrl->GetItemText(i));
 }
 

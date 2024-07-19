@@ -19,7 +19,7 @@
 #include "GSDrawScanline.h"
 #include "GS/GSRingHeap.h"
 
-class GSRendererSW : public GSRenderer
+class GSRendererSW final : public GSRenderer
 {
 	static const GSVector4 m_pos_scale;
 #if _M_SSE >= 0x501
@@ -35,7 +35,6 @@ class GSRendererSW : public GSRenderer
 		};
 
 	public:
-		GSRendererSW* m_parent;
 		GSOffset::PageLooper m_fb_pages;
 		GSOffset::PageLooper m_zb_pages;
 		int m_fpsm;
@@ -50,7 +49,7 @@ class GSRendererSW : public GSRenderer
 		} m_syncpoint;
 
 	public:
-		SharedData(GSRendererSW* parent);
+		SharedData();
 		virtual ~SharedData();
 
 		void UsePages(const GSOffset::PageLooper* fb_pages, int fpsm, const GSOffset::PageLooper* zb_pages, int zpsm);
@@ -64,32 +63,31 @@ class GSRendererSW : public GSRenderer
 
 	ConvertVertexBufferPtr m_cvb[4][2][2][2];
 
-	template <uint32 primclass, uint32 tme, uint32 fst, uint32 q_div>
+	template <u32 primclass, u32 tme, u32 fst, u32 q_div>
 	void ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex* RESTRICT src, size_t count);
 
 protected:
-	IRasterizer* m_rl;
+	std::unique_ptr<IRasterizer> m_rl;
+	std::unique_ptr<GSTextureCacheSW> m_tc;
 	GSRingHeap m_vertex_heap;
-	GSTextureCacheSW* m_tc;
-	GSTexture* m_texture[2];
-	uint8* m_output;
+	std::array<GSTexture*, 3> m_texture = {};
+	u8* m_output;
 	GSPixelOffset4* m_fzb;
 	GSVector4i m_fzb_bbox;
-	uint32 m_fzb_cur_pages[16];
-	std::atomic<uint32> m_fzb_pages[512]; // uint16 frame/zbuf pages interleaved
-	std::atomic<uint16> m_tex_pages[512];
+	u32 m_fzb_cur_pages[16];
+	std::atomic<u32> m_fzb_pages[512]; // u16 frame/zbuf pages interleaved
+	std::atomic<u16> m_tex_pages[512];
 
-	void Reset() final;
-	void VSync(int field) final;
-	void ResetDevice();
-	GSTexture* GetOutput(int i, int& y_offset) final;
-	GSTexture* GetFeedbackOutput() final;
+	void Reset(bool hardware_reset) override;
+	void VSync(u32 field, bool registers_written) override;
+	GSTexture* GetOutput(int i, int& y_offset) override;
+	GSTexture* GetFeedbackOutput() override;
 
-	void Draw() final;
+	void Draw() override;
 	void Queue(GSRingHeap::SharedPtr<GSRasterizerData>& item);
 	void Sync(int reason);
-	void InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r) final;
-	void InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut = false) final;
+	void InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r) override;
+	void InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut = false) override;
 
 	void UsePages(const GSOffset::PageLooper& pages, const int type);
 	void ReleasePages(const GSOffset::PageLooper& pages, const int type);
@@ -100,8 +98,10 @@ protected:
 	bool GetScanlineGlobalData(SharedData* data);
 
 public:
-	GSRendererSW(std::unique_ptr<GSDevice> dev, int threads);
-	virtual ~GSRendererSW();
+	GSRendererSW(int threads);
+	~GSRendererSW() override;
 
-	const char* GetName() const override;
+	__fi static GSRendererSW* GetInstance() { return static_cast<GSRendererSW*>(g_gs_renderer.get()); }
+
+	void Destroy() override;
 };

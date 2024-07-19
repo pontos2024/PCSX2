@@ -370,7 +370,7 @@ void normBranch(mV, microFlagCycles& mFC)
 		u32 tempPC = iPC;
 		u32* cpS = (u32*)&mVUregs;
 		u32* lpS = (u32*)&mVU.prog.lpState;
-		for (size_t i = 0; i < (sizeof(microRegInfo) - 4) / 4; i++, lpS++, cpS++)
+		for (size_t i = 0; i < (sizeof(microRegInfo) - 4) / 4; ++i, ++lpS, ++cpS)
 		{
 			xMOV(ptr32[lpS], cpS[0]);
 		}
@@ -508,7 +508,7 @@ void condBranch(mV, microFlagCycles& mFC, int JMPcc)
 		u32 tempPC = iPC;
 		u32* cpS = (u32*)&mVUregs;
 		u32* lpS = (u32*)&mVU.prog.lpState;
-		for (size_t i = 0; i < (sizeof(microRegInfo) - 4) / 4; i++, lpS++, cpS++)
+		for (size_t i = 0; i < (sizeof(microRegInfo) - 4) / 4; ++i, ++lpS, ++cpS)
 		{
 			xMOV(ptr32[lpS], cpS[0]);
 		}

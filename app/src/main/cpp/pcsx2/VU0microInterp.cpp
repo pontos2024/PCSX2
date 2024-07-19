@@ -189,7 +189,9 @@ static void _vu0Exec(VURegs* VU)
 
 			if (VU->takedelaybranch)
 			{
+#ifdef PCSX2_DEBUG
 				DevCon.Warning("VU0 - Branch/Jump in Delay Slot");
+#endif
 				VU->branch = 1;
 				VU->branchpc = VU->delaybranchpc;
 				VU->takedelaybranch = false;
@@ -221,6 +223,7 @@ void vu0Exec(VURegs* VU)
 	VU->cycle++;
 	_vu0Exec(VU);
 
+#ifdef PCSX2_DEBUG
 	if (VU->VI[0].UL != 0)
 		DbgCon.Error("VI[0] != 0!!!!\n");
 	if (VU->VF[0].f.x != 0.0f)
@@ -231,6 +234,7 @@ void vu0Exec(VURegs* VU)
 		DbgCon.Error("VF[0].z != 0.0!!!!\n");
 	if (VU->VF[0].f.w != 1.0f)
 		DbgCon.Error("VF[0].w != 1.0!!!!\n");
+#endif
 }
 
 // --------------------------------------------------------------------------------------
@@ -244,7 +248,9 @@ InterpVU0::InterpVU0()
 
 void InterpVU0::Reset()
 {
+#ifdef PCSX2_DEBUG
 	DevCon.Warning("VU0 Int Reset");
+#endif
 	VU0.fmacwritepos = 0;
 	VU0.fmacreadpos = 0;
 	VU0.fmaccount = 0;

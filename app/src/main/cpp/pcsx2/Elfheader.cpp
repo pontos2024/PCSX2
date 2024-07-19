@@ -131,7 +131,7 @@ bool ElfObject::hasHeaders() { return (hasProgramHeaders() && hasSectionHeaders(
 
 std::pair<u32,u32> ElfObject::getTextRange()
 {
-	for (int i = 0; i < header.e_phnum; i++)
+	for (int i = 0; i < header.e_phnum; ++i)
 	{
 		u32 start = proghead[i].p_vaddr;
 		u32 size = proghead[i].p_memsz;
@@ -290,7 +290,7 @@ void ElfObject::loadSectionHeaders()
 		eS = (Elf32_Sym*)data.GetPtr(secthead[i_st].sh_offset);
 		Console.WriteLn("found %d symbols", secthead[i_st].sh_size / sizeof(Elf32_Sym));
 
-		for(uint i = 1; i < (secthead[i_st].sh_size / sizeof(Elf32_Sym)); i++) {
+		for(uint i = 1; i < (secthead[i_st].sh_size / sizeof(Elf32_Sym)); ++i) {
 			if ((eS[i].st_value != 0) && (ELF32_ST_TYPE(eS[i].st_info) == 2))
 			{
 				R5900SymbolMap.AddLabel(&SymNames[eS[i].st_name],eS[i].st_value);

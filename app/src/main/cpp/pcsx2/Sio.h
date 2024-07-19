@@ -69,7 +69,7 @@ struct _mcd
 	u8 DoXor(const u8 *buf, uint length)
 	{
 		u8 i, x;
-		for (x=0, i=0; i<length; i++) x ^= buf[i];
+		for (x=0, i=0; i<length; ++i) { x ^= buf[i]; }
 		return x;
 	}
 

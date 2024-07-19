@@ -2810,7 +2810,7 @@ bool wxTextCtrl::MSWSetParaFormat(const wxTextAttr& style, long start, long end)
 
         pf.cTabCount = (SHORT)wxMin(tabs.GetCount(), MAX_TAB_STOPS);
         size_t i;
-        for (i = 0; i < (size_t) pf.cTabCount; i++)
+        for (i = 0; i < (size_t) pf.cTabCount; ++i)
         {
             // Convert from 1/10 mm to TWIPS
             pf.rgxTabs[i] = (int) (((double) tabs[i]) * mm2twips / 10.0) ;
@@ -3057,7 +3057,7 @@ bool wxTextCtrl::GetStyle(long position, wxTextAttr& style)
 
     wxArrayInt tabStops;
     size_t i;
-    for (i = 0; i < (size_t) pf.cTabCount; i++)
+    for (i = 0; i < (size_t) pf.cTabCount; ++i)
     {
         tabStops.Add( (int) ((double) (pf.rgxTabs[i] & 0xFFFF) * twips2mm * 10.0) );
     }

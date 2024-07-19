@@ -160,7 +160,7 @@ static void TestTemplate(const wxDirName &base, const wxString &fname, bool canE
 		NULL
 	};
 
-	for (int i = 0; ins[i]; i++) {
+	for (int i = 0; ins[i]; ++i) {
 		wxString tem(wxString::From8BitData(ins[i]));
 		Console.WriteLn(Color_Green, L"test: '%s' -> '%s'",
 		                WX_STR(tem),

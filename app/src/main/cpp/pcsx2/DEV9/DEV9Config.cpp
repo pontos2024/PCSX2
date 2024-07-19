@@ -44,7 +44,7 @@ void SaveDnsHosts()
 #endif
 	IniSaver ini((wxConfigBase*)hini.get());
 
-	for (size_t i = 0; i < config.EthHosts.size(); i++)
+	for (size_t i = 0; i < config.EthHosts.size(); ++i)
 	{
 		std::wstring groupName(L"Host" + std::to_wstring(i));
 		ScopedIniGroup iniEntry(ini, groupName);
@@ -119,10 +119,10 @@ void LoadDnsHosts()
 		}
 		else
 			ini.Entry(L"Enabled", entry.Enabled, false);
-
+#ifdef PCSX2_DEBUG
 		if (config.EthLogDNS && entry.Enabled)
 			Console.WriteLn("DEV9: Host entry %i: url %s mapped to %s", i, entry.Url.c_str(), tmp.ToStdString().c_str());
-
+#endif
 		config.EthHosts.push_back(entry);
 		i++;
 	}

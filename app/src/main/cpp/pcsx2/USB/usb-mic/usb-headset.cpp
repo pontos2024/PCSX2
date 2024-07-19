@@ -665,7 +665,7 @@ namespace usb_mic
 		int ret = USB_RET_STALL;
 
 		//cs 1 cn 0xFF, ep 0x81 attrib 1
-		/*for(int i=0; i<length; i++)
+		/*for(int i=0; i<length; ++i)
         Console.Warning("%02X ", data[i]);
     Console.Warning("\n");*/
 
@@ -814,7 +814,7 @@ namespace usb_mic
 					}
 
 					uint32_t i = 0;
-					for (; i < frames; i++)
+					for (; i < frames; ++i)
 					{
 						dst[i * outChns] = SetVolume(s->in_buffer[i * inChns], s->f.in.vol);
 						//if (outChns > 1 && inChns > 1)
@@ -873,7 +873,7 @@ namespace usb_mic
 					s->out_buffer.resize(frames * outChns); //TODO move to AudioDevice for less data copying
 
 					uint32_t i = 0;
-					for (; i < frames; i++)
+					for (; i < frames; ++i)
 					{
 						if (inChns == outChns)
 						{

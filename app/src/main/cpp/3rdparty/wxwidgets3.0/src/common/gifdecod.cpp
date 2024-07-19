@@ -104,7 +104,7 @@ wxGIFDecoder::~wxGIFDecoder()
 void wxGIFDecoder::Destroy()
 {
     wxASSERT(m_nFrames==m_frames.GetCount());
-    for (unsigned int i=0; i<m_nFrames; i++)
+    for (unsigned int i=0; i<m_nFrames; ++i)
     {
         GIFImage *f = (GIFImage*)m_frames[i];
         free(f->p);
@@ -148,7 +148,7 @@ bool wxGIFDecoder::ConvertToImage(unsigned int frame, wxImage *image) const
     // set transparent colour mask
     if (transparent != -1)
     {
-        for (i = 0; i < GetNcolours(frame); i++)
+        for (i = 0; i < GetNcolours(frame); ++i)
         {
             if ((pal[3 * i + 0] == 255) &&
                 (pal[3 * i + 1] == 0) &&
@@ -172,7 +172,7 @@ bool wxGIFDecoder::ConvertToImage(unsigned int frame, wxImage *image) const
     unsigned char g[256];
     unsigned char b[256];
 
-    for (i = 0; i < 256; i++)
+    for (i = 0; i < 256; ++i)
     {
         r[i] = pal[3*i + 0];
         g[i] = pal[3*i + 1];

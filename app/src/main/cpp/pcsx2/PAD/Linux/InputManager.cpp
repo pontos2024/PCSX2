@@ -35,7 +35,7 @@ void PollForJoystickInput(int cpad)
 
 	gamePad->UpdateDeviceState();
 
-	for (u32 i = 0; i < MAX_KEYS; i++)
+	for (u32 i = 0; i < MAX_KEYS; ++i)
 	{
 		s32 value = gamePad->GetInput((gamePadValues)i);
 		if (value != 0)

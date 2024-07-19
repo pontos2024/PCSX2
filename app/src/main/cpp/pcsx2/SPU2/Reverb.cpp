@@ -125,11 +125,11 @@ StereoOut32 __forceinline V_Core::ReverbUpsample(bool phase)
 	else
 	{
 
-		for (u32 i = 0; i < (NUM_TAPS >> 1) + 1; i++)
+		for (u32 i = 0; i < (NUM_TAPS >> 1) + 1; ++i)
 		{
 			ls += RevbUpBuf[0][(((RevbSampleBufPos - NUM_TAPS) >> 1) + i) & 63] * filter_coefs[i * 2];
 		}
-		for (u32 i = 0; i < (NUM_TAPS >> 1) + 1; i++)
+		for (u32 i = 0; i < (NUM_TAPS >> 1) + 1; ++i)
 		{
 			rs += RevbUpBuf[1][(((RevbSampleBufPos - NUM_TAPS) >> 1) + i) & 63] * filter_coefs[i * 2];
 		}
@@ -186,7 +186,7 @@ StereoOut32 V_Core::DoReverb(const StereoOut32& Input)
 	// within that zone then the "bulk" of the test is skipped, so this should only
 	// be a slowdown on a few evil games.
 
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 2; ++i)
 	{
 		if (Cores[i].IRQEnable && ((Cores[i].IRQA >= EffectsStartA) && (Cores[i].IRQA <= EffectsEndA)))
 		{

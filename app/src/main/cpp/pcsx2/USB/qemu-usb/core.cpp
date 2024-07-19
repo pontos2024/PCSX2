@@ -41,7 +41,7 @@ void usb_pick_speed(USBPort* port)
 	USBDevice* udev = port->dev;
 	int i;
 
-	for (i = 0; i < (int)ARRAY_SIZE(speeds); i++)
+	for (i = 0; i < (int)ARRAY_SIZE(speeds); ++i)
 	{
 		if ((udev->speedmask & (1 << speeds[i])) &&
 			(port->speedmask & (1 << speeds[i])))
@@ -286,7 +286,7 @@ static void do_parameter(USBDevice* s, USBPacket* p)
 {
 	int i, request, value, index;
 
-	for (i = 0; i < 8; i++)
+	for (i = 0; i < 8; ++i)
 	{
 		s->setup_buf[i] = p->parameter >> (i * 8);
 	}

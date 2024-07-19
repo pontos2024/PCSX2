@@ -547,7 +547,7 @@ hash_t pthr_hash_fast(pthread_t thread)
 void* bitclear(void* loc, void* mask, size_t count)
 {
   int i;
-  for (i=0; i < count; i++) {
+  for (i=0; i < count; ++i) {
     (unsigned char) *loc++ &= ~((unsigned char) *mask++);
   }
 }
@@ -558,7 +558,7 @@ hash_t hash(void* str, size_t count)
    hash_t hash = (hash_t) count;
    unsigned int i = 0;
 
-   for(i = 0; i < len; str++, i++)
+   for(i = 0; i < len; str++, ++i)
    {
       hash = ((hash << 5) ^ (hash >> 27)) ^ (*str);
    }
@@ -688,7 +688,7 @@ int pthcmp(pthread_t left, pthread_t right)
   pthcmp_t L, R;
   L.t = left;
   R.t = right;
-  for (i = 0; i < sizeof(pthread_t); i++)
+  for (i = 0; i < sizeof(pthread_t); ++i)
   {
     if (L.b[i] > R.b[i])
       return 1;
@@ -732,7 +732,7 @@ int pthcmp(pthread_t left, pthread_t right)
   * -1 : left is less than right
   */
   int i;
-  for (i = 0; i < sizeof(pthread_t); i++)
+  for (i = 0; i < sizeof(pthread_t); ++i)
   {
     if (((pthcmp_t)left).b[i] > ((pthcmp_t)right).b[i])
       return 1;

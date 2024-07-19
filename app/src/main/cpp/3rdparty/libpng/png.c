@@ -464,7 +464,7 @@ png_free_data(png_const_structrp png_ptr, png_inforp info_ptr, png_uint_32 mask,
       {
          int i;
 
-         for (i = 0; i < info_ptr->num_text; i++)
+         for (i = 0; i < info_ptr->num_text; ++i)
             png_free(png_ptr, info_ptr->text[i].key);
 
          png_free(png_ptr, info_ptr->text);
@@ -510,7 +510,7 @@ png_free_data(png_const_structrp png_ptr, png_inforp info_ptr, png_uint_32 mask,
          {
             int i;
 
-            for (i = 0; i < info_ptr->pcal_nparams; i++)
+            for (i = 0; i < info_ptr->pcal_nparams; ++i)
                png_free(png_ptr, info_ptr->pcal_params[i]);
 
             png_free(png_ptr, info_ptr->pcal_params);
@@ -549,7 +549,7 @@ png_free_data(png_const_structrp png_ptr, png_inforp info_ptr, png_uint_32 mask,
       {
          int i;
 
-         for (i = 0; i < info_ptr->splt_palettes_num; i++)
+         for (i = 0; i < info_ptr->splt_palettes_num; ++i)
          {
             png_free(png_ptr, info_ptr->splt_palettes[i].name);
             png_free(png_ptr, info_ptr->splt_palettes[i].entries);
@@ -577,7 +577,7 @@ png_free_data(png_const_structrp png_ptr, png_inforp info_ptr, png_uint_32 mask,
       {
          int i;
 
-         for (i = 0; i < info_ptr->unknown_chunks_num; i++)
+         for (i = 0; i < info_ptr->unknown_chunks_num; ++i)
             png_free(png_ptr, info_ptr->unknown_chunks[i].data);
 
          png_free(png_ptr, info_ptr->unknown_chunks);
@@ -3871,7 +3871,7 @@ png_build_16bit_table(png_structrp png_ptr, png_uint_16pp *ptable,
    png_uint_16pp table = *ptable =
        (png_uint_16pp)png_calloc(png_ptr, num * (sizeof (png_uint_16p)));
 
-   for (i = 0; i < num; i++)
+   for (i = 0; i < num; ++i)
    {
       png_uint_16p sub_table = table[i] =
           (png_uint_16p)png_malloc(png_ptr, 256 * (sizeof (png_uint_16)));
@@ -3890,7 +3890,7 @@ png_build_16bit_table(png_structrp png_ptr, png_uint_16pp *ptable,
           * bits (unsigned) so long as max <= 32767.
           */
          unsigned int j;
-         for (j = 0; j < 256; j++)
+         for (j = 0; j < 256; ++j)
          {
             png_uint_32 ig = (j << (8-shift)) + i;
 #           ifdef PNG_FLOATING_ARITHMETIC_SUPPORTED
@@ -3913,7 +3913,7 @@ png_build_16bit_table(png_structrp png_ptr, png_uint_16pp *ptable,
          /* We must still build a table, but do it the fast way. */
          unsigned int j;
 
-         for (j = 0; j < 256; j++)
+         for (j = 0; j < 256; ++j)
          {
             png_uint_32 ig = (j << (8-shift)) + i;
 
@@ -3945,7 +3945,7 @@ png_build_16to8_table(png_structrp png_ptr, png_uint_16pp *ptable,
     * bits of the input 16-bit value used to select a table.  Each table is
     * itself indexed by the high 8 bits of the value.
     */
-   for (i = 0; i < num; i++)
+   for (i = 0; i < num; ++i)
       table[i] = (png_uint_16p)png_malloc(png_ptr,
           256 * (sizeof (png_uint_16)));
 
@@ -4005,7 +4005,7 @@ png_build_8bit_table(png_structrp png_ptr, png_bytepp ptable,
    png_bytep table = *ptable = (png_bytep)png_malloc(png_ptr, 256);
 
    if (png_gamma_significant(gamma_val) != 0)
-      for (i=0; i<256; i++)
+      for (i=0; i<256; ++i)
          table[i] = png_gamma_8bit_correct(i, gamma_val);
 
    else
@@ -4027,7 +4027,7 @@ png_destroy_gamma_table(png_structrp png_ptr)
    {
       int i;
       int istop = (1 << (8 - png_ptr->gamma_shift));
-      for (i = 0; i < istop; i++)
+      for (i = 0; i < istop; ++i)
       {
          png_free(png_ptr, png_ptr->gamma_16_table[i]);
       }
@@ -4049,7 +4049,7 @@ png_destroy_gamma_table(png_structrp png_ptr)
    {
       int i;
       int istop = (1 << (8 - png_ptr->gamma_shift));
-      for (i = 0; i < istop; i++)
+      for (i = 0; i < istop; ++i)
       {
          png_free(png_ptr, png_ptr->gamma_16_from_1[i]);
       }
@@ -4060,7 +4060,7 @@ png_destroy_gamma_table(png_structrp png_ptr)
    {
       int i;
       int istop = (1 << (8 - png_ptr->gamma_shift));
-      for (i = 0; i < istop; i++)
+      for (i = 0; i < istop; ++i)
       {
          png_free(png_ptr, png_ptr->gamma_16_to_1[i]);
       }

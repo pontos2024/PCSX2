@@ -308,7 +308,7 @@ std::vector<LoadedModuleInfo> SymbolMap::getAllModules() const {
 	std::lock_guard<std::recursive_mutex> guard(m_lock);
 
 	std::vector<LoadedModuleInfo> result;
-	for (size_t i = 0; i < modules.size(); i++) {
+	for (size_t i = 0; i < modules.size(); ++i) {
 		LoadedModuleInfo m;
 		m.name = modules[i].name;
 		m.address = modules[i].start;

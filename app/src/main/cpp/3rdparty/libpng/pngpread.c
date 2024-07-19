@@ -873,7 +873,7 @@ png_push_process_row(png_structrp png_ptr)
          case 0:
          {
             int i;
-            for (i = 0; i < 8 && png_ptr->pass == 0; i++)
+            for (i = 0; i < 8 && png_ptr->pass == 0; ++i)
             {
                png_push_have_row(png_ptr, png_ptr->row_buf + 1);
                png_read_push_finish_row(png_ptr); /* Updates png_ptr->pass */
@@ -881,7 +881,7 @@ png_push_process_row(png_structrp png_ptr)
 
             if (png_ptr->pass == 2) /* Pass 1 might be empty */
             {
-               for (i = 0; i < 4 && png_ptr->pass == 2; i++)
+               for (i = 0; i < 4 && png_ptr->pass == 2; ++i)
                {
                   png_push_have_row(png_ptr, NULL);
                   png_read_push_finish_row(png_ptr);
@@ -890,7 +890,7 @@ png_push_process_row(png_structrp png_ptr)
 
             if (png_ptr->pass == 4 && png_ptr->height <= 4)
             {
-               for (i = 0; i < 2 && png_ptr->pass == 4; i++)
+               for (i = 0; i < 2 && png_ptr->pass == 4; ++i)
                {
                   png_push_have_row(png_ptr, NULL);
                   png_read_push_finish_row(png_ptr);
@@ -909,7 +909,7 @@ png_push_process_row(png_structrp png_ptr)
          case 1:
          {
             int i;
-            for (i = 0; i < 8 && png_ptr->pass == 1; i++)
+            for (i = 0; i < 8 && png_ptr->pass == 1; ++i)
             {
                png_push_have_row(png_ptr, png_ptr->row_buf + 1);
                png_read_push_finish_row(png_ptr);
@@ -917,7 +917,7 @@ png_push_process_row(png_structrp png_ptr)
 
             if (png_ptr->pass == 2) /* Skip top 4 generated rows */
             {
-               for (i = 0; i < 4 && png_ptr->pass == 2; i++)
+               for (i = 0; i < 4 && png_ptr->pass == 2; ++i)
                {
                   png_push_have_row(png_ptr, NULL);
                   png_read_push_finish_row(png_ptr);
@@ -931,13 +931,13 @@ png_push_process_row(png_structrp png_ptr)
          {
             int i;
 
-            for (i = 0; i < 4 && png_ptr->pass == 2; i++)
+            for (i = 0; i < 4 && png_ptr->pass == 2; ++i)
             {
                png_push_have_row(png_ptr, png_ptr->row_buf + 1);
                png_read_push_finish_row(png_ptr);
             }
 
-            for (i = 0; i < 4 && png_ptr->pass == 2; i++)
+            for (i = 0; i < 4 && png_ptr->pass == 2; ++i)
             {
                png_push_have_row(png_ptr, NULL);
                png_read_push_finish_row(png_ptr);
@@ -945,7 +945,7 @@ png_push_process_row(png_structrp png_ptr)
 
             if (png_ptr->pass == 4) /* Pass 3 might be empty */
             {
-               for (i = 0; i < 2 && png_ptr->pass == 4; i++)
+               for (i = 0; i < 2 && png_ptr->pass == 4; ++i)
                {
                   png_push_have_row(png_ptr, NULL);
                   png_read_push_finish_row(png_ptr);
@@ -959,7 +959,7 @@ png_push_process_row(png_structrp png_ptr)
          {
             int i;
 
-            for (i = 0; i < 4 && png_ptr->pass == 3; i++)
+            for (i = 0; i < 4 && png_ptr->pass == 3; ++i)
             {
                png_push_have_row(png_ptr, png_ptr->row_buf + 1);
                png_read_push_finish_row(png_ptr);
@@ -967,7 +967,7 @@ png_push_process_row(png_structrp png_ptr)
 
             if (png_ptr->pass == 4) /* Skip top two generated rows */
             {
-               for (i = 0; i < 2 && png_ptr->pass == 4; i++)
+               for (i = 0; i < 2 && png_ptr->pass == 4; ++i)
                {
                   png_push_have_row(png_ptr, NULL);
                   png_read_push_finish_row(png_ptr);
@@ -981,13 +981,13 @@ png_push_process_row(png_structrp png_ptr)
          {
             int i;
 
-            for (i = 0; i < 2 && png_ptr->pass == 4; i++)
+            for (i = 0; i < 2 && png_ptr->pass == 4; ++i)
             {
                png_push_have_row(png_ptr, png_ptr->row_buf + 1);
                png_read_push_finish_row(png_ptr);
             }
 
-            for (i = 0; i < 2 && png_ptr->pass == 4; i++)
+            for (i = 0; i < 2 && png_ptr->pass == 4; ++i)
             {
                png_push_have_row(png_ptr, NULL);
                png_read_push_finish_row(png_ptr);
@@ -1006,7 +1006,7 @@ png_push_process_row(png_structrp png_ptr)
          {
             int i;
 
-            for (i = 0; i < 2 && png_ptr->pass == 5; i++)
+            for (i = 0; i < 2 && png_ptr->pass == 5; ++i)
             {
                png_push_have_row(png_ptr, png_ptr->row_buf + 1);
                png_read_push_finish_row(png_ptr);

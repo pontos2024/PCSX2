@@ -57,7 +57,7 @@ void SincResampler::readFrame(float *frame) {
     float *coefficients2 = &mCoefficients[index2 * getNumTaps()];
 
     float *xFrame = &mX[mCursor * getChannelCount()];
-    for (int i = 0; i < mNumTaps; i++) {
+    for (int i = 0; i < mNumTaps; ++i) {
         float coefficient1 = *coefficients1++;
         float coefficient2 = *coefficients2++;
         for (int channel = 0; channel < getChannelCount(); channel++) {

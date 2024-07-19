@@ -1,5 +1,5 @@
 #pragma once
-//#include "vulkan_loader.h"
+#include "common/Vulkan/Loader.h"
 #include "common/Vulkan/StreamBuffer.h"
 #include "common/Vulkan/SwapChain.h"
 #include "common/WindowInfo.h"
@@ -27,9 +27,8 @@ public:
 	bool HasRenderDevice() const override;
 	bool HasRenderSurface() const override;
 
-	bool CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool threaded_presentation, bool debug_device) override;
+	bool CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, VsyncMode vsync, bool threaded_presentation, bool debug_device) override;
 	bool InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device) override;
-	void DestroyRenderDevice() override;
 
 	bool MakeRenderContextCurrent() override;
 	bool DoneRenderContextCurrent() override;
@@ -41,16 +40,18 @@ public:
 	bool SetFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) override;
 	AdapterAndModeList GetAdapterAndModeList() override;
 	void DestroyRenderSurface() override;
-//	std::string GetDriverInfo() const override;
+	std::string GetDriverInfo() const override;
 
-	std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, const void* data,
-													  u32 data_stride, bool dynamic) override;
+	std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, const void* data, u32 data_stride, bool dynamic = false) override;
 	void UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* texture_data, u32 texture_data_stride) override;
 
 	void SetVSync(VsyncMode mode) override;
 
 	bool BeginPresent(bool frame_skip) override;
 	void EndPresent() override;
+
+	bool SetGPUTimingEnabled(bool enabled) override;
+	float GetAndResetAccumulatedGPUTime() override;
 
 	static AdapterAndModeList StaticGetAdapterAndModeList(const WindowInfo* wi);
 

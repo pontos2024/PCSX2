@@ -31,12 +31,12 @@
 
 struct GSFrameInfo
 {
-	uint32 FBP;
-	uint32 FPSM;
-	uint32 FBMSK;
-	uint32 TBP0;
-	uint32 TPSM;
-	uint32 TZTST;
+	u32 FBP;
+	u32 FPSM;
+	u32 FBMSK;
+	u32 TBP0;
+	u32 TPSM;
+	u32 TZTST;
 	bool TME;
 };
 
@@ -51,13 +51,15 @@ class GSState : public GSAlignedClass<32>
 	GIFPackedRegHandler m_fpGIFPackedRegHandlers[16];
 	GIFPackedRegHandler m_fpGIFPackedRegHandlerXYZ[8][4];
 
+	void CheckFlushes();
+
 	void GIFPackedRegHandlerNull(const GIFPackedReg* RESTRICT r);
 	void GIFPackedRegHandlerRGBA(const GIFPackedReg* RESTRICT r);
 	void GIFPackedRegHandlerSTQ(const GIFPackedReg* RESTRICT r);
 	void GIFPackedRegHandlerUV(const GIFPackedReg* RESTRICT r);
 	void GIFPackedRegHandlerUV_Hack(const GIFPackedReg* RESTRICT r);
-	template<uint32 prim, uint32 adc, bool auto_flush> void GIFPackedRegHandlerXYZF2(const GIFPackedReg* RESTRICT r);
-	template<uint32 prim, uint32 adc, bool auto_flush> void GIFPackedRegHandlerXYZ2(const GIFPackedReg* RESTRICT r);
+	template<u32 prim, u32 adc, bool auto_flush, bool index_swap> void GIFPackedRegHandlerXYZF2(const GIFPackedReg* RESTRICT r);
+	template<u32 prim, u32 adc, bool auto_flush, bool index_swap> void GIFPackedRegHandlerXYZ2(const GIFPackedReg* RESTRICT r);
 	void GIFPackedRegHandlerFOG(const GIFPackedReg* RESTRICT r);
 	void GIFPackedRegHandlerA_D(const GIFPackedReg* RESTRICT r);
 	void GIFPackedRegHandlerNOP(const GIFPackedReg* RESTRICT r);
@@ -67,18 +69,18 @@ class GSState : public GSAlignedClass<32>
 	GIFRegHandler m_fpGIFRegHandlers[256];
 	GIFRegHandler m_fpGIFRegHandlerXYZ[8][4];
 
-	typedef void (GSState::*GIFPackedRegHandlerC)(const GIFPackedReg* RESTRICT r, uint32 size);
+	typedef void (GSState::*GIFPackedRegHandlerC)(const GIFPackedReg* RESTRICT r, u32 size);
 
 	GIFPackedRegHandlerC m_fpGIFPackedRegHandlersC[2];
 	GIFPackedRegHandlerC m_fpGIFPackedRegHandlerSTQRGBAXYZF2[8];
 	GIFPackedRegHandlerC m_fpGIFPackedRegHandlerSTQRGBAXYZ2[8];
 
-	template<uint32 prim, bool auto_flush> void GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, uint32 size);
-	template<uint32 prim, bool auto_flush> void GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, uint32 size);
-	void GIFPackedRegHandlerNOP(const GIFPackedReg* RESTRICT r, uint32 size);
+	template<u32 prim, bool auto_flush, bool index_swap> void GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, u32 size);
+	template<u32 prim, bool auto_flush, bool index_swap> void GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, u32 size);
+	void GIFPackedRegHandlerNOP(const GIFPackedReg* RESTRICT r, u32 size);
 
 	template<int i> void ApplyTEX0(GIFRegTEX0& TEX0);
-	void ApplyPRIM(uint32 prim);
+	void ApplyPRIM(u32 prim);
 
 	void GIFRegHandlerNull(const GIFReg* RESTRICT r);
 	void GIFRegHandlerPRIM(const GIFReg* RESTRICT r);
@@ -86,8 +88,8 @@ class GSState : public GSAlignedClass<32>
 	void GIFRegHandlerST(const GIFReg* RESTRICT r);
 	void GIFRegHandlerUV(const GIFReg* RESTRICT r);
 	void GIFRegHandlerUV_Hack(const GIFReg* RESTRICT r);
-	template<uint32 prim, uint32 adc, bool auto_flush> void GIFRegHandlerXYZF2(const GIFReg* RESTRICT r);
-	template<uint32 prim, uint32 adc, bool auto_flush> void GIFRegHandlerXYZ2(const GIFReg* RESTRICT r);
+	template<u32 prim, u32 adc, bool auto_flush, bool index_swap> void GIFRegHandlerXYZF2(const GIFReg* RESTRICT r);
+	template<u32 prim, u32 adc, bool auto_flush, bool index_swap> void GIFRegHandlerXYZ2(const GIFReg* RESTRICT r);
 	template<int i> void GIFRegHandlerTEX0(const GIFReg* RESTRICT r);
 	template<int i> void GIFRegHandlerCLAMP(const GIFReg* RESTRICT r);
 	void GIFRegHandlerFOG(const GIFReg* RESTRICT r);
@@ -120,15 +122,17 @@ class GSState : public GSAlignedClass<32>
 	void GIFRegHandlerTRXDIR(const GIFReg* RESTRICT r);
 	void GIFRegHandlerHWREG(const GIFReg* RESTRICT r);
 
-	int m_version;
+	template<bool auto_flush, bool index_swap>
+	void SetPrimHandlers();
+
+	u32 m_version;
 	int m_sssize;
 
 	struct GSTransferBuffer
 	{
 		int x, y;
 		int start, end, total;
-		bool overflow;
-		uint8* buff;
+		u8* buff;
 		GIFRegBITBLTBUF m_blit;
 
 		GSTransferBuffer();
@@ -139,36 +143,38 @@ class GSState : public GSAlignedClass<32>
 
 	} m_tr;
 
+private:
+	void CalcAlphaMinMax();
+
 protected:
 	bool IsBadFrame();
 	void SetupCrcHack();
 
-	bool m_userhacks_wildhack;
 	bool m_isPackedUV_HackFlag;
 	CRCHackLevel m_crc_hack_level;
 	GetSkipCount m_gsc;
 	int m_skip;
 	int m_skip_offset;
-	int m_userhacks_skipdraw;
-	int m_userhacks_skipdraw_offset;
-	bool m_userhacks_auto_flush;
 
 	GSVertex m_v;
 	float m_q;
 	GSVector4i m_scissor;
 	GSVector4i m_ofxy;
 
+	u8 m_scanmask_used;
+	bool tex_flushed;
+
 	struct
 	{
 		GSVertex* buff;
 		size_t head, tail, next, maxcount; // head: first vertex, tail: last vertex + 1, next: last indexed + 1
 		size_t xy_tail;
-		uint64 xy[4];
+		u64 xy[4];
 	} m_vertex;
 
 	struct
 	{
-		uint32* buff;
+		u32* buff;
 		size_t tail;
 	} m_index;
 
@@ -178,21 +184,39 @@ protected:
 	void UpdateVertexKick();
 
 	void GrowVertexBuffer();
-
-	template <uint32 prim, bool auto_flush>
-	void VertexKick(uint32 skip);
+	void HandleAutoFlush();
+	
+	template <u32 prim, bool auto_flush, bool index_swap>
+	void VertexKick(u32 skip);
 
 	// following functions need m_vt to be initialized
 
 	GSVertexTrace m_vt;
-
-	void GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFRegCLAMP& CLAMP, bool linear);
-	void GetAlphaMinMax();
-	bool TryAlphaTest(uint32& fm, uint32& zm);
+	GSVertexTrace::VertexAlpha& GetAlphaMinMax()
+	{
+		if (!m_vt.m_alpha.valid)
+			CalcAlphaMinMax();
+		return m_vt.m_alpha;
+	}
+	struct TextureMinMaxResult
+	{
+		enum UsesBoundary
+		{
+			USES_BOUNDARY_LEFT   = 1 << 0,
+			USES_BOUNDARY_TOP    = 1 << 1,
+			USES_BOUNDARY_RIGHT  = 1 << 2,
+			USES_BOUNDARY_BOTTOM = 1 << 3,
+			USES_BOUNDARY_U = USES_BOUNDARY_LEFT | USES_BOUNDARY_RIGHT,
+			USES_BOUNDARY_V = USES_BOUNDARY_TOP | USES_BOUNDARY_BOTTOM,
+		};
+		GSVector4i coverage; ///< Part of the texture used
+		u8 uses_boundary;    ///< Whether or not the usage touches the left, top, right, or bottom edge (and therefore needs wrap modes preserved)
+	};
+	TextureMinMaxResult GetTextureMinMax(const GIFRegTEX0& TEX0, const GIFRegCLAMP& CLAMP, bool linear);
+	bool TryAlphaTest(u32& fm, const u32 fm_mask, u32& zm);
 	bool IsOpaque();
 	bool IsMipMapDraw();
 	bool IsMipMapActive();
-	GIFRegTEX0 GetTex0Layer(uint32 lod);
 
 public:
 	GIFPath m_path[4];
@@ -200,15 +224,18 @@ public:
 	GSPrivRegSet* m_regs;
 	GSLocalMemory m_mem;
 	GSDrawingEnvironment m_env;
+	GSDrawingEnvironment m_backup_env;
+	GSDrawingEnvironment m_prev_env;
 	GSDrawingContext* m_context;
-	uint32 m_crc;
+	u32 m_crc;
 	CRC::Game m_game;
 	std::unique_ptr<GSDumpBase> m_dump;
 	int m_options;
-	int m_frameskip;
-	bool m_NTSC_Saturation;
+    int m_frameskip;
 	bool m_nativeres;
-	int m_mipmap;
+	bool m_mipmap;
+	u32 m_dirty_gs_regs;
+	int m_backed_up_ctx;
 
 	static int s_n;
 	bool s_dump;
@@ -220,6 +247,74 @@ public:
 	int s_savel;
 	std::string m_dump_root;
 
+	static constexpr u32 STATE_VERSION = 8;
+
+	enum REG_DIRTY
+	{
+		DIRTY_REG_ALPHA,
+		DIRTY_REG_CLAMP,
+		DIRTY_REG_COLCLAMP,
+		DIRTY_REG_DIMX,
+		DIRTY_REG_DTHE,
+		DIRTY_REG_FBA,
+		DIRTY_REG_FOGCOL,
+		DIRTY_REG_FRAME,
+		DIRTY_REG_MIPTBP1,
+		DIRTY_REG_MIPTBP2,
+		DIRTY_REG_PABE,
+		DIRTY_REG_PRIM,
+		DIRTY_REG_SCANMSK,
+		DIRTY_REG_SCISSOR,
+		DIRTY_REG_TEST,
+		DIRTY_REG_TEX0,
+		DIRTY_REG_TEX1,
+		DIRTY_REG_TEXA,
+		DIRTY_REG_XYOFFSET,
+		DIRTY_REG_ZBUF
+	};
+
+	enum PRIM_OVERLAP
+	{
+		PRIM_OVERLAP_UNKNOW,
+		PRIM_OVERLAP_YES,
+		PRIM_OVERLAP_NO
+	};
+
+	PRIM_OVERLAP m_prim_overlap;
+	std::vector<size_t> m_drawlist;
+
+	// The horizontal offset values (under z) for PAL and NTSC have been tweaked
+	// they should be apparently 632 and 652 respectively, but that causes a thick black line on the left
+	// these values leave a small black line on the right in a bunch of games, but it's not so bad.
+	// The only conclusion I can come to is there is horizontal overscan expected so there would normally
+	// be black borders either side anyway, or both sides slightly covered.
+	const GSVector4i VideoModeOffsets[6] = {
+		GSVector4i(640, 224, 642, 25),
+		GSVector4i(640, 256, 676, 36),
+		GSVector4i(640, 480, 276, 34),
+		GSVector4i(720, 480, 232, 35),
+		GSVector4i(1280, 720, 302, 24),
+		GSVector4i(1920, 540, 238, 40)
+	};
+
+	const GSVector4i VideoModeOffsetsOverscan[6] = {
+		GSVector4i(711, 243, 498, 12),
+		GSVector4i(702, 288, 532, 18),
+		GSVector4i(640, 480, 276, 34),
+		GSVector4i(720, 480, 232, 35),
+		GSVector4i(1280, 720, 302, 24),
+		GSVector4i(1920, 540, 238, 40)
+	};
+
+	const GSVector4i VideoModeDividers[6] = {
+		GSVector4i(3, 0, 2559, 239),
+		GSVector4i(3, 0, 2559, 287),
+		GSVector4i(1, 0, 1279, 479),
+		GSVector4i(1, 0, 1439, 479),
+		GSVector4i(0, 0, 1279, 719),
+		GSVector4i(0, 0, 1919, 1079)
+	};
+
 public:
 	GSState();
 	virtual ~GSState();
@@ -227,43 +322,58 @@ public:
 	void ResetHandlers();
 
 	int GetFramebufferHeight();
-	void SaturateOutputSize(GSVector4i& r);
+	int GetDisplayHMagnification();
 	GSVector4i GetDisplayRect(int i = -1);
+	GSVector4i GetFrameMagnifiedRect(int i = -1);
+	GSVector2i GetResolutionOffset(int i = -1);
+	GSVector2i GetResolution();
 	GSVector4i GetFrameRect(int i = -1);
 	GSVideoMode GetVideoMode();
 
 	bool IsEnabled(int i);
 	bool isinterlaced();
+	bool isReallyInterlaced();
+	bool IsAnalogue();
 
 	float GetTvRefreshRate();
 
-	virtual void Reset();
+	virtual void Reset(bool hardware_reset);
+	virtual void UpdateSettings(const Pcsx2Config2::GSOptions& old_config);
+
+	void CopyEnv(GSDrawingEnvironment* dest, GSDrawingEnvironment* src, int ctx);
 	void Flush();
 	void FlushPrim();
+	bool TestDrawChanged();
 	void FlushWrite();
 	virtual void Draw() = 0;
 	virtual void PurgePool() = 0;
 	virtual void InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r) {}
 	virtual void InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut = false) {}
 
-	void Move();
-	void Write(const uint8* mem, int len);
-	void Read(uint8* mem, int len);
-	void InitReadFIFO(uint8* mem, int len);
+	virtual void Move();
 
-	void SoftReset(uint32 mask);
-	void WriteCSR(uint32 csr) { m_regs->CSR.u32[1] = csr; }
-	void ReadFIFO(uint8* mem, int size);
-	template<int index> void Transfer(const uint8* mem, uint32 size);
+	void Write(const u8* mem, int len);
+	void Read(u8* mem, int len);
+	void InitReadFIFO(u8* mem, int len);
+
+	void SoftReset(u32 mask);
+	void WriteCSR(u32 csr) { m_regs->CSR.U32[1] = csr; }
+	void ReadFIFO(u8* mem, int size);
+	void ReadLocalMemoryUnsync(u8* mem, int qwc, GIFRegBITBLTBUF BITBLTBUF, GIFRegTRXPOS TRXPOS, GIFRegTRXREG TRXREG);
+	template<int index> void Transfer(const u8* mem, u32 size);
 	int Freeze(freezeData* fd, bool sizeonly);
 	int Defrost(const freezeData* fd);
 
 	u32 GetGameCRC() const { return m_crc; }
 	int GetGameCRCOptions() const { return m_options; }
-	virtual void SetGameCRC(uint32 crc, int options);
+	virtual void SetGameCRC(u32 crc, int options);
 
-	uint8* GetRegsMem() const { return reinterpret_cast<uint8*>(m_regs); }
-	void SetRegsMem(uint8* basemem) { m_regs = reinterpret_cast<GSPrivRegSet*>(basemem); }
+	u8* GetRegsMem() const { return reinterpret_cast<u8*>(m_regs); }
+	void SetRegsMem(u8* basemem) { m_regs = reinterpret_cast<GSPrivRegSet*>(basemem); }
 
-	void SetFrameSkip(int skip);
+    void SetFrameSkip(int skip);
+	void DumpVertices(const std::string& filename);
+
+	PRIM_OVERLAP PrimitiveOverlap();
+	GIFRegTEX0 GetTex0Layer(u32 lod);
 };

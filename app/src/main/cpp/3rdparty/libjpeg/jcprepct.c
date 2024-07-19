@@ -298,7 +298,7 @@ create_context_buffer (j_compress_ptr cinfo)
     MEMCOPY(fake_buffer + rgroup_height, true_buffer,
 	    3 * rgroup_height * SIZEOF(JSAMPROW));
     /* Fill in the above and below wraparound pointers */
-    for (i = 0; i < rgroup_height; i++) {
+    for (i = 0; i < rgroup_height; ++i) {
       fake_buffer[i] = true_buffer[2 * rgroup_height + i];
       fake_buffer[4 * rgroup_height + i] = true_buffer[i];
     }

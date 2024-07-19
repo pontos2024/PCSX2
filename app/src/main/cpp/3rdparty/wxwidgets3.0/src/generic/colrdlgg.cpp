@@ -305,7 +305,7 @@ void wxGenericColourDialog::InitializeColours(void)
 {
     size_t i;
 
-    for (i = 0; i < WXSIZEOF(wxColourDialogNames); i++)
+    for (i = 0; i < WXSIZEOF(wxColourDialogNames); ++i)
     {
         wxColour col = wxTheColourDatabase->Find(wxColourDialogNames[i]);
         if (col.IsOk())
@@ -314,7 +314,7 @@ void wxGenericColourDialog::InitializeColours(void)
             m_standardColours[i].Set(0, 0, 0);
     }
 
-    for (i = 0; i < WXSIZEOF(m_customColours); i++)
+    for (i = 0; i < WXSIZEOF(m_customColours); ++i)
     {
         wxColour c = m_colourData.GetCustomColour(i);
         if (c.IsOk())
@@ -328,7 +328,7 @@ void wxGenericColourDialog::InitializeColours(void)
     {
         bool m_initColourFound = false;
 
-        for (i = 0; i < WXSIZEOF(wxColourDialogNames); i++)
+        for (i = 0; i < WXSIZEOF(wxColourDialogNames); ++i)
         {
             if ( m_standardColours[i] == curr && !m_initColourFound )
             {
@@ -363,10 +363,10 @@ void wxGenericColourDialog::InitializeColours(void)
 void wxGenericColourDialog::PaintBasicColours(wxDC& dc)
 {
     int i;
-    for (i = 0; i < 6; i++)
+    for (i = 0; i < 6; ++i)
     {
         int j;
-        for (j = 0; j < 8; j++)
+        for (j = 0; j < 8; ++j)
         {
             int ptr = i*8 + j;
 
@@ -385,10 +385,10 @@ void wxGenericColourDialog::PaintBasicColours(wxDC& dc)
 void wxGenericColourDialog::PaintCustomColours(wxDC& dc)
 {
   int i;
-  for (i = 0; i < 2; i++)
+  for (i = 0; i < 2; ++i)
   {
     int j;
-    for (j = 0; j < 8; j++)
+    for (j = 0; j < 8; ++j)
     {
       int ptr = i*8 + j;
 

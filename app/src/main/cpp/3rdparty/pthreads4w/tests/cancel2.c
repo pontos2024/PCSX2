@@ -173,7 +173,7 @@ main()
   assert((t[0] = pthread_self()).p != NULL);
   assert(pthread_mutex_lock(&waitLock) == 0);
 
-  for (i = 1; i <= NUMTHREADS; i++)
+  for (i = 1; i <= NUMTHREADS; ++i)
     {
       threadbag[i].started = 0;
       threadbag[i].threadnum = i;
@@ -189,7 +189,7 @@ main()
 
   Sleep(500);
 
-  for (i = 1; i <= NUMTHREADS; i++)
+  for (i = 1; i <= NUMTHREADS; ++i)
     {
       assert(pthread_cancel(t[i]) == 0);
     }
@@ -202,7 +202,7 @@ main()
   /*
    * Standard check that all threads started.
    */
-  for (i = 1; i <= NUMTHREADS; i++)
+  for (i = 1; i <= NUMTHREADS; ++i)
     { 
       if (!threadbag[i].started)
 	{
@@ -217,7 +217,7 @@ main()
    * Check any results here. Set "failed" and only print output on failure.
    */
   failed = 0;
-  for (i = 1; i <= NUMTHREADS; i++)
+  for (i = 1; i <= NUMTHREADS; ++i)
     {
       int fail = 0;
       void* result = (void*)0;

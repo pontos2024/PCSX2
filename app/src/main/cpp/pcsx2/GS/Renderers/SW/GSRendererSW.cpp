@@ -15,6 +15,8 @@
 
 #include "PrecompiledHeader.h"
 #include "GSRendererSW.h"
+#include "GS/GSGL.h"
+#include "common/StringUtil.h"
 
 #define LOG 0
 
@@ -25,27 +27,18 @@ CONSTINIT const GSVector4 GSRendererSW::m_pos_scale = GSVector4::cxpr(1.0f / 16,
 CONSTINIT const GSVector8 GSRendererSW::m_pos_scale2 = GSVector8::cxpr(1.0f / 16, 1.0f / 16, 1.0f, 128.0f, 1.0f / 16, 1.0f / 16, 1.0f, 128.0f);
 #endif
 
-GSRendererSW::GSRendererSW(std::unique_ptr<GSDevice> dev, int threads)
-	: GSRenderer(std::move(dev)), m_fzb(NULL)
+GSRendererSW::GSRendererSW(int threads)
+	: GSRenderer(), m_fzb(NULL)
 {
 	m_nativeres = true; // ignore ini, sw is always native
 
-	m_tc = new GSTextureCacheSW(this);
+	m_tc = std::make_unique<GSTextureCacheSW>();
+	m_rl = GSRasterizerList::Create<GSDrawScanline>(threads);
 
-	memset(m_texture, 0, sizeof(m_texture));
+	m_output = (u8*)_aligned_malloc(1024 * 1024 * sizeof(u32), 32);
 
-	m_rl = GSRasterizerList::Create<GSDrawScanline>(threads, &g_perfmon);
-
-	m_output = (uint8*)_aligned_malloc(1024 * 1024 * sizeof(uint32), 32);
-
-	for (uint32 i = 0; i < countof(m_fzb_pages); i++)
-	{
-		m_fzb_pages[i] = 0;
-	}
-	for (uint32 i = 0; i < countof(m_tex_pages); i++)
-	{
-		m_tex_pages[i] = 0;
-	}
+	std::fill(std::begin(m_fzb_pages), std::end(m_fzb_pages), 0);
+	std::fill(std::begin(m_tex_pages), std::end(m_tex_pages), 0);
 
 	#define InitCVB2(P, Q) \
 		m_cvb[P][0][0][Q] = &GSRendererSW::ConvertVertexBuffer<P, 0, 0, Q>; \
@@ -63,45 +56,42 @@ GSRendererSW::GSRendererSW(std::unique_ptr<GSDevice> dev, int threads)
 	InitCVB(GS_SPRITE_CLASS);
 
 	m_dump_root = root_sw;
-
-	// Reset handler with the auto flush hack enabled on the SW renderer.
-	// Some games run better without the hack so rely on ini/gui option.
-	if (!GLLoader::in_replayer && theApp.GetConfigB("autoflush_sw"))
-	{
-		m_userhacks_auto_flush = true;
-		ResetHandlers();
-	}
 }
 
 GSRendererSW::~GSRendererSW()
 {
-	delete m_tc;
-
-	for (size_t i = 0; i < countof(m_texture); i++)
-	{
-		delete m_texture[i];
-	}
-
-	delete m_rl;
-
-	_aligned_free(m_output);
+	// strictly speaking we should always be destroyed when the destructor runs..
+	// except if an exception gets thrown during construction. this will go once
+	// we get rid of exceptions...
+	GSRendererSW::Destroy();
 }
 
-const char* GSRendererSW::GetName() const
-{
-	return "SW";
-}
-
-void GSRendererSW::Reset()
+void GSRendererSW::Reset(bool hardware_reset)
 {
 	Sync(-1);
 
 	m_tc->RemoveAll();
 
-	GSRenderer::Reset();
+	GSRenderer::Reset(hardware_reset);
 }
 
-void GSRendererSW::VSync(int field)
+void GSRendererSW::Destroy()
+{
+	// Need to destroy worker queue first to stop any pending thread work
+	m_rl.reset();
+	m_tc.reset();
+
+	for (GSTexture*& tex : m_texture)
+	{
+		delete tex;
+		tex = nullptr;
+	}
+
+	_aligned_free(m_output);
+	m_output = nullptr;
+}
+
+void GSRendererSW::VSync(u32 field, bool registers_written)
 {
 	Sync(0); // IncAge might delete a cached texture in use
 
@@ -124,7 +114,7 @@ void GSRendererSW::VSync(int field)
 	/*
 	int draw[8], sum = 0;
 
-	for(size_t i = 0; i < countof(draw); i++)
+	for(size_t i = 0; i < std::size(draw); ++i)
 	{
 		draw[i] = m_perfmon.CPU(GSPerfMon::WorkerDraw0 + i);
 		sum += draw[i];
@@ -138,21 +128,11 @@ void GSRendererSW::VSync(int field)
 	//
 	*/
 
-	GSRenderer::VSync(field);
+	GSRenderer::VSync(field, registers_written);
 
 	m_tc->IncAge();
 
 	// if((m_perfmon.GetFrame() & 255) == 0) m_rl->PrintStats();
-}
-
-void GSRendererSW::ResetDevice()
-{
-	for (size_t i = 0; i < countof(m_texture); i++)
-	{
-		delete m_texture[i];
-
-		m_texture[i] = NULL;
-	}
 }
 
 GSTexture* GSRendererSW::GetOutput(int i, int& y_offset)
@@ -162,11 +142,20 @@ GSTexture* GSRendererSW::GetOutput(int i, int& y_offset)
 	const GSRegDISPFB& DISPFB = m_regs->DISP[i].DISPFB;
 
 	int w = DISPFB.FBW * 64;
-	int h = GetFramebufferHeight();
 
-	// TODO: round up bottom
+	const int videomode = static_cast<int>(GetVideoMode()) - 1;
+	const int display_offset = GetResolutionOffset(i).y;
+	const GSVector4i offsets = !GSConfig.PCRTCOverscan ? VideoModeOffsets[videomode] : VideoModeOffsetsOverscan[videomode];
+	const int display_height = offsets.y * ((isinterlaced() && !m_regs->SMODE2.FFMD) ? 2 : 1);
+	int h = std::min(GetFramebufferHeight(), display_height) + DISPFB.DBY;
 
-	if (m_dev->ResizeTexture(&m_texture[i], w, h))
+	// If there is a negative vertical offset on the picture, we need to read more.
+	if (display_offset < 0)
+	{
+		h += -display_offset;
+	}
+
+	if (g_gs_device->ResizeTarget(&m_texture[i], w, h))
 	{
 		static int pitch = 1024 * 4;
 
@@ -182,7 +171,7 @@ GSTexture* GSRendererSW::GetOutput(int i, int& y_offset)
 		{
 			if (s_savef && s_n >= s_saven)
 			{
-				m_texture[i]->Save(m_dump_root + format("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), i, (int)DISPFB.Block(), psm_str(DISPFB.PSM)));
+				m_texture[i]->Save(m_dump_root + StringUtil::StdStringFromFormat("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), i, (int)DISPFB.Block(), psm_str(DISPFB.PSM)));
 			}
 		}
 	}
@@ -195,7 +184,7 @@ GSTexture* GSRendererSW::GetFeedbackOutput()
 	int dummy;
 
 	// It is enough to emulate Xenosaga cutscene. (or any game that will do a basic loopback)
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 2; ++i)
 	{
 		if (m_regs->EXTBUF.EXBP == m_regs->DISP[i].DISPFB.Block())
 			return GetOutput(i, dummy);
@@ -205,93 +194,23 @@ GSTexture* GSRendererSW::GetFeedbackOutput()
 }
 
 
-template <uint32 primclass, uint32 tme, uint32 fst, uint32 q_div>
+template <u32 primclass, u32 tme, u32 fst, u32 q_div>
 void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex* RESTRICT src, size_t count)
 {
 	// FIXME q_div wasn't added to AVX2 code path.
-
-#if 0 //_M_SSE >= 0x501
-
-	// TODO: something isn't right here, this makes other functions slower (split load/store? old sse code in 3rd party lib?)
-
-	GSVector8i o2((GSVector4i)m_context->XYOFFSET);
-	GSVector8 tsize2(GSVector4(0x10000 << m_context->TEX0.TW, 0x10000 << m_context->TEX0.TH, 1, 0));
-
-	for(int i = (int)m_vertex.next; i > 0; i -= 2, src += 2, dst += 2) // ok to overflow, allocator makes sure there is one more dummy vertex
-	{
-		GSVector8i v0 = GSVector8i::load<true>(src[0].m);
-		GSVector8i v1 = GSVector8i::load<true>(src[1].m);
-
-		GSVector8 stcq = GSVector8::cast(v0.ac(v1));
-		GSVector8i xyzuvf = v0.bd(v1);
-
-		//GSVector8 stcq = GSVector8::load(&src[0].m[0], &src[1].m[0]);
-		//GSVector8i xyzuvf = GSVector8i::load(&src[0].m[1], &src[1].m[1]);
-
-		GSVector8i xy = xyzuvf.upl16() - o2;
-		GSVector8i zf = xyzuvf.ywww().min_u32(GSVector8i::xffffff00());
-
-		GSVector8 p = GSVector8(xy).xyxy(GSVector8(zf) + (GSVector8::m_x4f800000 & GSVector8::cast(zf.sra32(31)))) * m_pos_scale2;
-		GSVector8 c = GSVector8(GSVector8i::cast(stcq).uph8().upl16() << 7);
-
-		GSVector8 t = GSVector8::zero();
-
-		if(tme)
-		{
-			if(fst)
-			{
-				t = GSVector8(xyzuvf.uph16() << (16 - 4));
-			}
-			else
-			{
-				t = stcq.xyww() * tsize2;
-			}
-		}
-
-		if(primclass == GS_SPRITE_CLASS)
-		{
-			t = t.insert32<1, 3>(GSVector8::cast(xyzuvf));
-		}
-
-		GSVector8::storel(&dst[0].p, p);
-
-		if(tme || primclass == GS_SPRITE_CLASS)
-		{
-			GSVector8::store<true>(&dst[0].t, t.ac(c));
-		}
-		else
-		{
-			GSVector8::storel(&dst[0].c, c);
-		}
-
-		GSVector8::storeh(&dst[1].p, p);
-
-		if(tme || primclass == GS_SPRITE_CLASS)
-		{
-			GSVector8::store<true>(&dst[1].t, t.bd(c));
-		}
-		else
-		{
-			GSVector8::storeh(&dst[1].c, c);
-		}
-	}
-
-#else
 
 	GSVector4i off = (GSVector4i)m_context->XYOFFSET;
 	GSVector4 tsize = GSVector4(0x10000 << m_context->TEX0.TW, 0x10000 << m_context->TEX0.TH, 1, 0);
 	GSVector4i z_max = GSVector4i::xffffffff().srl32(GSLocalMemory::m_psm[m_context->ZBUF.PSM].fmt * 8);
 
-	for (int i = (int)m_vertex.next; i > 0; i--, src++, dst++)
+	for (int i = (int)m_vertex.next; i > 0; --i, ++src, ++dst)
 	{
 		GSVector4 stcq = GSVector4::load<true>(&src->m[0]); // s t rgba q
 
 		GSVector4i xyzuvf(src->m[1]);
 
 		GSVector4i xy = xyzuvf.upl16() - off;
-		GSVector4i zf = xyzuvf.ywww().min_u32(GSVector4i::xffffff00());
 
-		dst->p = GSVector4(xy).xyxy(GSVector4(zf) + (GSVector4::m_x4f800000 & GSVector4::cast(zf.sra32<31>()))) * m_pos_scale;
 		dst->c = GSVector4(GSVector4i::cast(stcq).zzzz().u8to32() << 7);
 
 		GSVector4 t = GSVector4::zero();
@@ -325,8 +244,16 @@ void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex*
 
 		if (primclass == GS_SPRITE_CLASS)
 		{
+			dst->p = GSVector4(xy).xyyw(GSVector4(xyzuvf)) * m_pos_scale;
+
 			xyzuvf = xyzuvf.min_u32(z_max);
 			t = t.insert32<1, 3>(GSVector4::cast(xyzuvf));
+		}
+		else
+		{
+			double z = static_cast<double>(static_cast<u32>(xyzuvf.extract32<1>()));
+			dst->p = (GSVector4(xy) * m_pos_scale).upld(GSVector4::f64(z, 0.0));
+			t = t.blend32<8>(GSVector4(xyzuvf << 7));
 		}
 
 		dst->t = t;
@@ -337,32 +264,49 @@ void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex*
 
 #endif
 	}
-
-#endif
 }
 
 void GSRendererSW::Draw()
 {
 	const GSDrawingContext* context = m_context;
 
-	auto data = m_vertex_heap.make_shared<SharedData>(this).cast<GSRasterizerData>();
+	if (s_dump)
+	{
+		std::string s;
+
+		if (s_n >= s_saven)
+		{
+			// Dump Register state
+			s = StringUtil::StdStringFromFormat("%05d_context.txt", s_n);
+
+			m_env.Dump(m_dump_root + s);
+			m_context->Dump(m_dump_root + s);
+
+			// Dump vertices
+			s = StringUtil::StdStringFromFormat("%05d_vertex.txt", s_n);
+			DumpVertices(m_dump_root + s);
+		}
+	}
+
+	auto data = m_vertex_heap.make_shared<SharedData>().cast<GSRasterizerData>();
 	SharedData* sd = static_cast<SharedData*>(data.get());
 
 	sd->primclass = m_vt.m_primclass;
 	sd->buff = (u8*)m_vertex_heap.alloc(sizeof(GSVertexSW) * ((m_vertex.next + 1) & ~1) + sizeof(u32) * m_index.tail, 64);
 	sd->vertex = (GSVertexSW*)sd->buff;
 	sd->vertex_count = m_vertex.next;
-	sd->index = (uint32*)(sd->buff + sizeof(GSVertexSW) * ((m_vertex.next + 1) & ~1));
+	sd->index = (u32*)(sd->buff + sizeof(GSVertexSW) * ((m_vertex.next + 1) & ~1));
 	sd->index_count = m_index.tail;
+	sd->scanmsk_value = m_env.SCANMSK.MSK;
 
 	// skip per pixel division if q is constant.
 	// Optimize the division by 1 with a nop. It also means that GS_SPRITE_CLASS must be processed when !m_vt.m_eq.q.
 	// If you have both GS_SPRITE_CLASS && m_vt.m_eq.q, it will depends on the first part of the 'OR'
-	uint32 q_div = !IsMipMapActive() && ((m_vt.m_eq.q && m_vt.m_min.t.z != 1.0f) || (!m_vt.m_eq.q && m_vt.m_primclass == GS_SPRITE_CLASS));
+	u32 q_div = !IsMipMapActive() && ((m_vt.m_eq.q && m_vt.m_min.t.z != 1.0f) || (!m_vt.m_eq.q && m_vt.m_primclass == GS_SPRITE_CLASS));
 
 	(this->*m_cvb[m_vt.m_primclass][PRIM->TME][PRIM->FST][q_div])(sd->vertex, m_vertex.buff, m_vertex.next);
 
-	memcpy(sd->index, m_index.buff, sizeof(uint32) * m_index.tail);
+	memcpy(sd->index, m_index.buff, sizeof(u32) * m_index.tail);
 
 	GSVector4i scissor = GSVector4i(context->scissor.in);
 	GSVector4i bbox = GSVector4i(m_vt.m_min.p.floor().xyxy(m_vt.m_max.p.ceil()));
@@ -392,9 +336,9 @@ void GSRendererSW::Draw()
 	{
 		int n = GSUtil::GetVertexCount(PRIM->PRIM);
 
-		for (uint32 i = 0, j = 0; i < m_index.tail; i += n, j++)
+		for (u32 i = 0, j = 0; i < m_index.tail; i += n, ++j)
 		{
-			for (int k = 0; k < n; k++)
+			for (int k = 0; k < n; ++k)
 			{
 				GSVertex* v = &m_vertex.buff[m_index.buff[i + k]];
 				GSVertex* vn = &m_vertex.buff[m_index.buff[i + n - 1]];
@@ -453,32 +397,23 @@ void GSRendererSW::Draw()
 	{
 		Sync(2);
 
-		uint64 frame = g_perfmon.GetFrame();
+		std::string s;
+
+		u64 frame = g_perfmon.GetFrame();
 		// Dump the texture in 32 bits format. It helps to debug texture shuffle effect
 		// It will breaks the few games that really uses 16 bits RT
 		bool texture_shuffle = ((context->FRAME.PSM & 0x2) && ((context->TEX0.PSM & 3) == 2) && (m_vt.m_primclass == GS_SPRITE_CLASS));
-
-		std::string s;
-
-		if (s_n >= s_saven)
-		{
-			// Dump Register state
-			s = format("%05d_context.txt", s_n);
-
-			m_env.Dump(m_dump_root + s);
-			m_context->Dump(m_dump_root + s);
-		}
 
 		if (s_savet && s_n >= s_saven && PRIM->TME)
 		{
 			if (texture_shuffle)
 			{
 				// Dump the RT in 32 bits format. It helps to debug texture shuffle effect
-				s = format("%05d_f%lld_itexraw_%05x_32bits.bmp", s_n, frame, (int)m_context->TEX0.TBP0);
+				s = StringUtil::StdStringFromFormat("%05d_f%lld_itexraw_%05x_32bits.bmp", s_n, frame, (int)m_context->TEX0.TBP0);
 				m_mem.SaveBMP(m_dump_root + s, m_context->TEX0.TBP0, m_context->TEX0.TBW, 0, 1 << m_context->TEX0.TW, 1 << m_context->TEX0.TH);
 			}
 
-			s = format("%05d_f%lld_itexraw_%05x_%s.bmp", s_n, frame, (int)m_context->TEX0.TBP0, psm_str(m_context->TEX0.PSM));
+			s = StringUtil::StdStringFromFormat("%05d_f%lld_itexraw_%05x_%s.bmp", s_n, frame, (int)m_context->TEX0.TBP0, psm_str(m_context->TEX0.PSM));
 			m_mem.SaveBMP(m_dump_root + s, m_context->TEX0.TBP0, m_context->TEX0.TBW, m_context->TEX0.PSM, 1 << m_context->TEX0.TW, 1 << m_context->TEX0.TH);
 		}
 
@@ -488,17 +423,17 @@ void GSRendererSW::Draw()
 			if (texture_shuffle)
 			{
 				// Dump the RT in 32 bits format. It helps to debug texture shuffle effect
-				s = format("%05d_f%lld_rt0_%05x_32bits.bmp", s_n, frame, m_context->FRAME.Block());
+				s = StringUtil::StdStringFromFormat("%05d_f%lld_rt0_%05x_32bits.bmp", s_n, frame, m_context->FRAME.Block());
 				m_mem.SaveBMP(m_dump_root + s, m_context->FRAME.Block(), m_context->FRAME.FBW, 0, GetFrameRect().width(), 512);
 			}
 
-			s = format("%05d_f%lld_rt0_%05x_%s.bmp", s_n, frame, m_context->FRAME.Block(), psm_str(m_context->FRAME.PSM));
+			s = StringUtil::StdStringFromFormat("%05d_f%lld_rt0_%05x_%s.bmp", s_n, frame, m_context->FRAME.Block(), psm_str(m_context->FRAME.PSM));
 			m_mem.SaveBMP(m_dump_root + s, m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, GetFrameRect().width(), 512);
 		}
 
 		if (s_savez && s_n >= s_saven)
 		{
-			s = format("%05d_f%lld_rz0_%05x_%s.bmp", s_n, frame, m_context->ZBUF.Block(), psm_str(m_context->ZBUF.PSM));
+			s = StringUtil::StdStringFromFormat("%05d_f%lld_rz0_%05x_%s.bmp", s_n, frame, m_context->ZBUF.Block(), psm_str(m_context->ZBUF.PSM));
 
 			m_mem.SaveBMP(m_dump_root + s, m_context->ZBUF.Block(), m_context->FRAME.FBW, m_context->ZBUF.PSM, GetFrameRect().width(), 512);
 		}
@@ -512,17 +447,17 @@ void GSRendererSW::Draw()
 			if (texture_shuffle)
 			{
 				// Dump the RT in 32 bits format. It helps to debug texture shuffle effect
-				s = format("%05d_f%lld_rt1_%05x_32bits.bmp", s_n, frame, m_context->FRAME.Block());
+				s = StringUtil::StdStringFromFormat("%05d_f%lld_rt1_%05x_32bits.bmp", s_n, frame, m_context->FRAME.Block());
 				m_mem.SaveBMP(m_dump_root + s, m_context->FRAME.Block(), m_context->FRAME.FBW, 0, GetFrameRect().width(), 512);
 			}
 
-			s = format("%05d_f%lld_rt1_%05x_%s.bmp", s_n, frame, m_context->FRAME.Block(), psm_str(m_context->FRAME.PSM));
+			s = StringUtil::StdStringFromFormat("%05d_f%lld_rt1_%05x_%s.bmp", s_n, frame, m_context->FRAME.Block(), psm_str(m_context->FRAME.PSM));
 			m_mem.SaveBMP(m_dump_root + s, m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, GetFrameRect().width(), 512);
 		}
 
 		if (s_savez && s_n >= s_saven)
 		{
-			s = format("%05d_f%lld_rz1_%05x_%s.bmp", s_n, frame, m_context->ZBUF.Block(), psm_str(m_context->ZBUF.PSM));
+			s = StringUtil::StdStringFromFormat("%05d_f%lld_rz1_%05x_%s.bmp", s_n, frame, m_context->ZBUF.Block(), psm_str(m_context->ZBUF.PSM));
 
 			m_mem.SaveBMP(m_dump_root + s, m_context->ZBUF.Block(), m_context->FRAME.FBW, m_context->ZBUF.PSM, GetFrameRect().width(), 512);
 		}
@@ -588,8 +523,6 @@ void GSRendererSW::Queue(GSRingHeap::SharedPtr<GSRasterizerData>& item)
 	if (sd->global.sel.fwrite)
 	{
 		m_tc->InvalidatePages(sd->m_fb_pages, sd->m_fpsm);
-
-		m_mem.m_clut.Invalidate(m_context->FRAME.Block());
 	}
 
 	if (sd->global.sel.zwrite)
@@ -602,9 +535,7 @@ void GSRendererSW::Sync(int reason)
 {
 	//printf("sync %d\n", reason);
 
-	GSPerfMonAutoTimer pmat(&g_perfmon, GSPerfMon::Sync);
-
-	uint64 t = __rdtsc();
+	u64 t = LOG ? _rdtsc() : 0;
 
 	m_rl->Sync();
 
@@ -614,20 +545,20 @@ void GSRendererSW::Sync(int reason)
 
 		if (s_save)
 		{
-			s = format("%05d_f%lld_rt1_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), m_context->FRAME.Block(), psm_str(m_context->FRAME.PSM));
+			s = StringUtil::StdStringFromFormat("%05d_f%lld_rt1_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), m_context->FRAME.Block(), psm_str(m_context->FRAME.PSM));
 
 			m_mem.SaveBMP(m_dump_root + s, m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, GetFrameRect().width(), 512);
 		}
 
 		if (s_savez)
 		{
-			s = format("%05d_f%lld_zb1_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), m_context->ZBUF.Block(), psm_str(m_context->ZBUF.PSM));
+			s = StringUtil::StdStringFromFormat("%05d_f%lld_zb1_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), m_context->ZBUF.Block(), psm_str(m_context->ZBUF.PSM));
 
 			m_mem.SaveBMP(m_dump_root + s, m_context->ZBUF.Block(), m_context->FRAME.FBW, m_context->ZBUF.PSM, GetFrameRect().width(), 512);
 		}
 	}
 
-	t = __rdtsc() - t;
+	t = LOG ? (_rdtsc() - t) : 0;
 
 	int pixels = m_rl->GetPixels();
 
@@ -655,7 +586,7 @@ void GSRendererSW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 
 	if (!m_rl->IsSynced())
 	{
-		pages.loopPagesWithBreak([&](uint32 page)
+		pages.loopPagesWithBreak([&](u32 page)
 		{
 			if (m_fzb_pages[page] | m_tex_pages[page])
 			{
@@ -683,7 +614,7 @@ void GSRendererSW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 		GSOffset off = m_mem.GetOffset(BITBLTBUF.SBP, BITBLTBUF.SBW, BITBLTBUF.SPSM);
 		GSOffset::PageLooper pages = off.pageLooperForRect(r);
 
-		pages.loopPagesWithBreak([&](uint32 page)
+		pages.loopPagesWithBreak([&](u32 page)
 		{
 			if (m_fzb_pages[page])
 			{
@@ -698,7 +629,7 @@ void GSRendererSW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 
 void GSRendererSW::UsePages(const GSOffset::PageLooper& pages, const int type)
 {
-	pages.loopPages([=](uint32 page)
+	pages.loopPages([=](u32 page)
 	{
 		switch (type)
 		{
@@ -722,7 +653,7 @@ void GSRendererSW::UsePages(const GSOffset::PageLooper& pages, const int type)
 
 void GSRendererSW::ReleasePages(const GSOffset::PageLooper& pages, const int type)
 {
-	pages.loopPages([=](uint32 page)
+	pages.loopPages([=](u32 page)
 	{
 		switch (type)
 		{
@@ -777,14 +708,14 @@ bool GSRendererSW::CheckTargetPages(const GSOffset::PageLooper* fb_pages, const 
 
 		memset(m_fzb_cur_pages, 0, sizeof(m_fzb_cur_pages));
 
-		uint32 used = 0;
+		u32 used = 0;
 
 		requirePages();
 
-		fb_pages->loopPages([&](uint32 i)
+		fb_pages->loopPages([&](u32 i)
 		{
-			uint32 row = i >> 5;
-			uint32 col = 1 << (i & 31);
+			u32 row = i >> 5;
+			u32 col = 1 << (i & 31);
 
 			m_fzb_cur_pages[row] |= col;
 
@@ -792,10 +723,10 @@ bool GSRendererSW::CheckTargetPages(const GSOffset::PageLooper* fb_pages, const 
 			used |= m_tex_pages[i];
 		});
 
-		zb_pages->loopPages([&](uint32 i)
+		zb_pages->loopPages([&](u32 i)
 		{
-			uint32 row = i >> 5;
-			uint32 col = 1 << (i & 31);
+			u32 row = i >> 5;
+			u32 col = 1 << (i & 31);
 
 			m_fzb_cur_pages[row] |= col;
 
@@ -835,12 +766,12 @@ bool GSRendererSW::CheckTargetPages(const GSOffset::PageLooper* fb_pages, const 
 
 			requirePages();
 
-			uint32 used = 0;
+			u32 used = 0;
 
-			fb_pages->loopPages([&](uint32 i)
+			fb_pages->loopPages([&](u32 i)
 			{
-				uint32 row = i >> 5;
-				uint32 col = 1 << (i & 31);
+				u32 row = i >> 5;
+				u32 col = 1 << (i & 31);
 
 				if ((m_fzb_cur_pages[row] & col) == 0)
 				{
@@ -850,10 +781,10 @@ bool GSRendererSW::CheckTargetPages(const GSOffset::PageLooper* fb_pages, const 
 				}
 			});
 
-			zb_pages->loopPages([&](uint32 i)
+			zb_pages->loopPages([&](u32 i)
 			{
-				uint32 row = i >> 5;
-				uint32 col = 1 << (i & 31);
+				u32 row = i >> 5;
+				u32 col = 1 << (i & 31);
 
 				if ((m_fzb_cur_pages[row] & col) == 0)
 				{
@@ -885,7 +816,7 @@ bool GSRendererSW::CheckTargetPages(const GSOffset::PageLooper* fb_pages, const 
 
 			if (fb && !res)
 			{
-				fb_pages->loopPagesWithBreak([&](uint32 page)
+				fb_pages->loopPagesWithBreak([&](u32 page)
 				{
 					if (m_fzb_pages[page] & 0xffff0000)
 					{
@@ -905,7 +836,7 @@ bool GSRendererSW::CheckTargetPages(const GSOffset::PageLooper* fb_pages, const 
 
 			if (zb && !res)
 			{
-				zb_pages->loopPagesWithBreak([&](uint32 page)
+				zb_pages->loopPagesWithBreak([&](u32 page)
 				{
 					if (m_fzb_pages[page] & 0x0000ffff)
 					{
@@ -932,12 +863,12 @@ bool GSRendererSW::CheckSourcePages(SharedData* sd)
 {
 	if (!m_rl->IsSynced())
 	{
-		for (size_t i = 0; sd->m_tex[i].t != NULL; i++)
+		for (size_t i = 0; sd->m_tex[i].t != NULL; ++i)
 		{
 			GSOffset::PageLooper pages = sd->m_tex[i].t->m_offset.pageLooperForRect(sd->m_tex[i].r);
 
 			bool ret = false;
-			pages.loopPagesWithBreak([&](uint32 pages)
+			pages.loopPagesWithBreak([&](u32 pages)
 			{
 				// TODO: 8H 4HL 4HH texture at the same place as the render target (24 bit, or 32-bit where the alpha channel is masked, Valkyrie Profile 2)
 
@@ -982,8 +913,18 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 	gd.sel.ababcd = 0xff;
 	gd.sel.prim = primclass;
 
-	uint32 fm = context->FRAME.FBMSK;
-	uint32 zm = context->ZBUF.ZMSK || context->TEST.ZTE == 0 ? 0xffffffff : 0;
+	u32 fm = context->FRAME.FBMSK;
+	u32 zm = context->ZBUF.ZMSK || context->TEST.ZTE == 0 ? 0xffffffff : 0;
+	const u32 fm_mask = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk;
+
+	// When the format is 24bit (Z or C), DATE ceases to function.
+	// It was believed that in 24bit mode all pixels pass because alpha doesn't exist
+	// however after testing this on a PS2 it turns out nothing passes, it ignores the draw.
+	if ((m_context->FRAME.PSM & 0xF) == PSM_PSMCT24 && m_context->TEST.DATE)
+	{
+		//DevCon.Warning("DATE on a 24bit format, Frame PSM %x", m_context->FRAME.PSM);
+		return false;
+	}
 
 	if (context->TEST.ZTE && context->TEST.ZTST == ZTST_NEVER)
 	{
@@ -1001,7 +942,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 	if (context->TEST.ATE)
 	{
-		if (!TryAlphaTest(fm, zm))
+		if (!TryAlphaTest(fm, fm_mask, zm))
 		{
 			gd.sel.atst = context->TEST.ATST;
 			gd.sel.afail = context->TEST.AFAIL;
@@ -1022,7 +963,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 		}
 	}
 
-	bool fwrite = fm != 0xffffffff;
+	bool fwrite = (fm & fm_mask) != fm_mask;
 	bool ftest = gd.sel.atst != ATST_ALWAYS || context->TEST.DATE && context->FRAME.PSM != PSM_PSMCT24;
 
 	bool zwrite = zm != 0xffffffff;
@@ -1061,7 +1002,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 				gd.clut = (u32*)m_vertex_heap.alloc(sizeof(u32) * 256, 32); // FIXME: might address uninitialized data of the texture (0xCD) that is not in 0-15 range for 4-bpp formats
 
-				memcpy(gd.clut, (const uint32*)m_mem.m_clut, sizeof(uint32) * GSLocalMemory::m_psm[context->TEX0.PSM].pal);
+				memcpy(gd.clut, (const u32*)m_mem.m_clut, sizeof(u32) * GSLocalMemory::m_psm[context->TEX0.PSM].pal);
 			}
 
 			gd.sel.wms = context->CLAMP.WMS;
@@ -1078,9 +1019,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 			GIFRegTEX0 TEX0 = m_context->GetSizeFixedTEX0(m_vt.m_min.t.xyxy(m_vt.m_max.t), m_vt.IsLinear(), mipmap);
 
-			GSVector4i r;
-
-			GetTextureMinMax(r, TEX0, context->CLAMP, gd.sel.ltf);
+			GSVector4i r = GetTextureMinMax(TEX0, context->CLAMP, gd.sel.ltf).coverage;
 
 			GSTextureCacheSW::Texture* t = m_tc->Lookup(TEX0, env.TEXA);
 
@@ -1168,7 +1107,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 				static int s_counter = 0;
 
-				for (int i = 1, j = std::min<int>((int)context->TEX1.MXL, 6); i <= j; i++)
+				for (int i = 1, j = std::min<int>((int)context->TEX1.MXL, 6); i <= j; ++i)
 				{
 					const GIFRegTEX0& MIP_TEX0 = GetTex0Layer(i);
 
@@ -1188,9 +1127,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 						return false;
 					}
 
-					GSVector4i r;
-
-					GetTextureMinMax(r, MIP_TEX0, MIP_CLAMP, gd.sel.ltf);
+					GSVector4i r = GetTextureMinMax(MIP_TEX0, MIP_CLAMP, gd.sel.ltf).coverage;
 
 					data->SetSource(t, r, i);
 				}
@@ -1217,7 +1154,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 					GSVertexSW* RESTRICT v = data->vertex;
 
-					for (int i = 0, j = data->vertex_count; i < j; i++)
+					for (int i = 0, j = data->vertex_count; i < j; ++i)
 					{
 						GSVector4 t = v[i].t;
 
@@ -1226,30 +1163,30 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 				}
 			}
 
-			uint16 tw = 1u << TEX0.TW;
-			uint16 th = 1u << TEX0.TH;
+			u16 tw = 1u << TEX0.TW;
+			u16 th = 1u << TEX0.TH;
 
 			switch (context->CLAMP.WMS)
 			{
 				case CLAMP_REPEAT:
-					gd.t.min.u16[0] = gd.t.minmax.u16[0] = tw - 1;
-					gd.t.max.u16[0] = gd.t.minmax.u16[2] = 0;
-					gd.t.mask.u32[0] = 0xffffffff;
+					gd.t.min.U16[0] = gd.t.minmax.U16[0] = tw - 1;
+					gd.t.max.U16[0] = gd.t.minmax.U16[2] = 0;
+					gd.t.mask.U32[0] = 0xffffffff;
 					break;
 				case CLAMP_CLAMP:
-					gd.t.min.u16[0] = gd.t.minmax.u16[0] = 0;
-					gd.t.max.u16[0] = gd.t.minmax.u16[2] = tw - 1;
-					gd.t.mask.u32[0] = 0;
+					gd.t.min.U16[0] = gd.t.minmax.U16[0] = 0;
+					gd.t.max.U16[0] = gd.t.minmax.U16[2] = tw - 1;
+					gd.t.mask.U32[0] = 0;
 					break;
 				case CLAMP_REGION_CLAMP:
-					gd.t.min.u16[0] = gd.t.minmax.u16[0] = std::min<uint16>(context->CLAMP.MINU, tw - 1);
-					gd.t.max.u16[0] = gd.t.minmax.u16[2] = std::min<uint16>(context->CLAMP.MAXU, tw - 1);
-					gd.t.mask.u32[0] = 0;
+					gd.t.min.U16[0] = gd.t.minmax.U16[0] = std::min<u16>(context->CLAMP.MINU, tw - 1);
+					gd.t.max.U16[0] = gd.t.minmax.U16[2] = std::min<u16>(context->CLAMP.MAXU, tw - 1);
+					gd.t.mask.U32[0] = 0;
 					break;
 				case CLAMP_REGION_REPEAT:
-					gd.t.min.u16[0] = gd.t.minmax.u16[0] = context->CLAMP.MINU & (tw - 1);
-					gd.t.max.u16[0] = gd.t.minmax.u16[2] = context->CLAMP.MAXU & (tw - 1);
-					gd.t.mask.u32[0] = 0xffffffff;
+					gd.t.min.U16[0] = gd.t.minmax.U16[0] = context->CLAMP.MINU & (tw - 1);
+					gd.t.max.U16[0] = gd.t.minmax.U16[2] = context->CLAMP.MAXU & (tw - 1);
+					gd.t.mask.U32[0] = 0xffffffff;
 					break;
 				default:
 					__assume(0);
@@ -1258,24 +1195,24 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 			switch (context->CLAMP.WMT)
 			{
 				case CLAMP_REPEAT:
-					gd.t.min.u16[4] = gd.t.minmax.u16[1] = th - 1;
-					gd.t.max.u16[4] = gd.t.minmax.u16[3] = 0;
-					gd.t.mask.u32[2] = 0xffffffff;
+					gd.t.min.U16[4] = gd.t.minmax.U16[1] = th - 1;
+					gd.t.max.U16[4] = gd.t.minmax.U16[3] = 0;
+					gd.t.mask.U32[2] = 0xffffffff;
 					break;
 				case CLAMP_CLAMP:
-					gd.t.min.u16[4] = gd.t.minmax.u16[1] = 0;
-					gd.t.max.u16[4] = gd.t.minmax.u16[3] = th - 1;
-					gd.t.mask.u32[2] = 0;
+					gd.t.min.U16[4] = gd.t.minmax.U16[1] = 0;
+					gd.t.max.U16[4] = gd.t.minmax.U16[3] = th - 1;
+					gd.t.mask.U32[2] = 0;
 					break;
 				case CLAMP_REGION_CLAMP:
-					gd.t.min.u16[4] = gd.t.minmax.u16[1] = std::min<uint16>(context->CLAMP.MINV, th - 1);
-					gd.t.max.u16[4] = gd.t.minmax.u16[3] = std::min<uint16>(context->CLAMP.MAXV, th - 1); // ffx anima summon scene, when the anchor appears (th = 256, maxv > 256)
-					gd.t.mask.u32[2] = 0;
+					gd.t.min.U16[4] = gd.t.minmax.U16[1] = std::min<u16>(context->CLAMP.MINV, th - 1);
+					gd.t.max.U16[4] = gd.t.minmax.U16[3] = std::min<u16>(context->CLAMP.MAXV, th - 1); // ffx anima summon scene, when the anchor appears (th = 256, maxv > 256)
+					gd.t.mask.U32[2] = 0;
 					break;
 				case CLAMP_REGION_REPEAT:
-					gd.t.min.u16[4] = gd.t.minmax.u16[1] = context->CLAMP.MINV & (th - 1); // skygunner main menu water texture 64x64, MINV = 127
-					gd.t.max.u16[4] = gd.t.minmax.u16[3] = context->CLAMP.MAXV & (th - 1);
-					gd.t.mask.u32[2] = 0xffffffff;
+					gd.t.min.U16[4] = gd.t.minmax.U16[1] = context->CLAMP.MINV & (th - 1); // skygunner main menu water texture 64x64, MINV = 127
+					gd.t.max.U16[4] = gd.t.minmax.U16[3] = context->CLAMP.MAXV & (th - 1);
+					gd.t.mask.U32[2] = 0xffffffff;
 					break;
 				default:
 					__assume(0);
@@ -1291,8 +1228,8 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 		{
 			gd.sel.fge = 1;
 
-			gd.frb = env.FOGCOL.u32[0] & 0x00ff00ff;
-			gd.fga = (env.FOGCOL.u32[0] >> 8) & 0x00ff00ff;
+			gd.frb = env.FOGCOL.U32[0] & 0x00ff00ff;
+			gd.fga = (env.FOGCOL.U32[0] >> 8) & 0x00ff00ff;
 		}
 
 		if (context->FRAME.PSM != PSM_PSMCT24)
@@ -1304,14 +1241,14 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 		if (!IsOpaque())
 		{
 			gd.sel.abe = PRIM->ABE;
-			gd.sel.ababcd = context->ALPHA.u32[0];
+			gd.sel.ababcd = context->ALPHA.U32[0];
 
 			if (env.PABE.PABE)
 			{
 				gd.sel.pabe = 1;
 			}
 
-			if (m_aa1 && PRIM->AA1 && (primclass == GS_LINE_CLASS || primclass == GS_TRIANGLE_CLASS))
+			if (GSConfig.AA1 && PRIM->AA1 && (primclass == GS_LINE_CLASS || primclass == GS_TRIANGLE_CLASS))
 			{
 				gd.sel.aa1 = 1;
 			}
@@ -1319,12 +1256,13 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 			gd.afix = GSVector4i((int)context->ALPHA.FIX << 7).xxzzlh();
 		}
 
+		const u32 masked_fm = fm & fm_mask;
 		if (gd.sel.date
 		 || gd.sel.aba == 1 || gd.sel.abb == 1 || gd.sel.abc == 1 || gd.sel.abd == 1
 		 || gd.sel.atst != ATST_ALWAYS && gd.sel.afail == AFAIL_RGB_ONLY
-		 || gd.sel.fpsm == 0 && fm != 0 && fm != 0xffffffff
-		 || gd.sel.fpsm == 1 && (fm & 0x00ffffff) != 0 && (fm & 0x00ffffff) != 0x00ffffff
-		 || gd.sel.fpsm == 2 && (fm & 0x80f8f8f8) != 0 && (fm & 0x80f8f8f8) != 0x80f8f8f8)
+		 || gd.sel.fpsm == 0 && masked_fm != 0 && masked_fm != fm_mask
+		 || gd.sel.fpsm == 1 && masked_fm != 0 && masked_fm != fm_mask
+		 || gd.sel.fpsm == 2 && masked_fm != 0 && masked_fm != fm_mask)
 		{
 			gd.sel.rfb = 1;
 		}
@@ -1347,12 +1285,13 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 	if (zwrite || ztest)
 	{
-		uint32_t z_max = 0xffffffff >> (GSLocalMemory::m_psm[context->ZBUF.PSM].fmt * 8);
+		u32 z_max = 0xffffffff >> (GSLocalMemory::m_psm[context->ZBUF.PSM].fmt * 8);
 
 		gd.sel.zpsm = GSLocalMemory::m_psm[context->ZBUF.PSM].fmt;
 		gd.sel.ztst = ztest ? context->TEST.ZTST : (int)ZTST_ALWAYS;
-		gd.sel.zoverflow = (uint32)GSVector4i(m_vt.m_max.p).z == 0x80000000U;
-		gd.sel.zclamp = (uint32)GSVector4i(m_vt.m_max.p).z > z_max;
+		gd.sel.zequal = !!m_vt.m_eq.z;
+		gd.sel.zoverflow = (u32)GSVector4i(m_vt.m_max.p).z == 0x80000000U;
+		gd.sel.zclamp = (u32)GSVector4i(m_vt.m_max.p).z > z_max;
 	}
 
 #if _M_SSE >= 0x501
@@ -1366,8 +1305,8 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 	}
 	else if (gd.sel.fpsm == 2)
 	{
-		uint32 rb = gd.fm & 0x00f800f8;
-		uint32 ga = gd.fm & 0x8000f800;
+		u32 rb = gd.fm & 0x00f800f8;
+		u32 ga = gd.fm & 0x8000f800;
 
 		gd.fm = (ga >> 16) | (rb >> 9) | (ga >> 6) | (rb >> 3) | 0xffff0000;
 	}
@@ -1413,9 +1352,9 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 	{
 		gd.sel.notest = 1;
 
-		uint32 ofx = context->XYOFFSET.OFX;
+		u32 ofx = context->XYOFFSET.OFX;
 
-		for (int i = 0, j = m_vertex.tail; i < j; i++)
+		for (int i = 0, j = m_vertex.tail; i < j; ++i)
 		{
 #if _M_SSE >= 0x501
 			if ((((m_vertex.buff[i].XYZ.X - ofx) + 15) >> 4) & 7) // aligned to 8
@@ -1433,9 +1372,8 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 	return true;
 }
 
-GSRendererSW::SharedData::SharedData(GSRendererSW* parent)
-	: m_parent(parent)
-	, m_fpsm(0)
+GSRendererSW::SharedData::SharedData()
+	: m_fpsm(0)
 	, m_zpsm(0)
 	, m_using_pages(false)
 	, m_syncpoint(SyncNone)
@@ -1461,7 +1399,7 @@ GSRendererSW::SharedData::~SharedData()
 	{
 		fprintf(s_fp, "[%d] done t=%lld p=%d | %d %d %d | %08x_%08x\n",
 			counter,
-			__rdtsc() - start, pixels,
+			_rdtsc() - start, pixels,
 			primclass, vertex_count, index_count,
 			global.sel.hi, global.sel.lo);
 		fflush(s_fp);
@@ -1480,17 +1418,17 @@ void GSRendererSW::SharedData::UsePages(const GSOffset::PageLooper* fb_pages, in
 
 		if (global.sel.fb)
 		{
-			m_parent->UsePages(*fb_pages, 0);
+			GSRendererSW::GetInstance()->UsePages(*fb_pages, 0);
 		}
 
 		if (global.sel.zb)
 		{
-			m_parent->UsePages(*zb_pages, 1);
+			GSRendererSW::GetInstance()->UsePages(*zb_pages, 1);
 		}
 
-		for (size_t i = 0; m_tex[i].t != NULL; i++)
+		for (size_t i = 0; m_tex[i].t != NULL; ++i)
 		{
-			m_parent->UsePages(m_tex[i].t->m_pages, 2);
+			GSRendererSW::GetInstance()->UsePages(m_tex[i].t->m_pages, 2);
 		}
 	}
 
@@ -1514,17 +1452,17 @@ void GSRendererSW::SharedData::ReleasePages()
 
 		if (global.sel.fb)
 		{
-			m_parent->ReleasePages(m_fb_pages, 0);
+			GSRendererSW::GetInstance()->ReleasePages(m_fb_pages, 0);
 		}
 
 		if (global.sel.zb)
 		{
-			m_parent->ReleasePages(m_zb_pages, 1);
+			GSRendererSW::GetInstance()->ReleasePages(m_zb_pages, 1);
 		}
 
-		for (size_t i = 0; m_tex[i].t != NULL; i++)
+		for (size_t i = 0; m_tex[i].t != NULL; ++i)
 		{
-			m_parent->ReleasePages(m_tex[i].t->m_pages, 2);
+			GSRendererSW::GetInstance()->ReleasePages(m_tex[i].t->m_pages, 2);
 		}
 	}
 
@@ -1543,7 +1481,7 @@ void GSRendererSW::SharedData::SetSource(GSTextureCacheSW::Texture* t, const GSV
 
 void GSRendererSW::SharedData::UpdateSource()
 {
-	for (size_t i = 0; m_tex[i].t != NULL; i++)
+	for (size_t i = 0; m_tex[i].t != NULL; ++i)
 	{
 		if (m_tex[i].t->Update(m_tex[i].r))
 		{
@@ -1559,30 +1497,30 @@ void GSRendererSW::SharedData::UpdateSource()
 
 	// TODO
 
-	if (m_parent->s_dump)
+	if (g_gs_renderer->s_dump)
 	{
-		uint64 frame = g_perfmon.GetFrame();
+		u64 frame = g_perfmon.GetFrame();
 
 		std::string s;
 
-		if (m_parent->s_savet && m_parent->s_n >= m_parent->s_saven)
+		if (g_gs_renderer->s_savet && g_gs_renderer->s_n >= g_gs_renderer->s_saven)
 		{
-			for (size_t i = 0; m_tex[i].t != NULL; i++)
+			for (size_t i = 0; m_tex[i].t != NULL; ++i)
 			{
-				const GIFRegTEX0& TEX0 = m_parent->GetTex0Layer(i);
+				const GIFRegTEX0& TEX0 = g_gs_renderer->GetTex0Layer(i);
 
-				s = format("%05d_f%lld_itex%d_%05x_%s.bmp", m_parent->s_n, frame, i, TEX0.TBP0, psm_str(TEX0.PSM));
+				s = StringUtil::StdStringFromFormat("%05d_f%lld_itex%d_%05x_%s.bmp", g_gs_renderer->s_n, frame, i, TEX0.TBP0, psm_str(TEX0.PSM));
 
 				m_tex[i].t->Save(root_sw + s);
 			}
 
 			if (global.clut != NULL)
 			{
-				GSTextureSW* t = new GSTextureSW(0, 256, 1);
+				GSTextureSW* t = new GSTextureSW(GSTexture::Type::Invalid, 256, 1);
 
-				t->Update(GSVector4i(0, 0, 256, 1), global.clut, sizeof(uint32) * 256);
+				t->Update(GSVector4i(0, 0, 256, 1), global.clut, sizeof(u32) * 256);
 
-				s = format("%05d_f%lld_itexp_%05x_%s.bmp", m_parent->s_n, frame, (int)m_parent->m_context->TEX0.CBP, psm_str(m_parent->m_context->TEX0.CPSM));
+				s = StringUtil::StdStringFromFormat("%05d_f%lld_itexp_%05x_%s.bmp", g_gs_renderer->s_n, frame, (int)g_gs_renderer->m_context->TEX0.CBP, psm_str(g_gs_renderer->m_context->TEX0.CPSM));
 
 				t->Save(root_sw + s);
 

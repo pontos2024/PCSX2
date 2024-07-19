@@ -24,7 +24,7 @@
 #error Unknown target.
 #endif
 
-GSSetupPrimCodeGenerator::GSSetupPrimCodeGenerator(void* param, uint64 key, void* code, size_t maxsize)
+GSSetupPrimCodeGenerator::GSSetupPrimCodeGenerator(void* param, u64 key, void* code, size_t maxsize)
 	: GSCodeGenerator(code, maxsize)
 	, m_local(*(GSScanlineLocalData*)param)
 	, m_rip(false)
@@ -39,6 +39,6 @@ GSSetupPrimCodeGenerator::GSSetupPrimCodeGenerator(void* param, uint64 key, void
 #if defined(_M_X86_32) || defined(_M_X86_64)
 	GSSetupPrimCodeGenerator2(this, CPUInfo(m_cpu), param, key).Generate();
 #elif defined(_M_ARM64)
-	GSSetupPrimCodeGenerator2(armAsm, param, key).Generate();
+    GSSetupPrimCodeGenerator2(armAsm, param, key).Generate();
 #endif
 }

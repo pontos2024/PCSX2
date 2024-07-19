@@ -57,7 +57,7 @@ png_error,(png_const_structrp png_ptr, png_const_charp error_message),
             if ((png_ptr->flags & PNG_FLAG_STRIP_ERROR_TEXT) != 0)
             {
                int i;
-               for (i = 0; i < offset - 1; i++)
+               for (i = 0; i < offset - 1; ++i)
                   msg[i] = error_message[i + 1];
                msg[i - 1] = '\0';
                error_message = msg;

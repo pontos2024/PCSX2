@@ -254,7 +254,7 @@ int wxStackWalker::InitFrames(wxStackFrame *arr, size_t n, void **addresses, cha
     int len = snprintf(g_buf, BUFSIZE, "addr2line -C -f -e \"%s\"", (const char*) exepath.mb_str());
 #endif
     len = (len <= 0) ? strlen(g_buf) : len;     // in case snprintf() is broken
-    for (size_t i=0; i<n; i++)
+    for (size_t i=0; i<n; ++i)
     {
         snprintf(&g_buf[len], BUFSIZE - len, " %p", addresses[i]);
         len = strlen(g_buf);

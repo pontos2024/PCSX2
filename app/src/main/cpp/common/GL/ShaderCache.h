@@ -51,7 +51,7 @@ private:
 		std::size_t operator()(const CacheIndexKey& e) const noexcept
 		{
 			std::size_t h = 0;
-			hash_combine(h, e.vertex_source_hash_low, e.vertex_source_hash_high, e.vertex_source_length,
+            HashCombine(h, e.vertex_source_hash_low, e.vertex_source_hash_high, e.vertex_source_length,
 				e.geometry_source_hash_low, e.geometry_source_hash_high, e.geometry_source_length,
 				e.fragment_source_hash_low, e.fragment_source_hash_high, e.fragment_source_length);
 			return h;

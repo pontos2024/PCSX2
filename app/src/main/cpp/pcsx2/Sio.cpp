@@ -109,9 +109,9 @@ void sioInit()
 	sio.bufSize = 4;
 	siomode = SIO_START;
 	
-	for(int i = 0; i < 2; i++)
+	for(int i = 0; i < 2; ++i)
 	{
-		for(int j = 0; j < 4; j++)
+		for(int j = 0; j < 4; ++j)
 		{
 			mcds[i][j].term = 0x55;
 			mcds[i][j].port = i;
@@ -141,7 +141,9 @@ SIO_FORCEINLINE void sioInterrupt() {
 		if (!(psxRegs.interrupt & (1 << IopEvt_SIO)))
 			PSX_INT(IopEvt_SIO, 64); // PSXCLK/250000);
 	} else {
+#ifdef PCSX2_DEBUG
 		PAD_LOG("Sio Interrupt");
+#endif
 		sio.StatReg |= IRQ;
 		iopIntcIrq(7); //Should this be used instead of the one below?
 		//psxHu32(0x1070)|=0x80;
@@ -184,7 +186,9 @@ SIO_WRITE sioWriteStart(u8 data)
 	case 0x81: siomode = SIO_MEMCARD; break;
 
 	default:
+#ifdef PCSX2_DEBUG
 		DevCon.Warning("%s cmd: %02X??", __FUNCTION__, data);
+#endif
 		DEVICE_UNPLUGGED();
 		siomode = SIO_DUMMY;
 		break;
@@ -289,7 +293,9 @@ SIO_WRITE sioWriteMultitap(u8 data)
 			break;
 
 		default:
+#ifdef PCSX2_DEBUG
 			DevCon.Warning("%s cmd: %02X??", __FUNCTION__, data);
+#endif
 			sio.buf[3] = 0x00;
 			sio.buf[4] = 0x00;
 			sio.buf[5] = 0x00;
@@ -396,7 +402,9 @@ SIO_WRITE memcardErase(u8 data)
 				break;
 
 			default:
+#ifdef PCSX2_DEBUG
 				DevCon.Warning("%s cmd: %02X??", __FUNCTION__, data);
+#endif
 				sio.bufCount = -1;
 				//sio.bufSize = 3;
 				//sio.bufCount = 4;
@@ -458,7 +466,9 @@ SIO_WRITE memcardWrite(u8 data)
 				[[fallthrough]];
 
 			default:
+#ifdef PCSX2_DEBUG
 				DevCon.Warning("%s cmd: %02X??", __FUNCTION__, data);
+#endif
 				sio.bufCount = -1;
 				//sio.bufSize = 3;
 				//sio.bufCount = 4;
@@ -549,7 +559,9 @@ SIO_WRITE memcardRead(u8 data)
 				[[fallthrough]];
 
 			default:
+#ifdef PCSX2_DEBUG
 				DevCon.Warning("%s cmd: %02X??", __FUNCTION__, data);
+#endif
 				sio.bufCount = -1;
 				//sio.bufSize = 3;
 				//sio.bufCount = 4;
@@ -638,7 +650,9 @@ SIO_WRITE memcardInit()
 			wxTimeSpan delta = wxDateTime::UNow().Subtract(mcd->ForceEjection_Timestamp);
 			if(delta.GetMilliseconds() >= FORCED_MCD_EJECTION_MAX_MS_AFTER_MIN_TRIES)
 			{
+#ifdef PCSX2_DEBUG
 				DevCon.Warning( L"[%s] Auto-eject: Timeout reached after mcd was accessed %d times [port:%d, slot:%d]", WX_STR(GetTimeMsStr()), numTimesAccessed, sio.GetPort(), sio.GetSlot());
+#endif
 				mcd->ForceEjection_Timeout = 0;	//Done. on next sio access the card will be seen as inserted.
 			}
 		}
@@ -740,7 +754,9 @@ SIO_WRITE sioWriteMemcard(u8 data)
 			break;
 
 		default:
+#ifdef PCSX2_DEBUG
 			DevCon.Warning("%s cmd: %02X??", __FUNCTION__, data);
+#endif
 			siomode = SIO_DUMMY;
 			break;
 		}

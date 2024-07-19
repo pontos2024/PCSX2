@@ -247,7 +247,7 @@ void eeSignExtendTo(int gpr, bool onlyupper)
 int _flushXMMunused()
 {
 	u32 i;
-	for (i = 0; i < iREGCNT_XMM; i++)
+	for (i = 0; i < iREGCNT_XMM; ++i)
 	{
 		if (!xmmregs[i].inuse || xmmregs[i].needed || !(xmmregs[i].mode & MODE_WRITE))
 			continue;
@@ -512,7 +512,7 @@ static void _DynGen_Dispatchers()
 
 static __ri void ClearRecLUT(BASEBLOCK* base, int memsize)
 {
-	for (int i = 0; i < memsize / (int)sizeof(uptr); i++)
+	for (int i = 0; i < memsize / (int)sizeof(uptr); ++i)
 		base[i].SetFnptr((uptr)JITCompile);
 }
 
@@ -572,10 +572,10 @@ static void recAlloc()
 	recROM1 = basepos; basepos += (Ps2MemSize::Rom1 / 4);
 	recROM2 = basepos; basepos += (Ps2MemSize::Rom2 / 4);
 
-	for (int i = 0; i < 0x10000; i++)
+	for (int i = 0; i < 0x10000; ++i)
 		recLUT_SetPage(recLUT, 0, 0, 0, i, 0);
 
-	for (int i = 0x0000; i < (int)(Ps2MemSize::MainRam / 0x10000); i++)
+	for (int i = 0x0000; i < (int)(Ps2MemSize::MainRam / 0x10000); ++i)
 	{
 		recLUT_SetPage(recLUT, hwLUT, recRAM, 0x0000, i, i);
 		recLUT_SetPage(recLUT, hwLUT, recRAM, 0x2000, i, i);
@@ -587,21 +587,21 @@ static void recAlloc()
 		recLUT_SetPage(recLUT, hwLUT, recRAM, 0xd000, i, i);
 	}
 
-	for (int i = 0x1fc0; i < 0x2000; i++)
+	for (int i = 0x1fc0; i < 0x2000; ++i)
 	{
 		recLUT_SetPage(recLUT, hwLUT, recROM, 0x0000, i, i - 0x1fc0);
 		recLUT_SetPage(recLUT, hwLUT, recROM, 0x8000, i, i - 0x1fc0);
 		recLUT_SetPage(recLUT, hwLUT, recROM, 0xa000, i, i - 0x1fc0);
 	}
 
-	for (int i = 0x1e00; i < 0x1e04; i++)
+	for (int i = 0x1e00; i < 0x1e04; ++i)
 	{
 		recLUT_SetPage(recLUT, hwLUT, recROM1, 0x0000, i, i - 0x1e00);
 		recLUT_SetPage(recLUT, hwLUT, recROM1, 0x8000, i, i - 0x1e00);
 		recLUT_SetPage(recLUT, hwLUT, recROM1, 0xa000, i, i - 0x1e00);
 	}
 
-	for (int i = 0x1e40; i < 0x1e48; i++)
+	for (int i = 0x1e40; i < 0x1e48; ++i)
 	{
 		recLUT_SetPage(recLUT, hwLUT, recROM2, 0x0000, i, i - 0x1e40);
 		recLUT_SetPage(recLUT, hwLUT, recROM2, 0x8000, i, i - 0x1e40);
@@ -892,7 +892,7 @@ void recClear(u32 addr, u32 size)
 
 	upperextent = std::min(upperextent, ceiling);
 
-	for (int i = 0; pexblock = recBlocks[i]; i++)
+	for (int i = 0; pexblock = recBlocks[i]; ++i)
 	{
 		if (s_pCurBlock == PC_GETBLOCK(pexblock->startpc))
 			continue;
@@ -1363,7 +1363,7 @@ void recMemcheck(u32 op, u32 bits, bool store)
 	// edx = access address+size
 
 	auto checks = CBreakPoints::GetMemChecks();
-	for (size_t i = 0; i < checks.size(); i++)
+	for (size_t i = 0; i < checks.size(); ++i)
 	{
 		if (checks[i].cpu != BREAKPOINT_EE)
 			continue;
@@ -1703,18 +1703,18 @@ static void __fastcall PreBlockCheck(u32 blockpc)
 
 #if 0
 		std::fprintf(fp, "%08X (%u; %08X; %08X; %08X):", cpuRegs.pc, cpuRegs.cycle, hash, hashf, hashi);
-		for (int i = 0; i < 34; i++)
+		for (int i = 0; i < 34; ++i)
 		{
 			std::fprintf(fp, " %s: %08X%08X%08X%08X", R3000A::disRNameGPR[i], cpuRegs.GPR.r[i].UL[3], cpuRegs.GPR.r[i].UL[2], cpuRegs.GPR.r[i].UL[1], cpuRegs.GPR.r[i].UL[0]);
 		}
 #if 0
 		std::fprintf(fp, "\nFPR: CR: %08X ACC: %08X", fpuRegs.fprc[31], fpuRegs.ACC.UL);
-		for (int i = 0; i < 32; i++)
+		for (int i = 0; i < 32; ++i)
 			std::fprintf(fp, " %08X", fpuRegs.fpr[i].UL);
 #endif
 #if 0
 		std::fprintf(fp, "\nVF: ");
-		for (int i = 0; i < 32; i++)
+		for (int i = 0; i < 32; ++i)
 			std::fprintf(fp, " %u: %08X %08X %08X %08X", i, VU0.VF[i].UL[0], VU0.VF[i].UL[1], VU0.VF[i].UL[2], VU0.VF[i].UL[3]);
 		std::fprintf(fp, "\nACC: %08X %08X %08X %08X Q: %08X P: %08X", VU0.ACC.UL[0], VU0.ACC.UL[1], VU0.ACC.UL[2], VU0.ACC.UL[3], VU0.q.UL, VU0.p.UL);
 #endif
@@ -2357,7 +2357,7 @@ StartRecomp:
 
 	s_pCurBlock->SetFnptr((uptr)recPtr);
 
-	for (i = 1; i < (u32)s_pCurBlockEx->size; i++)
+	for (i = 1; i < (u32)s_pCurBlockEx->size; ++i)
 	{
 		if ((uptr)JITCompile == s_pCurBlock[i].GetFnptr())
 			s_pCurBlock[i].SetFnptr((uptr)JITCompileInBlock);

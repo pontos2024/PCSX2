@@ -287,7 +287,7 @@ void cpuinfo_arm_mach_init(void) {
 	const uint32_t threads_per_package = mach_topology.threads / mach_topology.packages;
 	const uint32_t cores_per_package = mach_topology.cores / mach_topology.packages;
 
-	for (uint32_t i = 0; i < mach_topology.packages; i++) {
+	for (uint32_t i = 0; i < mach_topology.packages; ++i) {
 		packages[i] = (struct cpuinfo_package) {
 			.processor_start = i * threads_per_package,
 			.processor_count = threads_per_package,
@@ -367,7 +367,7 @@ void cpuinfo_arm_mach_init(void) {
 	}
 
 	uint32_t num_clusters = 1;
-	for (uint32_t i = 0; i < mach_topology.cores; i++) {
+	for (uint32_t i = 0; i < mach_topology.cores; ++i) {
 		cores[i] = (struct cpuinfo_core) {
 			.processor_start = i * threads_per_core,
 			.processor_count = threads_per_core,
@@ -380,7 +380,7 @@ void cpuinfo_arm_mach_init(void) {
 			num_clusters++;
 		}
 	}
-	for (uint32_t i = 0; i < mach_topology.threads; i++) {
+	for (uint32_t i = 0; i < mach_topology.threads; ++i) {
 		const uint32_t smt_id = i % threads_per_core;
 		const uint32_t core_id = i / threads_per_core;
 		const uint32_t package_id = i / threads_per_package;
@@ -405,7 +405,7 @@ void cpuinfo_arm_mach_init(void) {
 		goto cleanup;
 	}
 	uint32_t cluster_idx = UINT32_MAX;
-	for (uint32_t i = 0; i < mach_topology.cores; i++) {
+	for (uint32_t i = 0; i < mach_topology.cores; ++i) {
 		if (i == 0 || cores[i].uarch != cores[i - 1].uarch) {
 			cluster_idx++;
 			uarchs[cluster_idx] = (struct cpuinfo_uarch_info) {
@@ -432,12 +432,12 @@ void cpuinfo_arm_mach_init(void) {
 		cores[i].cluster = &clusters[cluster_idx];
 	}
 
-	for (uint32_t i = 0; i < mach_topology.threads; i++) {
+	for (uint32_t i = 0; i < mach_topology.threads; ++i) {
 		const uint32_t core_id = i / threads_per_core;
 		processors[i].cluster = cores[core_id].cluster;
 	}
 
-	for (uint32_t i = 0; i < mach_topology.packages; i++) {
+	for (uint32_t i = 0; i < mach_topology.packages; ++i) {
 		packages[i].cluster_start = 0;
 		packages[i].cluster_count = num_clusters;
 	}

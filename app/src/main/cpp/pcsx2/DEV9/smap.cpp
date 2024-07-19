@@ -139,7 +139,7 @@ void tx_process()
 
 	NetPacket pk;
 	u32 fc = 0;
-	for (fc = 0; fc < cnt; fc++)
+	for (fc = 0; fc < cnt; ++fc)
 	{
 		smap_bd_t* pbd = ((smap_bd_t*)&dev9.dev9R[SMAP_BD_TX_BASE & 0xffff]) + dev9.txbdi;
 

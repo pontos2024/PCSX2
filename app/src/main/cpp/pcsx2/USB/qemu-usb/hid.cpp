@@ -481,7 +481,7 @@ static void hid_keyboard_event(HIDState* hs, InputEvent* evt)
 		//trace_hid_kbd_queue_full();
 		return;
 	}
-	for (i = 0; i < count; i++)
+	for (i = 0; i < count; ++i)
 	{
 		slot = (hs->head + hs->n) & QUEUE_MASK;
 		hs->n++;

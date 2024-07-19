@@ -97,7 +97,7 @@ struct Helper1Param {
 };
 
 void Helper1(Helper1Param param) {
-  for (int i = 0; i < kRepeat; i++) {
+  for (int i = 0; i < kRepeat; ++i) {
     const char ch = param.mock_foo->Baz("a", "b");
     if (ch == 'a') {
       // It was an expected call.
@@ -148,7 +148,7 @@ void TestConcurrentCallsOnSameObject(Dummy /* dummy */) {
 // expectations are partially ordered.
 
 void Helper2(MockFoo* foo) {
-  for (int i = 0; i < kRepeat; i++) {
+  for (int i = 0; i < kRepeat; ++i) {
     foo->Bar(2);
     foo->Bar(3);
   }
@@ -205,7 +205,7 @@ TEST(StressTest, CanUseGMockWithThreads) {
   const int kCopiesOfEachRoutine = kMaxTestThreads / kRoutines;
   const int kTestThreads = kCopiesOfEachRoutine * kRoutines;
   ThreadWithParam<Dummy>* threads[kTestThreads] = {};
-  for (int i = 0; i < kTestThreads; i++) {
+  for (int i = 0; i < kTestThreads; ++i) {
     // Creates a thread to run the test function.
     threads[i] = new ThreadWithParam<Dummy>(test_routines[i % kRoutines],
                                             Dummy(), nullptr);
@@ -213,7 +213,7 @@ TEST(StressTest, CanUseGMockWithThreads) {
   }
 
   // At this point, we have many threads running.
-  for (int i = 0; i < kTestThreads; i++) {
+  for (int i = 0; i < kTestThreads; ++i) {
     JoinAndDelete(threads[i]);
   }
 

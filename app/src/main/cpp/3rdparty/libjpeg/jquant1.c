@@ -201,7 +201,7 @@ select_ncolors (j_decompress_ptr cinfo, int Ncolors[])
   do {
     iroot++;
     temp = iroot;		/* set temp = iroot ** nc */
-    for (i = 1; i < nc; i++)
+    for (i = 1; i < nc; ++i)
       temp *= iroot;
   } while (temp <= (long) max_colors); /* repeat till iroot exceeds root */
   iroot--;			/* now iroot = floor(root) */
@@ -212,7 +212,7 @@ select_ncolors (j_decompress_ptr cinfo, int Ncolors[])
 
   /* Initialize to iroot color values for each component */
   total_colors = 1;
-  for (i = 0; i < nc; i++) {
+  for (i = 0; i < nc; ++i) {
     Ncolors[i] = iroot;
     total_colors *= iroot;
   }
@@ -224,7 +224,7 @@ select_ncolors (j_decompress_ptr cinfo, int Ncolors[])
    */
   do {
     changed = FALSE;
-    for (i = 0; i < nc; i++) {
+    for (i = 0; i < nc; ++i) {
       j = (cinfo->out_color_space == JCS_RGB ? RGB_order[i] : i);
       /* calculate new total_colors if Ncolors[j] is incremented */
       temp = total_colors / Ncolors[j];
@@ -300,11 +300,11 @@ create_colormap (j_decompress_ptr cinfo)
   /* blkdist is distance between groups of identical entries for a component */
   blkdist = total_colors;
 
-  for (i = 0; i < cinfo->out_color_components; i++) {
+  for (i = 0; i < cinfo->out_color_components; ++i) {
     /* fill in colormap entries for i'th color component */
     nci = cquantize->Ncolors[i]; /* # of distinct values for this color */
     blksize = blkdist / nci;
-    for (j = 0; j < nci; j++) {
+    for (j = 0; j < nci; ++j) {
       /* Compute j'th output value (out of nci) for component */
       val = output_value(cinfo, i, j, nci-1);
       /* Fill in all colormap entries that have this value of this component */
@@ -357,7 +357,7 @@ create_colorindex (j_decompress_ptr cinfo)
   /* blksize is number of adjacent repeated entries for a component */
   blksize = cquantize->sv_actual;
 
-  for (i = 0; i < cinfo->out_color_components; i++) {
+  for (i = 0; i < cinfo->out_color_components; ++i) {
     /* fill in colorindex entries for i'th color component */
     nci = cquantize->Ncolors[i]; /* # of distinct values for this color */
     blksize = blksize / nci;
@@ -371,7 +371,7 @@ create_colorindex (j_decompress_ptr cinfo)
     indexptr = cquantize->colorindex[i];
     val = 0;
     k = largest_input_value(cinfo, i, 0, nci-1);
-    for (j = 0; j <= MAXJSAMPLE; j++) {
+    for (j = 0; j <= MAXJSAMPLE; ++j) {
       while (j > k)		/* advance val if past boundary */
 	k = largest_input_value(cinfo, i, ++val, nci-1);
       /* premultiply so that no multiplication needed in main processing */
@@ -379,7 +379,7 @@ create_colorindex (j_decompress_ptr cinfo)
     }
     /* Pad at both ends if necessary */
     if (pad)
-      for (j = 1; j <= MAXJSAMPLE; j++) {
+      for (j = 1; j <= MAXJSAMPLE; ++j) {
 	indexptr[-j] = indexptr[0];
 	indexptr[MAXJSAMPLE+j] = indexptr[MAXJSAMPLE];
       }
@@ -408,7 +408,7 @@ make_odither_array (j_decompress_ptr cinfo, int ncolors)
    * On 16-bit-int machine, be careful to avoid overflow.
    */
   den = 2 * ODITHER_CELLS * ((INT32) (ncolors - 1));
-  for (j = 0; j < ODITHER_SIZE; j++) {
+  for (j = 0; j < ODITHER_SIZE; ++j) {
     for (k = 0; k < ODITHER_SIZE; k++) {
       num = ((INT32) (ODITHER_CELLS-1 - 2*((int)base_dither_matrix[j][k])))
 	    * MAXJSAMPLE;
@@ -435,10 +435,10 @@ create_odither_tables (j_decompress_ptr cinfo)
   ODITHER_MATRIX_PTR odither;
   int i, j, nci;
 
-  for (i = 0; i < cinfo->out_color_components; i++) {
+  for (i = 0; i < cinfo->out_color_components; ++i) {
     nci = cquantize->Ncolors[i]; /* # of distinct values for this color */
     odither = NULL;		/* search for matching prior component */
-    for (j = 0; j < i; j++) {
+    for (j = 0; j < i; ++j) {
       if (nci == cquantize->Ncolors[j]) {
 	odither = cquantize->odither[j];
 	break;
@@ -726,7 +726,7 @@ alloc_fs_workspace (j_decompress_ptr cinfo)
   int i;
 
   arraysize = (size_t) ((cinfo->output_width + 2) * SIZEOF(FSERROR));
-  for (i = 0; i < cinfo->out_color_components; i++) {
+  for (i = 0; i < cinfo->out_color_components; ++i) {
     cquantize->fserrors[i] = (FSERRPTR)
       (*cinfo->mem->alloc_large)((j_common_ptr) cinfo, JPOOL_IMAGE, arraysize);
   }
@@ -780,7 +780,7 @@ start_pass_1_quant (j_decompress_ptr cinfo, boolean is_pre_scan)
       alloc_fs_workspace(cinfo);
     /* Initialize the propagated errors to zero. */
     arraysize = (size_t) ((cinfo->output_width + 2) * SIZEOF(FSERROR));
-    for (i = 0; i < cinfo->out_color_components; i++)
+    for (i = 0; i < cinfo->out_color_components; ++i)
       jzero_far((void FAR *) cquantize->fserrors[i], arraysize);
     break;
   default:

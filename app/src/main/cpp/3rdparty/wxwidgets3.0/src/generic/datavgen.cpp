@@ -1902,7 +1902,7 @@ void wxDataViewMainWindow::OnPaint( wxPaintEvent &WXUNUSED(event) )
         dc.SetPen(m_penRule);
         dc.SetBrush(*wxTRANSPARENT_BRUSH);
 
-        for (unsigned int i = item_start; i <= item_last; i++)
+        for (unsigned int i = item_start; i <= item_last; ++i)
         {
             int y = GetLineStart( i );
             dc.DrawLine(x_start, y, x_last, y);
@@ -1921,7 +1921,7 @@ void wxDataViewMainWindow::OnPaint( wxPaintEvent &WXUNUSED(event) )
         //     rule at the most-left side of the control.
 
         int x = x_start - 1;
-        for (unsigned int i = col_start; i < col_last; i++)
+        for (unsigned int i = col_start; i < col_last; ++i)
         {
             wxDataViewColumn *col = GetOwner()->GetColumnAt(i);
             if (col->IsHidden())
@@ -2049,7 +2049,7 @@ void wxDataViewMainWindow::OnPaint( wxPaintEvent &WXUNUSED(event) )
     // redraw all cells for all rows which must be repainted and all columns
     wxRect cell_rect;
     cell_rect.x = x_start;
-    for (unsigned int i = col_start; i < col_last; i++)
+    for (unsigned int i = col_start; i < col_last; ++i)
     {
         wxDataViewColumn *col = GetOwner()->GetColumnAt( i );
         wxDataViewRenderer *cell = col->GetRenderer();
@@ -2679,7 +2679,7 @@ int wxDataViewMainWindow::GetEndOfLastCol() const
 {
     int width = 0;
     unsigned int i;
-    for (i = 0; i < GetOwner()->GetColumnCount(); i++)
+    for (i = 0; i < GetOwner()->GetColumnCount(); ++i)
     {
         const wxDataViewColumn *c =
             const_cast<wxDataViewCtrl*>(GetOwner())->GetColumnAt( i );
@@ -2738,7 +2738,7 @@ void wxDataViewMainWindow::SelectAllRows( bool on )
     if (on)
     {
         m_selection.Clear();
-        for (unsigned int i = 0; i < GetRowCount(); i++)
+        for (unsigned int i = 0; i < GetRowCount(); ++i)
             m_selection.Add( i );
         Refresh();
     }
@@ -2747,7 +2747,7 @@ void wxDataViewMainWindow::SelectAllRows( bool on )
         unsigned int first_visible = GetFirstVisibleRow();
         unsigned int last_visible = GetLastVisibleRow();
         unsigned int i;
-        for (i = 0; i < m_selection.GetCount(); i++)
+        for (i = 0; i < m_selection.GetCount(); ++i)
         {
             unsigned int row = m_selection[i];
             if ((row >= first_visible) && (row <= last_visible))
@@ -2787,7 +2787,7 @@ void wxDataViewMainWindow::SelectRows( unsigned int from, unsigned int to, bool 
     }
 
     unsigned int i;
-    for (i = from; i <= to; i++)
+    for (i = from; i <= to; ++i)
     {
         if (m_selection.Index( i ) == wxNOT_FOUND)
         {
@@ -2805,7 +2805,7 @@ void wxDataViewMainWindow::SelectRows( unsigned int from, unsigned int to, bool 
 
 void wxDataViewMainWindow::Select( const wxArrayInt& aSelections )
 {
-    for (size_t i=0; i < aSelections.GetCount(); i++)
+    for (size_t i=0; i < aSelections.GetCount(); ++i)
     {
         int n = aSelections[i];
 
@@ -3398,7 +3398,7 @@ wxRect wxDataViewMainWindow::GetItemRect( const wxDataViewItem & item,
     unsigned int cols = GetOwner()->GetColumnCount();
     // If column is null the loop will compute the combined width of all columns.
     // Otherwise, it will compute the x position of the column we are looking for.
-    for (unsigned int i = 0; i < cols; i++)
+    for (unsigned int i = 0; i < cols; ++i)
     {
         wxDataViewColumn* col = GetOwner()->GetColumnAt( i );
 
@@ -4062,7 +4062,7 @@ void wxDataViewMainWindow::OnMouse( wxMouseEvent &event )
     int xpos = 0;
     unsigned int cols = GetOwner()->GetColumnCount();
     unsigned int i;
-    for (i = 0; i < cols; i++)
+    for (i = 0; i < cols; ++i)
     {
         wxDataViewColumn *c = GetOwner()->GetColumnAt( i );
         if (c->IsHidden())

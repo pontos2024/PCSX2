@@ -151,7 +151,7 @@ std::vector<AdapterEntry> TAPAdapter::GetAdapters()
 	if (status != ERROR_SUCCESS)
 		return tap_nic;
 
-	for (DWORD i = 0; i < cSubKeys; i++)
+	for (DWORD i = 0; i < cSubKeys; ++i)
 	{
 		TCHAR enum_name[256];
 		TCHAR connection_string[256];
@@ -398,7 +398,7 @@ bool TAPGetWin32Adapter(const char* name, PIP_ADAPTER_ADDRESSES adapter, std::un
 	{
 		int targetIndex = searchList[vi];
 
-		for (ULONG i = 0; i < table->NumEntries; i++)
+		for (ULONG i = 0; i < table->NumEntries; ++i)
 		{
 			MIB_IFSTACK_ROW row = table->Table[i];
 			if (row.LowerLayerInterfaceIndex == targetIndex)

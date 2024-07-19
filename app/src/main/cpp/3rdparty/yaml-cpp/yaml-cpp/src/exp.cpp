@@ -38,7 +38,7 @@ std::string Str(unsigned ch) { return std::string(1, static_cast<char>(ch)); }
 std::string Escape(Stream& in, int codeLength) {
   // grab string
   std::string str;
-  for (int i = 0; i < codeLength; i++)
+  for (int i = 0; i < codeLength; ++i)
     str += in.get();
 
   // get the value

@@ -35,10 +35,13 @@ void vu0ResetRegs()
 }
 
 void __fastcall vu0ExecMicro(u32 addr) {
+#ifdef PCSX2_DEBUG
 	VUM_LOG("vu0ExecMicro %x", addr);
-
+#endif
 	if(VU0.VI[REG_VPU_STAT].UL & 0x1) {
+#ifdef PCSX2_DEBUG
 		DevCon.Warning("vu0ExecMicro > Stalling for previous microprogram to finish");
+#endif
 		vu0Finish();
 	}
 

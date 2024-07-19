@@ -544,7 +544,7 @@ void wxAppConsoleBase::DeletePendingEvents()
     wxCHECK_RET( m_handlersWithPendingDelayedEvents.IsEmpty(),
                  "this helper list should be empty" );
 
-    for (unsigned int i=0; i<m_handlersWithPendingEvents.GetCount(); i++)
+    for (unsigned int i=0; i<m_handlersWithPendingEvents.GetCount(); ++i)
         m_handlersWithPendingEvents[i]->DeletePendingEvents();
 
     m_handlersWithPendingEvents.Clear();

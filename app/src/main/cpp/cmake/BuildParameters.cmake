@@ -34,6 +34,9 @@ endif()
 
 option(USE_VTUNE "Plug VTUNE to profile GS JIT.")
 
+option(USE_OPENGL "Enable OpenGL GS renderer" ON)
+option(USE_VULKAN "Enable Vulkan GS renderer" ON)
+
 #-------------------------------------------------------------------------------
 # Graphical option
 #-------------------------------------------------------------------------------
@@ -253,6 +256,14 @@ endif()
 
 if(USE_VTUNE)
 	list(APPEND PCSX2_DEFS ENABLE_VTUNE)
+endif()
+
+if(USE_OPENGL)
+	list(APPEND PCSX2_DEFS ENABLE_OPENGL)
+endif()
+
+if(USE_VULKAN)
+	list(APPEND PCSX2_DEFS ENABLE_VULKAN)
 endif()
 
 if(X11_API)

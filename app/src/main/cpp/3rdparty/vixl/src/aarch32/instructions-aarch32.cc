@@ -95,7 +95,7 @@ QRegister VRegister::Q() const {
 
 
 Register RegisterList::GetFirstAvailableRegister() const {
-  for (uint32_t i = 0; i < kNumberOfRegisters; i++) {
+  for (uint32_t i = 0; i < kNumberOfRegisters; ++i) {
     if (((list_ >> i) & 1) != 0) return Register(i);
   }
   return Register();
@@ -130,7 +130,7 @@ std::ostream& operator<<(std::ostream& os, RegisterList registers) {
 
 
 QRegister VRegisterList::GetFirstAvailableQRegister() const {
-  for (uint32_t i = 0; i < kNumberOfQRegisters; i++) {
+  for (uint32_t i = 0; i < kNumberOfQRegisters; ++i) {
     if (((list_ >> (i * 4)) & 0xf) == 0xf) return QRegister(i);
   }
   return QRegister();
@@ -138,7 +138,7 @@ QRegister VRegisterList::GetFirstAvailableQRegister() const {
 
 
 DRegister VRegisterList::GetFirstAvailableDRegister() const {
-  for (uint32_t i = 0; i < kMaxNumberOfDRegisters; i++) {
+  for (uint32_t i = 0; i < kMaxNumberOfDRegisters; ++i) {
     if (((list_ >> (i * 2)) & 0x3) == 0x3) return DRegister(i);
   }
   return DRegister();
@@ -146,7 +146,7 @@ DRegister VRegisterList::GetFirstAvailableDRegister() const {
 
 
 SRegister VRegisterList::GetFirstAvailableSRegister() const {
-  for (uint32_t i = 0; i < kNumberOfSRegisters; i++) {
+  for (uint32_t i = 0; i < kNumberOfSRegisters; ++i) {
     if (((list_ >> i) & 0x1) != 0) return SRegister(i);
   }
   return SRegister();

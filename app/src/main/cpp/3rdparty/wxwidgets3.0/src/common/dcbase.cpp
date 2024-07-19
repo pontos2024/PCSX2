@@ -636,15 +636,15 @@ wxDCImpl::DoDrawPolyPolygon(int n,
     int      i, j, lastOfs;
     wxPoint* pts;
 
-    for (i = j = lastOfs = 0; i < n; i++)
+    for (i = j = lastOfs = 0; i < n; ++i)
     {
         lastOfs = j;
         j      += count[i];
     }
     pts = new wxPoint[j+n-1];
-    for (i = 0; i < j; i++)
+    for (i = 0; i < j; ++i)
         pts[i] = points[i];
-    for (i = 2; i <= n; i++)
+    for (i = 2; i <= n; ++i)
     {
         lastOfs -= count[n-i];
         pts[j++] = pts[lastOfs];
@@ -655,7 +655,7 @@ wxDCImpl::DoDrawPolyPolygon(int n,
         DoDrawPolygon(j, pts, xoffset, yoffset, fillStyle);
     }
 
-    for (i = j = 0; i < n; i++)
+    for (i = j = 0; i < n; ++i)
     {
         DoDrawLines(count[i], pts+j, xoffset, yoffset);
         j += count[i];

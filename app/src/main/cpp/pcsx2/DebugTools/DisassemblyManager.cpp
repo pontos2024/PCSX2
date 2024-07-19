@@ -373,7 +373,7 @@ int DisassemblyFunction::getLineNum(u32 address, bool findStart)
 	if (findStart)
 	{
 		int last = (int)lineAddresses.size() - 1;
-		for (int i = 0; i < last; i++)
+		for (int i = 0; i < last; ++i)
 		{
 			u32 next = lineAddresses[i + 1];
 			if (lineAddresses[i] <= address && next > address)
@@ -385,7 +385,7 @@ int DisassemblyFunction::getLineNum(u32 address, bool findStart)
 	else
 	{
 		int last = (int)lineAddresses.size() - 1;
-		for (int i = 0; i < last; i++)
+		for (int i = 0; i < last; ++i)
 		{
 			if (lineAddresses[i] == address)
 				return i;
@@ -415,7 +415,7 @@ void DisassemblyFunction::getBranchLines(u32 start, u32 size, std::vector<Branch
 {
 	u32 end = start+size;
 
-	for (size_t i = 0; i < lines.size(); i++)
+	for (size_t i = 0; i < lines.size(); ++i)
 	{
 		BranchLine& line = lines[i];
 
@@ -442,7 +442,7 @@ void DisassemblyFunction::generateBranchLines()
 	};
 
 	LaneInfo lanes[NUM_LANES];
-	for (int i = 0; i < NUM_LANES; i++) {
+	for (int i = 0; i < NUM_LANES; ++i) {
 		lanes[i].used = false;
 		lanes[i].end = 0;
 	}
@@ -474,7 +474,7 @@ void DisassemblyFunction::generateBranchLines()
 	}
 
 	std::sort(lines.begin(),lines.end());
-	for (size_t i = 0; i < lines.size(); i++)
+	for (size_t i = 0; i < lines.size(); ++i)
 	{
 		for (int l = 0; l < NUM_LANES; l++)
 		{
@@ -520,7 +520,7 @@ void DisassemblyFunction::load()
 
 	// gather all branch targets
 	std::set<u32> branchTargets;
-	for (size_t i = 0; i < lines.size(); i++)
+	for (size_t i = 0; i < lines.size(); ++i)
 	{
 		switch (lines[i].type)
 		{
@@ -658,7 +658,7 @@ void DisassemblyFunction::load()
 						addOpcodeSequence(opcodeSequenceStart,opAddress);
 
 					entries[opAddress] = macro;
-					for (int i = 0; i < macro->getNumLines(); i++)
+					for (int i = 0; i < macro->getNumLines(); ++i)
 					{
 						lineAddresses.push_back(macro->getLineAddress(i));
 					}

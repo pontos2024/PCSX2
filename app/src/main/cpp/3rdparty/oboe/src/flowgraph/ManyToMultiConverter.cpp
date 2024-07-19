@@ -23,7 +23,7 @@ using namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph;
 ManyToMultiConverter::ManyToMultiConverter(int32_t channelCount)
         : inputs(channelCount)
         , output(*this, channelCount) {
-    for (int i = 0; i < channelCount; i++) {
+    for (int i = 0; i < channelCount; ++i) {
         inputs[i] = std::make_unique<FlowGraphPortFloatInput>(*this, 1);
     }
 }
@@ -35,7 +35,7 @@ int32_t ManyToMultiConverter::onProcess(int32_t numFrames) {
         const float *inputBuffer = inputs[ch]->getBuffer();
         float *outputBuffer = output.getBuffer() + ch;
 
-        for (int i = 0; i < numFrames; i++) {
+        for (int i = 0; i < numFrames; ++i) {
             // read one, write into the proper interleaved output channel
             float sample = *inputBuffer++;
             *outputBuffer = sample;

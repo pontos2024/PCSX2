@@ -122,7 +122,7 @@ void TConstTraverser::visitConstantUnion(TIntermConstantUnion* node)
         int rightUnionSize = node->getType().computeNumComponents();
 
         const TConstUnionArray& rightUnionArray = node->getConstArray();
-        for (int i = 0; i < rightUnionSize; i++) {
+        for (int i = 0; i < rightUnionSize; ++i) {
             if (index >= instanceSize)
                 return;
             leftUnionArray[index] = rightUnionArray[i];
@@ -135,7 +135,7 @@ void TConstTraverser::visitConstantUnion(TIntermConstantUnion* node)
         if (! isMatrix) {
             int count = 0;
             int nodeComps = node->getType().computeNumComponents();
-            for (int i = index; i < endIndex; i++) {
+            for (int i = index; i < endIndex; ++i) {
                 if (i >= instanceSize)
                     return;
 
@@ -169,7 +169,7 @@ void TConstTraverser::visitConstantUnion(TIntermConstantUnion* node)
                 int count = 0;
                 const int startIndex = index;
                 int nodeComps = node->getType().computeNumComponents();
-                for (int i = startIndex; i < endIndex; i++) {
+                for (int i = startIndex; i < endIndex; ++i) {
                     if (i >= instanceSize)
                         return;
                     if (nodeComps == 1) {

@@ -23,7 +23,7 @@
 WindowsKeyboard::WindowsKeyboard(DeviceAPI api, wchar_t* displayName, wchar_t* instanceID, wchar_t* deviceID)
 	: Device(api, KEYBOARD, displayName, instanceID, deviceID)
 {
-	for (int i = 0; i < 256; i++)
+	for (int i = 0; i < 256; ++i)
 	{
 		AddPhysicalControl(PSHBTN, i, i);
 	}

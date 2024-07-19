@@ -339,7 +339,7 @@ void cdrInterrupt()
 
 		case CdlGetlocL:
 			SetResultSize(8);
-			for (i = 0; i < 8; i++)
+			for (i = 0; i < 8; ++i)
 				cdr.Result[i] = cdr.Transfer[i];
 			cdr.Stat = Acknowledge;
 			break;
@@ -697,7 +697,7 @@ void cdrWrite1(u8 rt)
 	if (cdr.ParamC)
 	{
 		DevCon.Warning(" Param[%d] = {", cdr.ParamC);
-		for (i = 0; i < cdr.ParamC; i++)
+		for (i = 0; i < cdr.ParamC; ++i)
 			DevCon.Warning(" %x,", cdr.Param[i]);
 		DevCon.Warning("}\n");
 	}
@@ -728,7 +728,7 @@ void cdrWrite1(u8 rt)
 			// Setloc is memorizing the wanted target, and marks it as unprocessed, and has no other effect
 			// (it doesn't start reading or seeking, and doesn't interrupt or redirect any active reads).
 			int oldSector = msf_to_lsn(cdr.SetSector);
-			for (i = 0; i < 3; i++)
+			for (i = 0; i < 3; ++i)
 				cdr.SetSector[i] = btoi(cdr.Param[i]);
 			cdr.SetSector[3] = 0;
 			if ((cdr.SetSector[0] | cdr.SetSector[1] | cdr.SetSector[2]) == 0)

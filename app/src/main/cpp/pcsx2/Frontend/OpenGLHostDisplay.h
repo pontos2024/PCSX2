@@ -20,6 +20,8 @@
 #include "HostDisplay.h"
 #include "common/GL/Context.h"
 #include "common/WindowInfo.h"
+#include <array>
+#include <bitset>
 #include <memory>
 
 class OpenGLHostDisplay final : public HostDisplay
@@ -36,9 +38,8 @@ public:
 	bool HasRenderDevice() const override;
 	bool HasRenderSurface() const override;
 
-	bool CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool threaded_presentation, bool debug_device) override;
+	bool CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, VsyncMode vsync, bool threaded_presentation, bool debug_device) override;
 	bool InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device) override;
-	void DestroyRenderDevice() override;
 
 	bool MakeRenderContextCurrent() override;
 	bool DoneRenderContextCurrent() override;
@@ -50,10 +51,9 @@ public:
 	bool SetFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) override;
 	AdapterAndModeList GetAdapterAndModeList() override;
 	void DestroyRenderSurface() override;
-//	std::string GetDriverInfo() const override;
+	std::string GetDriverInfo() const override;
 
-	std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, const void* data,
-													  u32 data_stride, bool dynamic) override;
+	std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, const void* data, u32 data_stride, bool dynamic) override;
 	void UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* texture_data, u32 texture_data_stride) override;
 
 	void SetVSync(VsyncMode mode) override;
@@ -61,7 +61,12 @@ public:
 	bool BeginPresent(bool frame_skip) override;
 	void EndPresent() override;
 
+	bool SetGPUTimingEnabled(bool enabled) override;
+	float GetAndResetAccumulatedGPUTime() override;
+
 protected:
+	static constexpr u8 NUM_TIMESTAMP_QUERIES = 3;
+
 	const char* GetGLSLVersionString() const;
 	std::string GetGLSLVersionHeader() const;
 
@@ -69,6 +74,15 @@ protected:
 	void DestroyImGuiContext() override;
 	bool UpdateImGuiFontTexture() override;
 
+	void SetSwapInterval();
+
 	std::unique_ptr<GL::Context> m_gl_context;
+
+	std::array<GLuint, NUM_TIMESTAMP_QUERIES> m_timestamp_queries = {};
+	u8 m_read_timestamp_query = 0;
+	u8 m_write_timestamp_query = 0;
+	u8 m_waiting_timestamp_queries = 0;
+	bool m_timestamp_query_started = false;
+	float m_accumulated_gpu_time = 0.0f;
 };
 

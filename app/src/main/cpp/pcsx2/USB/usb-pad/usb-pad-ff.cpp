@@ -115,7 +115,7 @@ namespace usb_pad
 			switch (cmd)
 			{
 				case CMD_DOWNLOAD:
-					for (int i = 0; i < 4; i++)
+					for (int i = 0; i < 4; ++i)
 					{
 						if (slots & (1 << i))
 							mFFstate.slot_type[i] = ffdata->type;
@@ -123,7 +123,7 @@ namespace usb_pad
 					break;
 				case CMD_DOWNLOAD_AND_PLAY: //0x01
 				{
-					for (int i = 0; i < 4; i++)
+					for (int i = 0; i < 4; ++i)
 					{
 						if (slots & (1 << i))
 						{
@@ -139,7 +139,7 @@ namespace usb_pad
 							if (slots == 0xF)
 							{
 								int force = 0;
-								for (int i = 0; i < 4; i++)
+								for (int i = 0; i < 4; ++i)
 								{
 									int t = (int)ffdata->u.params[i];
 									if (t < 128)
@@ -150,7 +150,7 @@ namespace usb_pad
 							}
 							else
 							{
-								for (int i = 0; i < 4; i++)
+								for (int i = 0; i < 4; ++i)
 								{
 									if (slots == (1 << i))
 										SetConstantForce(mFFdev, ffdata->u.params[i]);
@@ -222,7 +222,7 @@ namespace usb_pad
 				break;
 				case CMD_STOP: //0x03
 				{
-					for (int i = 0; i < 4; i++)
+					for (int i = 0; i < 4; ++i)
 					{
 						if (slots & (1 << i))
 						{

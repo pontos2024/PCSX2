@@ -48,7 +48,7 @@ static void cpuinfo_x86_count_caches(
 	uint32_t l1i_count = 0, l1d_count = 0, l2_count = 0, l3_count = 0, l4_count = 0;
 	uint32_t last_l1i_id = UINT32_MAX, last_l1d_id = UINT32_MAX;
 	uint32_t last_l2_id = UINT32_MAX, last_l3_id = UINT32_MAX, last_l4_id = UINT32_MAX;
-	for (uint32_t i = 0; i < processors_count; i++) {
+	for (uint32_t i = 0; i < processors_count; ++i) {
 		const uint32_t apic_id = processors[i].apic_id;
 		cpuinfo_log_debug("APID ID %"PRIu32": logical processor %"PRIu32, apic_id, i);
 
@@ -137,7 +137,7 @@ BOOL CALLBACK cpuinfo_x86_windows_init(PINIT_ONCE init_once, PVOID parameter, PV
 
 	uint32_t processors_count = 0;
 	uint32_t* processors_per_group = (uint32_t*) CPUINFO_ALLOCA(max_group_count * sizeof(uint32_t));
-	for (uint32_t i = 0; i < max_group_count; i++) {
+	for (uint32_t i = 0; i < max_group_count; ++i) {
 		processors_per_group[i] = GetMaximumProcessorCount((WORD) i);
 		cpuinfo_log_debug("detected %"PRIu32" processors in group %"PRIu32,
 			processors_per_group[i], i);
@@ -145,7 +145,7 @@ BOOL CALLBACK cpuinfo_x86_windows_init(PINIT_ONCE init_once, PVOID parameter, PV
 	}
 
 	uint32_t* processors_before_group = (uint32_t*) CPUINFO_ALLOCA(max_group_count * sizeof(uint32_t));
-	for (uint32_t i = 0, count = 0; i < max_group_count; i++) {
+	for (uint32_t i = 0, count = 0; i < max_group_count; ++i) {
 		processors_before_group[i] = count;
 		cpuinfo_log_debug("detected %"PRIu32" processors before group %"PRIu32,
 			processors_before_group[i], i);
@@ -212,7 +212,7 @@ BOOL CALLBACK cpuinfo_x86_windows_init(PINIT_ONCE init_once, PVOID parameter, PV
 		/* Reconstruct package part of APIC ID */
 		const uint32_t package_apic_id = package_id << package_bits_offset;
 		/* Iterate processor groups and set the package part of APIC ID */
-		for (uint32_t i = 0; i < package_info->Processor.GroupCount; i++) {
+		for (uint32_t i = 0; i < package_info->Processor.GroupCount; ++i) {
 			const uint32_t group_id = package_info->Processor.GroupMask[i].Group;
 			/* Global index of the first logical processor belonging to this group */
 			const uint32_t group_processors_start = processors_before_group[group_id];
@@ -261,7 +261,7 @@ BOOL CALLBACK cpuinfo_x86_windows_init(PINIT_ONCE init_once, PVOID parameter, PV
 		/* Reconstruct core part of APIC ID */
 		const uint32_t core_apic_id = (core_id & core_bits_mask) << x86_processor.topology.core_bits_offset;
 		/* Iterate processor groups and set the core & SMT parts of APIC ID */
-		for (uint32_t i = 0; i < core_info->Processor.GroupCount; i++) {
+		for (uint32_t i = 0; i < core_info->Processor.GroupCount; ++i) {
 			const uint32_t group_id = core_info->Processor.GroupMask[i].Group;
 			/* Global index of the first logical processor belonging to this group */
 			const uint32_t group_processors_start = processors_before_group[group_id];
@@ -368,7 +368,7 @@ BOOL CALLBACK cpuinfo_x86_windows_init(PINIT_ONCE init_once, PVOID parameter, PV
 		package->core_count += 1;
 	}
 
-	for (uint32_t i = 0; i < packages_count; i++) {
+	for (uint32_t i = 0; i < packages_count; ++i) {
 		struct cpuinfo_package* package = packages + i;
 		struct cpuinfo_cluster* cluster = clusters + i;
 
@@ -432,7 +432,7 @@ BOOL CALLBACK cpuinfo_x86_windows_init(PINIT_ONCE init_once, PVOID parameter, PV
 	uint32_t l1i_index = UINT32_MAX, l1d_index = UINT32_MAX, l2_index = UINT32_MAX, l3_index = UINT32_MAX, l4_index = UINT32_MAX;
 	uint32_t last_l1i_id = UINT32_MAX, last_l1d_id = UINT32_MAX;
 	uint32_t last_l2_id = UINT32_MAX, last_l3_id = UINT32_MAX, last_l4_id = UINT32_MAX;
-	for (uint32_t i = 0; i < processors_count; i++) {
+	for (uint32_t i = 0; i < processors_count; ++i) {
 		const uint32_t apic_id = processors[i].apic_id;
 
 		if (x86_processor.cache.l1i.size != 0) {

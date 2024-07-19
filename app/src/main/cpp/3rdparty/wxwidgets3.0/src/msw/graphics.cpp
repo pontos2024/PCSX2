@@ -1512,12 +1512,12 @@ void wxGDIPlusContext::StrokeLines( size_t n, const wxPoint2DDouble *points)
    {
        wxGDIPlusOffsetHelper helper( m_context , ShouldOffset() );
        PointF *cpoints = new PointF[n];
-       for (size_t i = 0; i < n; i++)
+       for (size_t i = 0; i < n; ++i)
        {
            cpoints[i].X = static_cast<REAL>(points[i].m_x);
            cpoints[i].Y = static_cast<REAL>(points[i].m_y);
 
-       } // for (size_t i = 0; i < n; i++)
+       } // for (size_t i = 0; i < n; ++i)
        m_context->DrawLines( ((wxGDIPlusPenData*)m_pen.GetGraphicsData())->GetGDIPlusPen() , cpoints , n ) ;
        delete[] cpoints;
    }
@@ -1530,12 +1530,12 @@ void wxGDIPlusContext::DrawLines( size_t n, const wxPoint2DDouble *points, wxPol
 
     wxGDIPlusOffsetHelper helper( m_context , ShouldOffset() );
     PointF *cpoints = new PointF[n];
-    for (size_t i = 0; i < n; i++)
+    for (size_t i = 0; i < n; ++i)
     {
         cpoints[i].X = static_cast<REAL>(points[i].m_x);
         cpoints[i].Y = static_cast<REAL>(points[i].m_y);
 
-    } // for (int i = 0; i < n; i++)
+    } // for (int i = 0; i < n; ++i)
     if ( !m_brush.IsNull() )
         m_context->FillPolygon( ((wxGDIPlusBrushData*)m_brush.GetRefData())->GetGDIPlusBrush() , cpoints , n ) ;
     if ( !m_pen.IsNull() )

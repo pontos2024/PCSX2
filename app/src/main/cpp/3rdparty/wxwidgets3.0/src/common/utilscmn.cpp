@@ -1087,7 +1087,7 @@ static bool DoLaunchDefaultBrowserHelper(const wxString& urlOrig, int flags)
     // NOTE: when testing wxMSW's wxLaunchDefaultBrowser all possible forms
     //       of the URL/flags should be tested; e.g.:
     //
-    // for (int i=0; i<2; i++)
+    // for (int i=0; i<2; ++i)
     // {
     //   // test arguments without a valid URL scheme:
     //   wxLaunchDefaultBrowser("C:\\test.txt", i==0 ? 0 : wxBROWSER_NEW_WINDOW);

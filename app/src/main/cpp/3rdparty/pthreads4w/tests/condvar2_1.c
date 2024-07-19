@@ -123,14 +123,14 @@ main()
 
   assert(pthread_mutex_lock(&mutex) == 0);
 
-  for (i = 1; i <= NUMTHREADS; i++)
+  for (i = 1; i <= NUMTHREADS; ++i)
     {
       assert(pthread_create(&t[i], NULL, mythread, (void *)(size_t)i) == 0);
     }
 
   assert(pthread_mutex_unlock(&mutex) == 0);
 
-  for (i = 1; i <= NUMTHREADS; i++)
+  for (i = 1; i <= NUMTHREADS; ++i)
     {
       assert(pthread_join(t[i], &result) == 0);
 	assert((int)(size_t)result == i);

@@ -51,7 +51,7 @@ int32_t SinkI24::read(void *data, int32_t numFrames) {
 #else
         const int32_t kI24PackedMax = 0x007FFFFF;
         const int32_t kI24PackedMin = 0xFF800000;
-        for (int i = 0; i < numSamples; i++) {
+        for (int i = 0; i < numSamples; ++i) {
             int32_t n = (int32_t) (*floatData++ * 0x00800000);
             n = std::min(kI24PackedMax, std::max(kI24PackedMin, n)); // clip
             // Write as a packed 24-bit integer in Little Endian format.

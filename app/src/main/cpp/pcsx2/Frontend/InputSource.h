@@ -31,8 +31,8 @@ public:
 	InputSource();
 	virtual ~InputSource();
 
-	virtual bool Initialize(SettingsInterface& si) = 0;
-	virtual void UpdateSettings(SettingsInterface& si) = 0;
+	virtual bool Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) = 0;
+	virtual void UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) = 0;
 	virtual void Shutdown() = 0;
 
 	virtual void PollEvents() = 0;
@@ -46,6 +46,10 @@ public:
 
 	/// Enumerates available vibration motors at the time of call.
 	virtual std::vector<InputBindingKey> EnumerateMotors() = 0;
+
+	/// Retrieves bindings that match the generic bindings for the specified device.
+	/// Returns false if it's not one of our devices.
+	virtual bool GetGenericBindingMapping(const std::string_view& device, GenericInputBindingMapping* mapping) = 0;
 
 	/// Informs the source of a new vibration motor state. Changes may not take effect until the next PollEvents() call.
 	virtual void UpdateMotorState(InputBindingKey key, float intensity) = 0;

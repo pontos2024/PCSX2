@@ -34,7 +34,7 @@ int32_t ChannelCountConverter::onProcess(int32_t numFrames) {
     float *outputBuffer = output.getBuffer();
     int32_t inputChannelCount = input.getSamplesPerFrame();
     int32_t outputChannelCount = output.getSamplesPerFrame();
-    for (int i = 0; i < numFrames; i++) {
+    for (int i = 0; i < numFrames; ++i) {
         int inputChannel = 0;
         for (int outputChannel = 0; outputChannel < outputChannelCount; outputChannel++) {
             // Copy input channels to output channels.

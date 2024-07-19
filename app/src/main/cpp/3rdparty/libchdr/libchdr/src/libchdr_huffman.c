@@ -322,7 +322,7 @@ enum huffman_error huffman_compute_tree_from_histo(struct huffman_decoder* decod
 	uint32_t upperweight;
 	/* compute the number of data items in the histogram */
 	uint32_t sdatacount = 0;
-	for (i = 0; i < decoder->numcodes; i++)
+	for (i = 0; i < decoder->numcodes; ++i)
 		sdatacount += decoder->datahisto[i];
 
 	/* binary search to achieve the optimum encoding */
@@ -403,7 +403,7 @@ int huffman_build_tree(struct huffman_decoder* decoder, uint32_t totaldata, uint
 
 #if 0
         fprintf(stderr, "Pre-sort:\n");
-        for (int i = 0; i < listitems; i++) {
+        for (int i = 0; i < listitems; ++i) {
             fprintf(stderr, "weight: %d code: %d\n", list[i]->m_weight, list[i]->m_bits);
         }
 #endif
@@ -413,7 +413,7 @@ int huffman_build_tree(struct huffman_decoder* decoder, uint32_t totaldata, uint
 
 #if 0
         fprintf(stderr, "Post-sort:\n");
-        for (int i = 0; i < listitems; i++) {
+        for (int i = 0; i < listitems; ++i) {
             fprintf(stderr, "weight: %d code: %d\n", list[i]->m_weight, list[i]->m_bits);
         }
         fprintf(stderr, "===================\n");

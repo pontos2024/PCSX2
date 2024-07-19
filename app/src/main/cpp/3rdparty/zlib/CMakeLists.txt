@@ -26,6 +26,8 @@ add_library(pcsx2-zlib
 	zutil.h
 )
 
+set(CMAKE_REQUIRED_DEFINITIONS -D_LARGEFILE64_SOURCE=1)
+
 target_include_directories(pcsx2-zlib PUBLIC .)
 
 add_library(ZLIB::ZLIB ALIAS pcsx2-zlib)

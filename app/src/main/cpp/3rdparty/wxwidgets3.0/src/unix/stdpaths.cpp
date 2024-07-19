@@ -250,7 +250,7 @@ wxString wxStandardPaths::GetDocumentsDir() const
             if (textFile.Open(dirsFile))
             {
                 size_t i;
-                for (i = 0; i < textFile.GetLineCount(); i++)
+                for (i = 0; i < textFile.GetLineCount(); ++i)
                 {
                     wxString line(textFile[i]);
                     int pos = line.Find(wxT("XDG_DOCUMENTS_DIR"));

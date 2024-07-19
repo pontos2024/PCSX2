@@ -96,7 +96,7 @@ main()
   pthread_attr_init(&attr);
   pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
-  for (i = 0; i < NUMTHREADS; i++)
+  for (i = 0; i < NUMTHREADS; ++i)
     {
       washere = 0;
       assert(pthread_create(&t, &attr, func, (void *)(size_t)1) == 0);

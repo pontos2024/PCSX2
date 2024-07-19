@@ -142,14 +142,14 @@ pthread_sigmask (int how, sigset_t const *set, sigset_t * oset)
       switch (how)
 	{
 	case SIG_BLOCK:
-	  for (i = 0; i < (sizeof (sigset_t) / sizeof (unsigned long)); i++)
+	  for (i = 0; i < (sizeof (sigset_t) / sizeof (unsigned long)); ++i)
 	    {
 	      /* OR the bit field longword-wise. */
 	      *dest++ |= *src++;
 	    }
 	  break;
 	case SIG_UNBLOCK:
-	  for (i = 0; i < (sizeof (sigset_t) / sizeof (unsigned long)); i++)
+	  for (i = 0; i < (sizeof (sigset_t) / sizeof (unsigned long)); ++i)
 	    {
 	      /* XOR the bitfield longword-wise. */
 	      *dest++ ^= *src++;

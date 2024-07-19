@@ -287,7 +287,7 @@ s32 CALLBACK ISOgetTOC(void* toc)
 		tocBuff[27] = itob(min);
 		tocBuff[28] = itob(sec);
 
-		for (i = diskInfo.strack; i <= diskInfo.etrack; i++)
+		for (i = diskInfo.strack; i <= diskInfo.etrack; ++i)
 		{
 			err = ISOgetTD(i, &trackInfo);
 			lba_to_msf(trackInfo.lsn, &min, &sec, &frm);

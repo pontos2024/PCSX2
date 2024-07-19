@@ -49,32 +49,38 @@ static void TestClearVUs(u32 madr, u32 qwc, bool isWrite)
 		{
 			if(isWrite)
 			{
+#ifdef PCSX2_DEBUG
 				DbgCon.Warning("scratch pad clearing vu0");
-
-				CpuVU0->Clear(madr&0xfff, qwc * 16);
+#endif
+				CpuVU0->Clear(madr&0xfff, qwc << 4);
 			}
 
+#ifdef PCSX2_DEBUG
 			if(((madr & 0xff0) + (qwc * 16)) > 0x1000 )
 			{
 				DevCon.Warning("Warning! SPR%d Crossing in to VU0 Micro Mirror address! Start MADR = %x, End MADR = %x", isWrite ? 0 : 1, madr, madr + (qwc * 16));
 			}
+#endif
 		}
 		else if (madr >= 0x11008000 && madr < 0x1100c000)
 		{
 			if(isWrite)
 			{
+#ifdef PCSX2_DEBUG
 				DbgCon.Warning("scratch pad clearing vu1");
-
-				CpuVU1->Clear(madr&0x3fff, qwc * 16);
+#endif
+				CpuVU1->Clear(madr&0x3fff, qwc << 4);
 			}
 		}
 		else if (madr >= 0x11004000 && madr < 0x11008000)
 		{
+#ifdef PCSX2_DEBUG
 			// SPR trying to write to to VU0 Mem mirror address.
 			if(((madr & 0xff0) + (qwc * 16)) > 0x1000)
 			{
 				DevCon.Warning("Warning! SPR%d Crossing in to VU0 Mem Mirror address! Start MADR = %x, End MADR = %x", isWrite ? 0 : 1, madr, madr + (qwc * 16));
 			}
+#endif
 		}
 	}
 }
@@ -130,10 +136,14 @@ int  _SPR0chain()
 		{
 			partialqwc = std::min(spr0ch.qwc, 0x400 - ((spr0ch.sadr & 0x3fff) >> 4));
 
-			if ((spr0ch.madr & ~dmacRegs.rbsr.RMSK) != dmacRegs.rbor.ADDR)
+			if ((spr0ch.madr & ~dmacRegs.rbsr.RMSK) != dmacRegs.rbor.ADDR) {
+#ifdef PCSX2_DEBUG
 				Console.WriteLn("SPR MFIFO Write outside MFIFO area");
-			else
+#endif
+			}
+			else {
 				mfifotransferred += partialqwc;
+			}
 
 			hwMFIFOWrite(spr0ch.madr, &psSu128(spr0ch.sadr), partialqwc);
 			spr0ch.madr += partialqwc << 4;
@@ -189,9 +199,10 @@ void _SPR0interleave()
 
 	if (tqwc == 0) tqwc = qwc;
 	//Console.WriteLn("dmaSPR0 interleave");
+#ifdef PCSX2_DEBUG
 	SPR_LOG("SPR0 interleave size=%d, tqwc=%d, sqwc=%d, addr=%lx sadr=%lx",
 	        spr0ch.qwc, tqwc, sqwc, spr0ch.madr, spr0ch.sadr);
-
+#endif
 	CPU_INT(DMAC_FROM_SPR, qwc * BIAS);
 
 	while (qwc > 0)
@@ -199,10 +210,10 @@ void _SPR0interleave()
 		spr0ch.qwc = std::min(tqwc, qwc);
 		qwc -= spr0ch.qwc;
 		pMem = SPRdmaGetAddr(spr0ch.madr, true);
-
+#ifdef PCSX2_DEBUG
 		if(spr0ch.qwc > (0x400 - ((spr0ch.sadr & 0x3fff) >> 4)))
 			DevCon.Warning("Warning! Interleave on SPR0 going outside of SPR memory!");
-
+#endif
 		switch (dmacRegs.ctrl.MFD)
  		{
 			case MFD_VIF1:
@@ -263,10 +274,10 @@ static __fi void _dmaSPR0()
 			spr0ch.unsafeTransfer(ptag);
 
 			spr0ch.madr = ptag[1]._u32; // MADR = ADDR field + SPR
-
+#ifdef PCSX2_DEBUG
 			SPR_LOG("spr0 dmaChain %8.8x_%8.8x size=%d, id=%d, addr=%lx spr=%lx",
 				ptag[1]._u32, ptag[0]._u32, spr0ch.qwc, ptag->ID, spr0ch.madr, spr0ch.sadr);
-
+#endif
 			switch (ptag->ID)
 			{
 				case TAG_CNTS: // CNTS - Transfer QWC following the tag (Stall Control)
@@ -294,8 +305,10 @@ static __fi void _dmaSPR0()
 			}
 
 			spr0finished = done;
+#ifdef PCSX2_DEBUG
 			SPR_LOG("spr0 dmaChain complete %8.8x_%8.8x size=%d, id=%d, addr=%lx spr=%lx",
 				ptag[1]._u32, ptag[0]._u32, spr0ch.qwc, ptag->ID, spr0ch.madr);
+#endif
 			break;
 		}
 		//case INTERLEAVE_MODE:
@@ -310,7 +323,6 @@ static __fi void _dmaSPR0()
 
 void SPRFROMinterrupt()
 {
-
 	if (!spr0finished || spr0ch.qwc > 0)
 	{
 		_dmaSPR0();
@@ -324,7 +336,9 @@ void SPRFROMinterrupt()
 				case MFD_VIF1: // Most common case.
 				case MFD_GIF:
 				{
+#ifdef PCSX2_DEBUG
 					if ((spr0ch.madr & ~dmacRegs.rbsr.RMSK) != dmacRegs.rbor.ADDR) Console.WriteLn("GIF MFIFO Write outside MFIFO area");
+#endif
 					spr0ch.madr = dmacRegs.rbor.ADDR + (spr0ch.madr & dmacRegs.rbsr.RMSK);
 					//Console.WriteLn("mfifoGIFtransfer %x madr %x, tadr %x", gif->chcr._u32, gif->madr, gif->tadr);
 					hwMFIFOResume(mfifotransferred);
@@ -342,14 +356,17 @@ void SPRFROMinterrupt()
 
 	spr0ch.chcr.STR = false;
 	hwDmacIrq(DMAC_FROM_SPR);
+#ifdef PCSX2_DEBUG
 	DMA_LOG("SPR0 DMA End");
+#endif
 }
 
 void dmaSPR0()   // fromSPR
 {
+#ifdef PCSX2_DEBUG
 	SPR_LOG("dmaSPR0 chcr = %lx, madr = %lx, qwc  = %lx, sadr = %lx",
 	        spr0ch.chcr._u32, spr0ch.madr, spr0ch.qwc, spr0ch.sadr);
-
+#endif
 
 	spr0finished = false; //Init
 
@@ -416,8 +433,10 @@ void _SPR1interleave()
 	tDMA_TAG *pMem;
 
 	if (tqwc == 0) tqwc = qwc;
+#ifdef PCSX2_DEBUG
 	SPR_LOG("SPR1 interleave size=%d, tqwc=%d, sqwc=%d, addr=%lx sadr=%lx",
 	        spr1ch.qwc, tqwc, sqwc, spr1ch.madr, spr1ch.sadr);
+#endif
 	CPU_INT(DMAC_TO_SPR, qwc * BIAS);
 	while (qwc > 0)
 	{
@@ -452,7 +471,9 @@ void _dmaSPR1()   // toSPR work function
 
 			if (spr1ch.qwc > 0)
 			{
+#ifdef PCSX2_DEBUG
 				SPR_LOG("spr1 Normal or in Progress size=%d, addr=%lx taddr=%lx saddr=%lx", spr1ch.qwc, spr1ch.madr, spr1ch.tadr, spr1ch.sadr);
+#endif
 				// Transfer Dn_QWC from Dn_MADR to SPR1
 				SPR1chain();
 				return;
@@ -472,20 +493,23 @@ void _dmaSPR1()   // toSPR work function
 			// Transfer dma tag if tte is set
 			if (spr1ch.chcr.TTE)
 			{
+#ifdef PCSX2_DEBUG
 				SPR_LOG("SPR TTE: %x_%x\n", ptag[3]._u32, ptag[2]._u32);
+#endif
 				SPR1transfer(ptag, 1); // Transfer Tag
 			}
-
+#ifdef PCSX2_DEBUG
 			SPR_LOG("spr1 dmaChain %8.8x_%8.8x size=%d, id=%d, addr=%lx taddr=%lx saddr=%lx",
 				ptag[1]._u32, ptag[0]._u32, spr1ch.qwc, ptag->ID, spr1ch.madr, spr1ch.tadr, spr1ch.sadr);
-
+#endif
 			done = hwDmacSrcChain(spr1ch, ptag->ID);
 			SPR1chain(); // Transfers the data set by the switch
 
 			if (spr1ch.chcr.TIE && ptag->IRQ) // Check TIE bit of CHCR and IRQ bit of tag
 			{
+#ifdef PCSX2_DEBUG
 				SPR_LOG("dmaIrq Set");
-
+#endif
 				//Console.WriteLn("SPR1 TIE");
 				done = true;
 			}
@@ -505,11 +529,12 @@ void _dmaSPR1()   // toSPR work function
 
 void dmaSPR1()   // toSPR
 {
+#ifdef PCSX2_DEBUG
 	SPR_LOG("dmaSPR1 chcr = 0x%x, madr = 0x%x, qwc  = 0x%x\n"
 	        "        tadr = 0x%x, sadr = 0x%x",
 	        spr1ch.chcr._u32, spr1ch.madr, spr1ch.qwc,
 	        spr1ch.tadr, spr1ch.sadr);
-
+#endif
 	spr1finished = false; // Init
 
 	if(spr1ch.chcr.MOD == CHAIN_MODE && spr1ch.qwc > 0)
@@ -526,14 +551,17 @@ void dmaSPR1()   // toSPR
 
 void SPRTOinterrupt()
 {
+#ifdef PCSX2_DEBUG
 	SPR_LOG("SPR1 Interrupt");
+#endif
 	if (!spr1finished || spr1ch.qwc > 0)
 	{
 		_dmaSPR1();
 		return;
 	}
-
+#ifdef PCSX2_DEBUG
 	DMA_LOG("SPR1 DMA End");
+#endif
 	spr1ch.chcr.STR = false;
 	hwDmacIrq(DMAC_TO_SPR);
 }
@@ -541,7 +569,6 @@ void SPRTOinterrupt()
 void SaveStateBase::sprFreeze()
 {
 	FreezeTag("SPRdma");
-
 	Freeze(spr0finished);
 	Freeze(spr1finished);
 	Freeze(mfifotransferred);

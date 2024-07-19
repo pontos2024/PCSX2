@@ -298,7 +298,7 @@ public:
     void setValue(float value) {
         int numFloats = kDefaultBufferSize * getSamplesPerFrame();
         float *buffer = getBuffer();
-        for (int i = 0; i < numFloats; i++) {
+        for (int i = 0; i < numFloats; ++i) {
             *buffer++ = value;
         }
     }

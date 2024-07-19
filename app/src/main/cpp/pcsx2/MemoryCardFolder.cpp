@@ -1777,7 +1777,7 @@ void FolderMemoryCard::CalculateECC(u8* ecc, const u8* data)
 
 	ecc[0] = ecc[1] = ecc[2] = 0;
 
-	for (i = 0; i < 0x80; i++)
+	for (i = 0; i < 0x80; ++i)
 	{
 		c = Table[data[i]];
 

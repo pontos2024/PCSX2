@@ -144,7 +144,7 @@ main()
 
   assert(pthread_barrier_init(&startBarrier, NULL, NUM_THREADS/2) == 0);
 
-  for (i = 1; i < NUM_THREADS/2; i++)
+  for (i = 1; i < NUM_THREADS/2; ++i)
     {
       accesscount[i] = thread_set[i] = thread_destroyed[i] = 0;
       assert(pthread_create(&thread[i], NULL, mythread, (void *)&accesscount[i]) == 0);
@@ -168,7 +168,7 @@ main()
    * Here we test that new threads will get a key created
    * for them.
    */
-  for (i = NUM_THREADS/2; i < NUM_THREADS; i++)
+  for (i = NUM_THREADS/2; i < NUM_THREADS; ++i)
     {
       accesscount[i] = thread_set[i] = thread_destroyed[i] = 0;
       assert(pthread_create(&thread[i], NULL, mythread, (void *)&accesscount[i]) == 0);
@@ -177,7 +177,7 @@ main()
   /*
    * Wait for all threads to complete.
    */
-  for (i = 1; i < NUM_THREADS; i++)
+  for (i = 1; i < NUM_THREADS; ++i)
     {
 	assert(pthread_join(thread[i], NULL) == 0);
     }
@@ -186,7 +186,7 @@ main()
 
   assert(pthread_barrier_destroy(&startBarrier) == 0);
 
-  for (i = 1; i < NUM_THREADS; i++)
+  for (i = 1; i < NUM_THREADS; ++i)
     {
 	/*
 	 * The counter is incremented once when the key is set to

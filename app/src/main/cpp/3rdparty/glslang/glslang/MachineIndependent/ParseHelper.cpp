@@ -1082,7 +1082,7 @@ TIntermAggregate* TParseContext::handleFunctionDefinition(const TSourceLoc& loc,
     // knows where to find parameters.
     //
     TIntermAggregate* paramNodes = new TIntermAggregate;
-    for (int i = 0; i < function.getParamCount(); i++) {
+    for (int i = 0; i < function.getParamCount(); ++i) {
         TParameter& param = function[i];
         if (param.name != nullptr) {
             TVariable *variable = new TVariable(param.name, *param.type);
@@ -8545,7 +8545,7 @@ const TTypeList* TParseContext::recordStructCopy(TStructRecord& record, const TT
     size_t memberCount = tmpType->getStruct()->size();
     size_t originHash = 0, tmpHash = 0;
     std::hash<size_t> hasher;
-    for (size_t i = 0; i < memberCount; i++) {
+    for (size_t i = 0; i < memberCount; ++i) {
         size_t originMemberHash = hasher(originType->getStruct()->at(i).type->getQualifier().layoutPacking +
                                          originType->getStruct()->at(i).type->getQualifier().layoutMatrix);
         size_t tmpMemberHash = hasher(tmpType->getStruct()->at(i).type->getQualifier().layoutPacking +

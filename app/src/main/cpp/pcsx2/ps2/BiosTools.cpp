@@ -64,7 +64,7 @@ static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& descriptio
 	uint i;
 	romdir rd;
 
-	for (i = 0; i < 512 * 1024; i++)
+	for (i = 0; i < 512 * 1024; ++i)
 	{
 		if (std::fread(&rd, sizeof(rd), 1, fp) != 1)
 			return false;

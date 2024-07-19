@@ -46,7 +46,7 @@ int32_t SinkI16::read(void *data, int32_t numFrames) {
         shortData += numSamples;
         signal += numSamples;
 #else
-        for (int i = 0; i < numSamples; i++) {
+        for (int i = 0; i < numSamples; ++i) {
             int32_t n = (int32_t) (*signal++ * 32768.0f);
             *shortData++ = std::min(INT16_MAX, std::max(INT16_MIN, n)); // clip
         }

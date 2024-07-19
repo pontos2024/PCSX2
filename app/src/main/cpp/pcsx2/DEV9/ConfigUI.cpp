@@ -221,7 +221,7 @@ public:
 	{
 		m_eth_enable->SetValue(config.ethEnable);
 		m_eth_adapter_api->SetSelection(0);
-		for (size_t i = 0; i < m_api_list.size(); i++)
+		for (size_t i = 0; i < m_api_list.size(); ++i)
 		{
 			if (config.EthApi == m_api_list[i])
 				m_eth_adapter_api->SetSelection(i + 1);
@@ -231,7 +231,7 @@ public:
 		if (static_cast<u32>(config.EthApi) < m_adapter_list.size())
 		{
 			const auto& list = m_adapter_list[static_cast<u32>(config.EthApi)];
-			for (size_t i = 0; i < list.size(); i++)
+			for (size_t i = 0; i < list.size(); ++i)
 			{
 				if (list[i].guid == config.Eth)
 				{
@@ -317,7 +317,7 @@ public:
 				current = m_eth_adapter->GetString(m_eth_adapter->GetSelection());
 			if (current.empty())
 				current = config.Eth;
-			for (size_t i = 0; i < list.size(); i++)
+			for (size_t i = 0; i < list.size(); ++i)
 			{
 				options.Add(list[i].name);
 				if (list[i].name == current)

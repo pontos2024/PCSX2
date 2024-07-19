@@ -404,13 +404,13 @@ static bool CheckAndLoad(const char* cached_filename, s64 expected_mtime)
 		entry.vuClampMode = static_cast<GameDatabaseSchema::ClampMode>(vu_clamp);
 
 		entry.gameFixes.resize(game_fix_count);
-		for (u32 i = 0; i < game_fix_count; i++)
+		for (u32 i = 0; i < game_fix_count; ++i)
 		{
 			if (!ReadString(fp.get(), &entry.gameFixes[i]))
 				return false;
 		}
 
-		for (u32 i = 0; i < speed_hack_count; i++)
+		for (u32 i = 0; i < speed_hack_count; ++i)
 		{
 			std::string speed_hack_name;
 			s32 speed_hack_value;
@@ -420,13 +420,13 @@ static bool CheckAndLoad(const char* cached_filename, s64 expected_mtime)
 		}
 
 		entry.memcardFilters.resize(memcard_filter_count);
-		for (u32 i = 0; i < memcard_filter_count; i++)
+		for (u32 i = 0; i < memcard_filter_count; ++i)
 		{
 			if (!ReadString(fp.get(), &entry.memcardFilters[i]))
 				return false;
 		}
 
-		for (u32 i = 0; i < patch_count; i++)
+		for (u32 i = 0; i < patch_count; ++i)
 		{
 			std::string patch_crc;
 			u32 patch_line_count;
@@ -435,7 +435,7 @@ static bool CheckAndLoad(const char* cached_filename, s64 expected_mtime)
 
 			GameDatabaseSchema::Patch patch_lines;
 			patch_lines.resize(patch_line_count);
-			for (u32 j = 0; j < patch_line_count; j++)
+			for (u32 j = 0; j < patch_line_count; ++j)
 			{
 				if (!ReadString(fp.get(), &patch_lines[j]))
 					return false;

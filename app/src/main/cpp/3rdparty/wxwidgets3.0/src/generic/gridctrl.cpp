@@ -546,10 +546,10 @@ void wxGridCellStringRenderer::Draw(wxGrid& grid,
         if ((best_width > rectCell.width) && (col < cols) && grid.GetTable())
         {
             int i, c_cols, c_rows;
-            for (i = col+cell_cols; i < cols; i++)
+            for (i = col+cell_cols; i < cols; ++i)
             {
                 bool is_empty = true;
-                for (int j=row; j < row + cell_rows; j++)
+                for (int j=row; j < row + cell_rows; ++j)
                 {
                     // check w/ anchor cell for multicell block
                     grid.GetCellSize(j, i, &c_rows, &c_cols);
@@ -590,7 +590,7 @@ void wxGridCellStringRenderer::Draw(wxGrid& grid,
             int col_end = col + cell_cols + overflowCols;
             if (col_end >= grid.GetNumberCols())
                 col_end = grid.GetNumberCols() - 1;
-            for (int i = col + cell_cols; i <= col_end; i++)
+            for (int i = col + cell_cols; i <= col_end; ++i)
             {
                 clip.width = grid.GetColSize(i) - 1;
                 dc.DestroyClippingRegion();

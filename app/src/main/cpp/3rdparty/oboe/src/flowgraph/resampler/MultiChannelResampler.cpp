@@ -140,7 +140,7 @@ void MultiChannelResampler::generateCoefficients(int32_t inputRate,
              : ((float)inputRate / outputRate));
     const int numTapsHalf = getNumTaps() / 2; // numTaps must be even.
     const float numTapsHalfInverse = 1.0f / numTapsHalf;
-    for (int i = 0; i < numRows; i++) {
+    for (int i = 0; i < numRows; ++i) {
         float tapPhase = phase - numTapsHalf;
         float gain = 0.0; // sum of raw coefficients
         int gainCursor = coefficientIndex;

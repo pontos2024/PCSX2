@@ -386,9 +386,9 @@ namespace usb_eyetoy
 				{
 					// flip Y - always required on windows
 					unsigned char* data2 = (unsigned char*)calloc(1, comprBufSize);
-					for (int y = 0; y < frame_height; y++)
+					for (int y = 0; y < frame_height; ++y)
 					{
-						for (int x = 0; x < frame_width; x++)
+						for (int x = 0; x < frame_width; ++x)
 						{
 							unsigned char* src = data + (y * frame_width + x) * bytesPerPixel;
 							unsigned char* dst = data2 + ((frame_height - y - 1) * frame_width + x) * bytesPerPixel;
@@ -422,9 +422,9 @@ namespace usb_eyetoy
 			const int bytesPerPixel = 3;
 			int comprBufSize = frame_width * frame_height * bytesPerPixel;
 			unsigned char* rgbData = (unsigned char*)calloc(1, comprBufSize);
-			for (int y = 0; y < frame_height; y++)
+			for (int y = 0; y < frame_height; ++y)
 			{
-				for (int x = 0; x < frame_width; x++)
+				for (int x = 0; x < frame_width; ++x)
 				{
 					unsigned char* ptr = rgbData + (y * frame_width + x) * bytesPerPixel;
 					ptr[0] = 255 * y / frame_height;
@@ -561,7 +561,7 @@ namespace usb_eyetoy
 					SendDlgItemMessage(hW, IDC_COMBO1_USB, CB_RESETCONTENT, 0, 0);
 
 					std::vector<std::wstring> devList = getDevList();
-					for (auto i = 0; i != devList.size(); i++)
+					for (auto i = 0; i != devList.size(); ++i)
 					{
 						SendDlgItemMessageW(hW, IDC_COMBO1_USB, CB_ADDSTRING, 0, (LPARAM)devList[i].c_str());
 						if (selectedDevice == devList.at(i))

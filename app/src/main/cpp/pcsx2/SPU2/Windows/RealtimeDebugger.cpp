@@ -137,7 +137,7 @@ void UpdateDebugDialog()
 				if (vc.ADSR.Value > 0)
 				{
 					if (vc.SBuffer)
-						for (int i = 0; i < 28; i++)
+						for (int i = 0; i < 28; ++i)
 						{
 							int val = ((int)vc.SBuffer[i] * 20) / 32768;
 
@@ -224,7 +224,7 @@ void UpdateDebugDialog()
 			{
 				FillRectangle(hdc, JX + 40, JY + 32, 10, 10);
 
-				for (int j = 0; j < 64; j++)
+				for (int j = 0; j < 64; ++j)
 				{
 					int i = j * 256 / 64;
 					int val = (cd.admaWaveformL[i] * 26) / 32768;
@@ -241,7 +241,7 @@ void UpdateDebugDialog()
 					}
 				}
 
-				for (int j = 0; j < 64; j++)
+				for (int j = 0; j < 64; ++j)
 				{
 					int i = j * 256 / 64;
 					int val = (cd.admaWaveformR[i] * 26) / 32768;

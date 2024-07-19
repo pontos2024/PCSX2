@@ -26,13 +26,13 @@ class GSTextureSW final : public GSTexture
 	std::atomic_flag m_mapped;
 
 public:
-	GSTextureSW(int type, int width, int height);
-	virtual ~GSTextureSW() final;
+	GSTextureSW(Type type, int width, int height);
+	~GSTextureSW() override;
 
-	void* GetNativeHandle() const final;
-
-	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) final;
-	bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0) final;
-	void Unmap() final;
-	bool Save(const std::string& fn) final;
+	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) override;
+	bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0) override;
+	void Unmap() override;
+	bool Save(const std::string& fn) override;
+	void Swap(GSTexture* tex) override;
+	void* GetNativeHandle() const override;
 };

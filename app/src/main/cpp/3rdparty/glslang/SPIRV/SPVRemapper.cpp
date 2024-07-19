@@ -1116,7 +1116,7 @@ namespace spv {
                     return true;
                 } else if (opCode == spv::OpEntryPoint) {
                     const int wordCount = asWordCount(start);
-                    for (int i = 4; i < wordCount; i++) {
+                    for (int i = 4; i < wordCount; ++i) {
                         ++varUseCount[asId(start+i)];
                     }
                     return true;

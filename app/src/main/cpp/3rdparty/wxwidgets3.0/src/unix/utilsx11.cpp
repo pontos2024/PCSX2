@@ -324,7 +324,7 @@ static bool wxQueryWMspecSupport(Display *display, Window rootWnd, Atom feature)
         return false;
 
     // Lookup the feature we want:
-    for (unsigned i = 0; i < natoms; i++)
+    for (unsigned i = 0; i < natoms; ++i)
     {
         if ( atoms[i] == feature )
         {

@@ -61,7 +61,7 @@ static uint64_t ShuffleNibbles(uint64_t in_data) {
   static int in_positions[16] =
       {4, 36, 52, 40, 44, 0, 24, 12, 56, 60, 8, 32, 16, 28, 20, 48};
   uint64_t out_data = 0;
-  for (int i = 0; i < 16; i++) {
+  for (int i = 0; i < 16; ++i) {
     out_data |= GetNibble(in_data, in_positions[i]) << (4 * i);
   }
   return out_data;
@@ -72,7 +72,7 @@ static uint64_t SubstituteNibbles(uint64_t in_data) {
   static uint64_t subs[16] =
       {4, 7, 3, 9, 10, 14, 0, 1, 15, 2, 8, 6, 12, 5, 11, 13};
   uint64_t out_data = 0;
-  for (int i = 0; i < 16; i++) {
+  for (int i = 0; i < 16; ++i) {
     int index = (in_data >> (4 * i)) & 0xf;
     out_data |= subs[index] << (4 * i);
   }
@@ -90,7 +90,7 @@ static uint64_t RotNibble(uint64_t in_cell, int amount) {
 
 static uint64_t BigShuffle(uint64_t in_data) {
   uint64_t out_data = 0;
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 4; ++i) {
     uint64_t n12 = GetNibble(in_data, 4 * (i + 12));
     uint64_t n8 = GetNibble(in_data, 4 * (i + 8));
     uint64_t n4 = GetNibble(in_data, 4 * (i + 4));

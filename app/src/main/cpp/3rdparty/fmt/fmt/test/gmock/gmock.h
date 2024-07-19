@@ -10261,7 +10261,7 @@ class FunctionMockerBase : public UntypedFunctionMockerBase {
          << (count == 1 ? "expectation, but it didn't match" :
              "expectations, but none matched")
          << ":\n";
-    for (int i = 0; i < count; i++) {
+    for (int i = 0; i < count; ++i) {
       TypedExpectation<F>* const expectation =
           static_cast<TypedExpectation<F>*>(untyped_expectations_[i].get());
       *why << "\n";
@@ -11967,7 +11967,7 @@ class ArgsMatcherImpl : public MatcherInterface<ArgsTuple> {
   static void PrintIndices(::std::ostream* os) {
     *os << "whose fields (";
     const int indices[10] = { k0, k1, k2, k3, k4, k5, k6, k7, k8, k9 };
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 10; ++i) {
       if (indices[i] < 0)
         break;
 

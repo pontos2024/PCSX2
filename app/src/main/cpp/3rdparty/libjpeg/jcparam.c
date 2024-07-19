@@ -46,7 +46,7 @@ jpeg_add_quant_table (j_compress_ptr cinfo, int which_tbl,
   if (*qtblptr == NULL)
     *qtblptr = jpeg_alloc_quant_table((j_common_ptr) cinfo);
 
-  for (i = 0; i < DCTSIZE2; i++) {
+  for (i = 0; i < DCTSIZE2; ++i) {
     temp = ((long) basic_table[i] * scale_factor + 50L) / 100L;
     /* limit the values to the valid range */
     if (temp <= 0L) temp = 1L;
@@ -310,7 +310,7 @@ jpeg_set_defaults (j_compress_ptr cinfo)
   std_huff_tables(cinfo);
 
   /* Initialize default arithmetic coding conditioning */
-  for (i = 0; i < NUM_ARITH_TBLS; i++) {
+  for (i = 0; i < NUM_ARITH_TBLS; ++i) {
     cinfo->arith_dc_L[i] = 0;
     cinfo->arith_dc_U[i] = 1;
     cinfo->arith_ac_K[i] = 5;

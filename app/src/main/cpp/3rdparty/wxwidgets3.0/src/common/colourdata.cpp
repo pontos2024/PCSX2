@@ -56,7 +56,7 @@ wxColour wxColourData::GetCustomColour(int i) const
 
 wxColourData& wxColourData::operator=(const wxColourData& data)
 {
-    for ( int i = 0; i < NUM_CUSTOM; i++)
+    for ( int i = 0; i < NUM_CUSTOM; ++i)
         m_custColours[i] = data.m_custColours[i];
 
     m_dataColour = data.m_dataColour;
@@ -94,7 +94,7 @@ bool wxColourData::FromString(const wxString& str)
     wxString token = tokenizer.GetNextToken();
     m_chooseFull = token == '1';
     bool success = m_chooseFull || token == '0';
-    for (int i = 0; success && i < NUM_CUSTOM; i++)
+    for (int i = 0; success && i < NUM_CUSTOM; ++i)
     {
         token = tokenizer.GetNextToken();
         if (token.empty())

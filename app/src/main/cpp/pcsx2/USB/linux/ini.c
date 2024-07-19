@@ -238,7 +238,7 @@ int INISaveString(const char *file, const char *section, const char *keyword, co
   if(value == NULL)  return(-1);
 
   filepos = INIRemoveExt(file, inname);
-  for(i = 0; i <= filepos; i++)  outname[i] = inname[i];
+  for(i = 0; i <= filepos; ++i)  outname[i] = inname[i];
   INIAddInExt(inname, filepos);
   INIAddOutExt(outname, filepos);
 
@@ -465,7 +465,7 @@ int INIRemove(const char *file, const char *section, const char *keyword) {
 
 
   filepos = INIRemoveExt(file, inname);
-  for(i = 0; i <= filepos; i++)  outname[i] = inname[i];
+  for(i = 0; i <= filepos; ++i)  outname[i] = inname[i];
   INIAddInExt(inname, filepos);
   INIAddOutExt(outname, filepos);
 

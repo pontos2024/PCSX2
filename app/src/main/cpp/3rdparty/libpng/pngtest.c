@@ -1003,7 +1003,7 @@ test_one_file(PNG_CONST char *inname, PNG_CONST char *outname)
    {
       int i;
 
-      for (i = 0; i<256; i++)
+      for (i = 0; i<256; ++i)
          filters_used[i] = 0;
 
       png_set_read_user_transform_fn(read_ptr, count_filters);
@@ -1261,7 +1261,7 @@ test_one_file(PNG_CONST char *inname, PNG_CONST char *outname)
             int i;
 
             printf("\n");
-            for (i=0; i<num_text; i++)
+            for (i=0; i<num_text; ++i)
             {
                printf("   Text compression[%d]=%d\n",
                      i, text_ptr[i].compression);
@@ -1333,7 +1333,7 @@ test_one_file(PNG_CONST char *inname, PNG_CONST char *outname)
           */
          {
             int i;
-            for (i = 0; i < num_unknowns; i++)
+            for (i = 0; i < num_unknowns; ++i)
               png_set_unknown_chunk_location(write_ptr, write_info_ptr, i,
                 unknowns[i].location);
          }
@@ -1380,7 +1380,7 @@ test_one_file(PNG_CONST char *inname, PNG_CONST char *outname)
    for (pass = 0; pass < num_pass; pass++)
    {
       pngtest_debug1("Writing row data for pass %d", pass);
-      for (y = 0; y < height; y++)
+      for (y = 0; y < height; ++y)
       {
 #ifndef SINGLE_ROWBUF_ALLOC
          pngtest_debug2("Allocating row buffer (pass %d, y = %u)...", pass, y);
@@ -1444,7 +1444,7 @@ test_one_file(PNG_CONST char *inname, PNG_CONST char *outname)
             int i;
 
             printf("\n");
-            for (i=0; i<num_text; i++)
+            for (i=0; i<num_text; ++i)
             {
                printf("   Text compression[%d]=%d\n",
                      i, text_ptr[i].compression);
@@ -1494,7 +1494,7 @@ test_one_file(PNG_CONST char *inname, PNG_CONST char *outname)
           */
          {
             int i;
-            for (i = 0; i < num_unknowns; i++)
+            for (i = 0; i < num_unknowns; ++i)
               png_set_unknown_chunk_location(write_ptr, write_end_info_ptr, i,
                 unknowns[i].location);
          }

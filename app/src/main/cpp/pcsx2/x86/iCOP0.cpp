@@ -190,7 +190,9 @@ void recMFC0()
 	}
 	else if (_Rd_ == 24)
 	{
+		#ifdef PCSX2_DEBUG
 		COP0_LOG("MFC0 Breakpoint debug Registers code = %x\n", cpuRegs.code & 0x3FF);
+        #endif
 		return;
 	}
 	_eeOnWriteReg(_Rt_, 1);
@@ -247,7 +249,9 @@ void recMTC0()
 				break;
 
 			case 24:
+				#ifdef PCSX2_DEBUG
 				COP0_LOG("MTC0 Breakpoint debug Registers code = %x\n", cpuRegs.code & 0x3FF);
+                #endif
 				break;
 
 			default:
@@ -302,7 +306,9 @@ void recMTC0()
 				break;
 
 			case 24:
+				#ifdef PCSX2_DEBUG
 				COP0_LOG("MTC0 Breakpoint debug Registers code = %x\n", cpuRegs.code & 0x3FF);
+                #endif
 				break;
 
 			default:

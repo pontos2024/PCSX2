@@ -244,7 +244,7 @@ void wxFileHistoryBase::Load(const wxConfigBase& config)
 void wxFileHistoryBase::Save(wxConfigBase& config)
 {
     size_t i;
-    for (i = 0; i < m_fileMaxFiles; i++)
+    for (i = 0; i < m_fileMaxFiles; ++i)
     {
         wxString buf;
         buf.Printf(wxT("file%d"), (int)i+1);

@@ -20,7 +20,7 @@ struct Indentation {
 
 inline ostream_wrapper& operator<<(ostream_wrapper& out,
                                    const Indentation& indent) {
-  for (std::size_t i = 0; i < indent.n; i++)
+  for (std::size_t i = 0; i < indent.n; ++i)
     out << ' ';
   return out;
 }

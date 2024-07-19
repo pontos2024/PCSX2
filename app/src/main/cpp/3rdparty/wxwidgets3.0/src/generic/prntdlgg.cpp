@@ -529,7 +529,7 @@ void wxGenericPrintSetupDialog::Init(wxPrintData* data)
     if (res >= 0 && errors.GetCount() == 0)
     {
         size_t i;
-        for (i = 0; i < output.GetCount(); i++)
+        for (i = 0; i < output.GetCount(); ++i)
         {
             wxStringTokenizer tok( output[i], wxT(" ") );
             wxString tmp = tok.GetNextToken(); // "device"
@@ -786,7 +786,7 @@ wxComboBox *wxGenericPrintSetupDialog::CreatePaperTypeChoice()
     wxString *choices = new wxString [n];
     size_t sel = 0;
 
-    for (size_t i = 0; i < n; i++)
+    for (size_t i = 0; i < n; ++i)
     {
         wxPrintPaperType *paper = wxThePrintPaperDatabase->Item(i);
         choices[i] = paper->GetName();
@@ -844,7 +844,7 @@ wxGenericPageSetupDialog::wxGenericPageSetupDialog( wxWindow *parent,
     size_t      n = wxThePrintPaperDatabase->GetCount();
     wxString   *choices = new wxString [n];
 
-    for (size_t i = 0; i < n; i++)
+    for (size_t i = 0; i < n; ++i)
     {
         wxPrintPaperType *paper = wxThePrintPaperDatabase->Item(i);
         choices[i] = paper->GetName();
@@ -1043,7 +1043,7 @@ wxComboBox *wxGenericPageSetupDialog::CreatePaperTypeChoice(int *x, int *y)
     size_t      n = wxThePrintPaperDatabase->GetCount();
     wxString   *choices = new wxString [n];
 
-    for (size_t i = 0; i < n; i++)
+    for (size_t i = 0; i < n; ++i)
     {
         wxPrintPaperType *paper = wxThePrintPaperDatabase->Item(i);
         choices[i] = paper->GetName();

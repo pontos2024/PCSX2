@@ -380,7 +380,7 @@ template <typename Char> struct ansi_color_escape {
       return;
     }
 
-    for (int i = 0; i < 7; i++) {
+    for (int i = 0; i < 7; ++i) {
       buffer[i] = static_cast<Char>(esc[i]);
     }
     rgb color(text_color.value.rgb_color);

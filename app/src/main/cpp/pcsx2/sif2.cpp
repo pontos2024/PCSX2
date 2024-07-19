@@ -26,7 +26,9 @@ static bool done = false;
 
 static __fi void Sif2Init()
 {
+#ifdef PCSX2_DEBUG
 	SIF_LOG("SIF2 DMA start... free %x iop busy %x", sif2.fifo.sif_free(), sif2.iop.busy);
+#endif
 	done = false;
 	sif2.ee.cycles = 0;
 	sif2.iop.cycles = 0;
@@ -35,9 +37,9 @@ static __fi void Sif2Init()
 __fi bool WriteFifoSingleWord()
 {
 	// There's some data ready to transfer into the fifo..
-
+#ifdef PCSX2_DEBUG
 	SIF_LOG("Write Single word to SIF2 Fifo");
-	
+#endif
 	sif2.fifo.write((u32*)&psxHu32(HW_PS1_GPU_DATA), 1);
 	if (sif2.fifo.size > 0) psxHu32(0x1000f300) &= ~0x4000000;
 	return true;
@@ -46,11 +48,10 @@ __fi bool WriteFifoSingleWord()
 __fi bool ReadFifoSingleWord()
 {
 	u32 ptag[4];
-
+#ifdef PCSX2_DEBUG
 	//SIF_LOG(" EE SIF doing transfer %04Xqw to %08X", readSize, sif2dma.madr);
 	SIF_LOG("Read Fifo SIF2 Single Word IOP Busy %x Fifo Size %x SIF2 CHCR %x", sif2.iop.busy, sif2.fifo.size, HW_DMA2_CHCR);
-
-
+#endif
 	sif2.fifo.read((u32*)&ptag[0], 1);
 	psHu32(0x1000f3e0) = ptag[0];
 	if (sif2.fifo.size == 0) psxHu32(0x1000f300) |= 0x4000000;
@@ -64,14 +65,16 @@ static __fi bool WriteFifoToEE()
 	const int readSize = std::min((s32)sif2dma.qwc, sif2.fifo.size >> 2);
 
 	tDMA_TAG *ptag;
-
+#ifdef PCSX2_DEBUG
 	//SIF_LOG(" EE SIF doing transfer %04Xqw to %08X", readSize, sif2dma.madr);
 	SIF_LOG("Write Fifo to EE: ----------- %lX of %lX", readSize << 2, sif2dma.qwc << 2);
-
+#endif
 	ptag = sif2dma.getAddr(sif2dma.madr, DMAC_SIF2, true);
 	if (ptag == NULL)
 	{
+#ifdef PCSX2_DEBUG
 		DevCon.Warning("Write Fifo to EE: ptag == NULL");
+#endif
 		return false;
 	}
 
@@ -92,9 +95,9 @@ static __fi bool WriteIOPtoFifo()
 {
 	// There's some data ready to transfer into the fifo..
 	const int writeSize = std::min(sif2.iop.counter, sif2.fifo.sif_free());
-
+#ifdef PCSX2_DEBUG
 	SIF_LOG("Write IOP to Fifo: +++++++++++ %lX of %lX", writeSize, sif2.iop.counter);
-	
+#endif
 	sif2.fifo.write((u32*)iopPhysMem(hw_dma2.madr), writeSize);
 	hw_dma2.madr += writeSize << 2;
 
@@ -114,14 +117,15 @@ static __fi bool ProcessEETag()
 	tDMA_TAG& ptag(*(tDMA_TAG*)tag);
 
 	sif2.fifo.read((u32*)&tag[0], 4); // Tag
+#ifdef PCSX2_DEBUG
 	SIF_LOG("SIF2 EE read tag: %x %x %x %x", tag[0], tag[1], tag[2], tag[3]);
-
+#endif
 	sif2dma.unsafeTransfer(&ptag);
 	sif2dma.madr = tag[1];
-
+#ifdef PCSX2_DEBUG
 	SIF_LOG("SIF2 EE dest chain tag madr:%08X qwc:%04X id:%X irq:%d(%08X_%08X)",
 		sif2dma.madr, sif2dma.qwc, ptag.ID, ptag.IRQ, tag[1], tag[0]);
-
+#endif
 	if (sif2dma.chcr.TIE && ptag.IRQ)
 	{
 		//Console.WriteLn("SIF2 TIE");
@@ -147,7 +151,9 @@ static __fi bool ProcessIOPTag()
 {
 	//sif2.iop.data = *(sifData *)iopPhysMem(hw_dma2.madr); //comment this out and replace words below
 	// Process DMA tag at hw_dma9.tadr
+#ifdef PCSX2_DEBUG
 	if (HW_DMA2_CHCR & 0x400) DevCon.Warning("First bit %x", sif2.iop.data.data);
+#endif
 	
 	sif2.iop.data.words = sif2.iop.data.data >> 24; // Round up to nearest 4.
 
@@ -166,20 +172,25 @@ static __fi bool ProcessIOPTag()
 	else hw_dma2.madr += 2;
 	// IOP tags have an IRQ bit and an End of Transfer bit:
 	if ((sif2data & 0xFFFFFF) == 0xFFFFFF || (HW_DMA2_CHCR & 0x200)) */sif2.iop.end = true;
+#ifdef PCSX2_DEBUG
 	DevCon.Warning("SIF2 IOP Tag: madr=%lx, counter=%lx (%08X_%08X)", hw_dma2.madr, sif2.iop.counter, sif2words, sif2data);
-
+#endif
 	return true;
 }
 
 // Stop transferring ee, and signal an interrupt.
 static __fi void EndEE()
 {
+#ifdef PCSX2_DEBUG
 	SIF_LOG("Sif2: End EE");
+#endif
 	sif2.ee.end = false;
 	sif2.ee.busy = false;
 	if (sif2.ee.cycles == 0)
 	{
+#ifdef PCSX2_DEBUG
 		SIF_LOG("SIF2 EE: cycles = 0");
+#endif
 		sif2.ee.cycles = 1;
 	}
 
@@ -189,14 +200,18 @@ static __fi void EndEE()
 // Stop transferring iop, and signal an interrupt.
 static __fi void EndIOP()
 {
+#ifdef PCSX2_DEBUG
 	SIF_LOG("Sif2: End IOP");
+#endif
 	sif2data = 0;
 	//sif2.iop.end = false;
 	sif2.iop.busy = false;
 
 	if (sif2.iop.cycles == 0)
 	{
+#ifdef PCSX2_DEBUG
 		DevCon.Warning("SIF2 IOP: cycles = 0");
+#endif
 		sif2.iop.cycles = 1;
 	}
 	// iop is 1/8th the clock rate of the EE and psxcycles is in words (not quadwords)
@@ -236,7 +251,9 @@ static __fi void HandleEETransfer()
 		{
 			// Read Fifo into an ee tag, transfer it to sif2dma
 			// and process it.
+#ifdef PCSX2_DEBUG
 			DevCon.Warning("SIF2 EE Chain?!");
+#endif
 			ProcessEETag();
 		}
 	}
@@ -304,7 +321,9 @@ static __fi void HandleIOPTransfer()
 		{
 			WriteIOPtoFifo();
 		}
+#ifdef PCSX2_DEBUG
 		else DevCon.Warning("Nothing free!");
+#endif
 	}
 }
 
@@ -312,8 +331,9 @@ static __fi void Sif2End()
 {
 	psHu32(SBUS_F240) &= ~0x80;
 	psHu32(SBUS_F240) &= ~0x8000;
-
+#ifdef PCSX2_DEBUG
 	DMA_LOG("SIF2 DMA End");
+#endif
 }
 
 // Transfer IOP to EE, putting data in the fifo as an intermediate step.
@@ -355,8 +375,9 @@ __fi void  sif2Interrupt()
 		SIF2Dma();
 		return;
 	}
-	
+#ifdef PCSX2_DEBUG
 	SIF_LOG("SIF2 IOP Intr end");
+#endif
 	HW_DMA2_CHCR &= ~0x01000000;
 	psxDmaInterrupt2(2);
 }
@@ -369,6 +390,7 @@ __fi void  EEsif2Interrupt()
 
 __fi void dmaSIF2()
 {
+#ifdef PCSX2_DEBUG
 	DevCon.Warning("SIF2 EE CHCR %x", sif2dma.chcr._u32);
 	SIF_LOG(wxString(L"dmaSIF2" + sif2dma.cmqt_to_str()).To8BitData());
 
@@ -376,6 +398,7 @@ __fi void dmaSIF2()
 	{
 		SIF_LOG("warning, sif2.fifoReadPos != sif2.fifoWritePos");
 	}
+#endif
 
 	//if(sif2dma.chcr.MOD == CHAIN_MODE && sif2dma.qwc > 0) DevCon.Warning(L"SIF2 QWC on Chain CHCR " + sif2dma.chcr.desc());
 	psHu32(SBUS_F240) |= 0x8000;

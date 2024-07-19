@@ -385,7 +385,7 @@ jpeg_make_d_derived_tbl (j_decompress_ptr cinfo, boolean isDC, int tblno,
    * but this is sufficient to ensure safe decoding.)
    */
   if (isDC) {
-    for (i = 0; i < numsymbols; i++) {
+    for (i = 0; i < numsymbols; ++i) {
       int sym = htbl->huffval[i];
       if (sym < 0 || sym > 15)
 	ERREXIT(cinfo, JERR_BAD_HUFF_TABLE);
@@ -1293,16 +1293,16 @@ jinit_huff_decoder (j_decompress_ptr cinfo)
 				  cinfo->num_components*DCTSIZE2*SIZEOF(int));
     coef_bit_ptr = & cinfo->coef_bits[0][0];
     for (ci = 0; ci < cinfo->num_components; ci++)
-      for (i = 0; i < DCTSIZE2; i++)
+      for (i = 0; i < DCTSIZE2; ++i)
 	*coef_bit_ptr++ = -1;
 
     /* Mark derived tables unallocated */
-    for (i = 0; i < NUM_HUFF_TBLS; i++) {
+    for (i = 0; i < NUM_HUFF_TBLS; ++i) {
       entropy->derived_tbls[i] = NULL;
     }
   } else {
     /* Mark tables unallocated */
-    for (i = 0; i < NUM_HUFF_TBLS; i++) {
+    for (i = 0; i < NUM_HUFF_TBLS; ++i) {
       entropy->dc_derived_tbls[i] = entropy->ac_derived_tbls[i] = NULL;
     }
   }

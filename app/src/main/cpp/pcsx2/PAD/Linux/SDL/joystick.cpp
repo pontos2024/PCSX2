@@ -190,7 +190,7 @@ JoystickInfo::JoystickInfo(int id)
 
 	// Default haptic effect
 	SDL_HapticEffect effects[NB_EFFECT];
-	for (int i = 0; i < NB_EFFECT; i++)
+	for (int i = 0; i < NB_EFFECT; ++i)
 	{
 		SDL_HapticEffect effect;
 		memset(&effect, 0, sizeof(SDL_HapticEffect)); // 0 is safe default

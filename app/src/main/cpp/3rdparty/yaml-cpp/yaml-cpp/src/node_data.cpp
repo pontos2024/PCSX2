@@ -308,7 +308,7 @@ void node_data::convert_sequence_to_map(const shared_memory_holder& pMemory) {
   assert(m_type == NodeType::Sequence);
 
   reset_map();
-  for (std::size_t i = 0; i < m_sequence.size(); i++) {
+  for (std::size_t i = 0; i < m_sequence.size(); ++i) {
     std::stringstream stream;
     stream << i;
 

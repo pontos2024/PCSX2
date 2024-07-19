@@ -163,7 +163,7 @@ void psxMemcheck(u32 op, u32 bits, bool store)
 	u32 end = start + bits / 8;
 
 	auto checks = CBreakPoints::GetMemChecks();
-	for (size_t i = 0; i < checks.size(); i++)
+	for (size_t i = 0; i < checks.size(); ++i)
 	{
 		auto& check = checks[i];
 
@@ -238,9 +238,9 @@ static __fi void execI()
 	}
 
 	psxRegs.code = iopMemRead32(psxRegs.pc);
-
-		PSXCPU_LOG("%s", disR3000AF(psxRegs.code, psxRegs.pc));
-
+#ifdef PCSX2_DEBUG
+	PSXCPU_LOG("%s", disR3000AF(psxRegs.code, psxRegs.pc));
+#endif
 	psxRegs.pc+= 4;
 	psxRegs.cycle++;
 
@@ -257,9 +257,11 @@ static __fi void execI()
 }
 
 static void doBranch(s32 tar) {
-	if (tar == 0x0)
+#ifdef PCSX2_DEBUG
+	if (tar == 0x0) {
 		DevCon.Warning("[R3000 Interpreter] Warning: Branch to 0x0!");
-
+	}
+#endif
 	branch2 = iopIsDelaySlot = true;
 	branchPC = tar;
 	execI();

@@ -87,7 +87,9 @@ void __fastcall psxException(u32 code, u32 bd)
 	// Set the EPC & PC
 	if (bd)
 	{
+#ifdef PCSX2_DEBUG
 		PSXCPU_LOG("bd set");
+#endif
 		psxRegs.CP0.n.Cause|= 0x80000000;
 		psxRegs.CP0.n.EPC = (psxRegs.pc - 4);
 	}
@@ -223,7 +225,9 @@ __ri void iopEventTest()
 	{
 		if( (psxRegs.CP0.n.Status & 0xFE01) >= 0x401 )
 		{
+#ifdef PCSX2_DEBUG
 			PSXCPU_LOG("Interrupt: %x  %x", psxHu32(0x1070), psxHu32(0x1074));
+#endif
 			psxException(0, 0);
 			iopEventAction = true;
 		}

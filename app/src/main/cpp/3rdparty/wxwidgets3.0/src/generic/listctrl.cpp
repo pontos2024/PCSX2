@@ -586,7 +586,7 @@ void wxListLineData::SetPosition( int x, int y, int spacing )
 
 void wxListLineData::InitItems( int num )
 {
-    for (int i = 0; i < num; i++)
+    for (int i = 0; i < num; ++i)
         m_items.Append( new wxListItemData(m_owner) );
 }
 
@@ -1305,7 +1305,7 @@ void wxListHeaderWindow::OnMouse( wxMouseEvent &event )
                 // record the selected state of the columns
                 if (event.LeftDown())
                 {
-                    for (int i=0; i < m_owner->GetColumnCount(); i++)
+                    for (int i=0; i < m_owner->GetColumnCount(); ++i)
                     {
                         wxListItem colItem;
                         m_owner->GetColumn(i, colItem);
@@ -3656,7 +3656,7 @@ wxListMainWindow::GetSubItemRect(long item, long subItem, wxRect& rect) const
         wxCHECK_MSG( subItem >= 0 && subItem < GetColumnCount(), false,
                      wxT("invalid subItem in GetSubItemRect") );
 
-        for (int i = 0; i < subItem; i++)
+        for (int i = 0; i < subItem; ++i)
         {
             rect.x += GetColumnWidth(i);
         }
@@ -3822,7 +3822,7 @@ void wxListMainWindow::RecalculatePositions(bool noRefresh)
                 m_linesPerPage = 0;
                 int currentlyVisibleLines = 0;
 
-                for (size_t i = 0; i < count; i++)
+                for (size_t i = 0; i < count; ++i)
                 {
                     currentlyVisibleLines++;
                     wxListLineData *line = GetLine( i );
@@ -3850,7 +3850,7 @@ void wxListMainWindow::RecalculatePositions(bool noRefresh)
                         if ( HasFlag(wxLC_ICON) || HasFlag(wxLC_SMALL_ICON) )
                         {
                             size_t firstRowLine = i - currentlyVisibleLines + 1;
-                            for (size_t j = firstRowLine; j <= i; j++)
+                            for (size_t j = firstRowLine; j <= i; ++j)
                             {
                                 GetLine(j)->m_gi->ExtendWidth(maxWidthInThisRow);
                             }
@@ -3987,7 +3987,7 @@ void wxListMainWindow::DeleteItem( long lindex )
         wxListItem      item;
         int             itemWidth;
 
-        for (size_t i = 0; i < m_columns.GetCount(); i++)
+        for (size_t i = 0; i < m_columns.GetCount(); ++i)
         {
             n = line->m_items.Item( i );
             itemData = n->GetData();
@@ -4173,7 +4173,7 @@ long wxListMainWindow::FindItem(long start, wxUIntPtr data)
         pos = 0;
 
     size_t count = GetItemCount();
-    for (size_t i = (size_t)pos; i < count; i++)
+    for (size_t i = (size_t)pos; i < count; ++i)
     {
         wxListLineData *line = GetLine(i);
         wxListItem item;

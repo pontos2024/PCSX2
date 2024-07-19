@@ -34,6 +34,10 @@ void Device::DoRumble(unsigned type, unsigned pad)
 	int index = uid_to_index(pad);
 	if (index >= 0) {
 		device_manager.devices[index]->Rumble(type, pad);
+	} else {
+		if (g_haptic_android != nullptr) {
+            g_haptic_android->Rumble(type, pad);
+		}
 	}
 }
 

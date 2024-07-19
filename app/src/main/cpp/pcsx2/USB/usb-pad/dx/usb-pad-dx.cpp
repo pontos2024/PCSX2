@@ -47,7 +47,7 @@ namespace usb_pad
 
 			if (mType == WT_BUZZ_CONTROLLER)
 			{
-				for (int i = 0; i < 20; i++)
+				for (int i = 0; i < 20; ++i)
 				{
 					if (GetControl(mPort, i))
 					{
@@ -60,7 +60,7 @@ namespace usb_pad
 
 			if (mType == WT_KEYBOARDMANIA_CONTROLLER)
 			{
-				for (int i = 0; i < 31; i++)
+				for (int i = 0; i < 31; ++i)
 				{
 					if (GetControl(mPort, i))
 					{

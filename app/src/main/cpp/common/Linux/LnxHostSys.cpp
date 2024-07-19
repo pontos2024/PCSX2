@@ -128,7 +128,9 @@ static void SysPageFaultSignalFilter(int signal, siginfo_t* siginfo, void* ctx)
 
 void _platform_InstallSignalHandler()
 {
+#ifdef PCSX2_DEBUG
 	Console.WriteLn("Installing POSIX SIGSEGV handler...");
+#endif
 	struct sigaction sa;
 
 	sigemptyset(&sa.sa_mask);

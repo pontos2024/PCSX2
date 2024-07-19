@@ -55,7 +55,7 @@ public:
 
 	virtual bool parseReference(char* str, u64& referenceIndex)
 	{
-		for (int i = 0; i < 32; i++)
+		for (int i = 0; i < 32; ++i)
 		{
 			char reg[8];
 			sprintf(reg, "r%d", i);
@@ -212,7 +212,7 @@ char* DebugInterface::stringFromPointer(u32 p)
 
 	try
 	{
-		for (u32 i = 0; i < BUFFER_LEN; i++)
+		for (u32 i = 0; i < BUFFER_LEN; ++i)
 		{
 			char c = read8(p + i);
 			buf[i] = c;
@@ -647,10 +647,7 @@ bool R5900DebugInterface::isValidAddress(u32 addr)
 		case 0xA:
 		case 0xB:
 			// [ 8000_0000 - BFFF_FFFF ] kernel
-			// We only need to access the EE kernel (which is 1 MB large)
-			if (lopart < 0x100000)
-				return true;
-			break;
+			return true;
 		case 0xF:
 			// [ 8000_0000 - BFFF_FFFF ] IOP or kernel stack
 			if (lopart >= 0xfff8000)

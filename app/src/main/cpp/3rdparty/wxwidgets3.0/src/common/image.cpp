@@ -358,9 +358,9 @@ wxImage wxImage::ShrinkBy( int xFactor , int yFactor ) const
         }
     }
 
-    for (long y = 0; y < height; y++)
+    for (long y = 0; y < height; ++y)
     {
-        for (long x = 0; x < width; x++)
+        for (long x = 0; x < width; ++x)
         {
             unsigned long avgRed = 0 ;
             unsigned long avgGreen = 0;
@@ -1197,12 +1197,12 @@ wxImage wxImage::Rotate90( bool clockwise ) const
     {
         long next_ii = wxMin(ii + 21, width);
 
-        for (long j = 0; j < height; j++)
+        for (long j = 0; j < height; ++j)
         {
             const unsigned char *source_data
                                      = M_IMGDATA->m_data + (j*width + ii)*3;
 
-            for (long i = ii; i < next_ii; i++)
+            for (long i = ii; i < next_ii; ++i)
             {
                 if ( clockwise )
                 {
@@ -1231,11 +1231,11 @@ wxImage wxImage::Rotate90( bool clockwise ) const
         {
             long next_ii = wxMin(ii + 64, width);
 
-            for (long j = 0; j < height; j++)
+            for (long j = 0; j < height; ++j)
             {
                 source_alpha = M_IMGDATA->m_alpha + j*width + ii;
 
-                for (long i = ii; i < next_ii; i++)
+                for (long i = ii; i < next_ii; ++i)
                 {
                     if ( clockwise )
                     {
@@ -1283,9 +1283,9 @@ wxImage wxImage::Rotate180() const
     const unsigned char *source_data = M_IMGDATA->m_data;
     unsigned char *target_data = data + width * height * 3;
 
-    for (long j = 0; j < height; j++)
+    for (long j = 0; j < height; ++j)
     {
-        for (long i = 0; i < width; i++)
+        for (long i = 0; i < width; ++i)
         {
             target_data -= 3;
             memcpy( target_data, source_data, 3 );
@@ -1326,11 +1326,11 @@ wxImage wxImage::Mirror( bool horizontally ) const
 
     if (horizontally)
     {
-        for (long j = 0; j < height; j++)
+        for (long j = 0; j < height; ++j)
         {
             data += width*3;
             target_data = data-3;
-            for (long i = 0; i < width; i++)
+            for (long i = 0; i < width; ++i)
             {
                 memcpy( target_data, source_data, 3 );
                 source_data += 3;
@@ -1359,7 +1359,7 @@ wxImage wxImage::Mirror( bool horizontally ) const
     }
     else
     {
-        for (long i = 0; i < height; i++)
+        for (long i = 0; i < height; ++i)
         {
             target_data = data + 3*width*(height-1-i);
             memcpy( target_data, source_data, (size_t)3*width );
@@ -1536,7 +1536,7 @@ void wxImage::Paste( const wxImage &image, int x, int y )
 
         unsigned char* target_data = GetData() + 3*((x+xx) + (y+yy)*M_IMGDATA->m_width);
         int target_step = M_IMGDATA->m_width*3;
-        for (int j = 0; j < height; j++)
+        for (int j = 0; j < height; ++j)
         {
             memcpy( target_data, source_data, width*3 );
             source_data += source_step;
@@ -1576,7 +1576,7 @@ void wxImage::Paste( const wxImage &image, int x, int y )
         unsigned char* target_data = GetData() + 3*((x+xx) + (y+yy)*M_IMGDATA->m_width);
         int target_step = M_IMGDATA->m_width*3;
 
-        for (int j = 0; j < height; j++)
+        for (int j = 0; j < height; ++j)
         {
             for (int i = 0; i < width*3; i+=3)
             {
@@ -1605,8 +1605,8 @@ void wxImage::Replace( unsigned char r1, unsigned char g1, unsigned char b1,
     const int w = GetWidth();
     const int h = GetHeight();
 
-    for (int j = 0; j < h; j++)
-        for (int i = 0; i < w; i++)
+    for (int j = 0; j < h; ++j)
+        for (int i = 0; i < w; ++i)
         {
             if ((data[0] == r1) && (data[1] == g1) && (data[2] == b1))
             {
@@ -1817,10 +1817,10 @@ void wxImage::SetRGB( const wxRect& rect_, unsigned char r, unsigned char g, uns
 
     unsigned char *data wxDUMMY_INITIALIZE(NULL);
     int x, y, width = GetWidth();
-    for (y = y1; y < y2; y++)
+    for (y = y1; y < y2; ++y)
     {
         data = M_IMGDATA->m_data + (y*width + x1)*3;
-        for (x = x1; x < x2; x++)
+        for (x = x1; x < x2; ++x)
         {
             *data++ = r;
             *data++ = g;
@@ -2177,9 +2177,9 @@ bool wxImage::SetMaskFromImage(const wxImage& mask,
     const int w = GetWidth();
     const int h = GetHeight();
 
-    for (int j = 0; j < h; j++)
+    for (int j = 0; j < h; ++j)
     {
-        for (int i = 0; i < w; i++)
+        for (int i = 0; i < w; ++i)
         {
             if ((maskdata[0] == mr) && (maskdata[1]  == mg) && (maskdata[2] == mb))
             {
@@ -2232,7 +2232,7 @@ bool wxImage::ConvertAlphaToMask(unsigned char mr,
     int w = GetWidth();
     int h = GetHeight();
 
-    for (int y = 0; y < h; y++)
+    for (int y = 0; y < h; ++y)
     {
         for (int x = 0; x < w; x++, imgdata += 3, alphadata++)
         {
@@ -2925,7 +2925,7 @@ wxString wxImage::GetImageExtWildcard()
     {
         wxImageHandler* Handler = (wxImageHandler*)Node->GetData();
         fmts += wxT("*.") + Handler->GetExtension();
-        for (size_t i = 0; i < Handler->GetAltExtensions().size(); i++)
+        for (size_t i = 0; i < Handler->GetAltExtensions().size(); ++i)
             fmts += wxT(";*.") + Handler->GetAltExtensions()[i];
         Node = Node->GetNext();
         if ( Node ) fmts += wxT(";");
@@ -3290,7 +3290,7 @@ unsigned long wxImage::CountColours( unsigned long stopafter ) const
     size = GetWidth() * GetHeight();
     nentries = 0;
 
-    for (unsigned long j = 0; (j < size) && (nentries <= stopafter) ; j++)
+    for (unsigned long j = 0; (j < size) && (nentries <= stopafter) ; ++j)
     {
         r = *(p++);
         g = *(p++);
@@ -3378,7 +3378,7 @@ wxImage wxImage::Rotate(double angle,
     // Create pointer-based array to accelerate access to wxImage's data
     unsigned char ** data = new unsigned char * [h];
     data[0] = GetData();
-    for (i = 1; i < h; i++)
+    for (i = 1; i < h; ++i)
         data[i] = data[i - 1] + (3 * w);
 
     // Same for alpha channel
@@ -3387,7 +3387,7 @@ wxImage wxImage::Rotate(double angle,
     {
         alpha = new unsigned char * [h];
         alpha[0] = GetAlpha();
-        for (i = 1; i < h; i++)
+        for (i = 1; i < h; ++i)
             alpha[i] = alpha[i - 1] + w;
     }
 
@@ -3453,9 +3453,9 @@ wxImage wxImage::Rotate(double angle,
     // only once, instead of repeating it for each pixel.
     if (interpolating)
     {
-        for (int y = 0; y < rH; y++)
+        for (int y = 0; y < rH; ++y)
         {
-            for (int x = 0; x < rW; x++)
+            for (int x = 0; x < rW; ++x)
             {
                 wxRealPoint src = wxRotatePoint (x + x1a, y + y1a, cos_angle, -sin_angle, p0);
 
@@ -3600,9 +3600,9 @@ wxImage wxImage::Rotate(double angle,
     }
     else // not interpolating
     {
-        for (int y = 0; y < rH; y++)
+        for (int y = 0; y < rH; ++y)
         {
-            for (int x = 0; x < rW; x++)
+            for (int x = 0; x < rW; ++x)
             {
                 wxRealPoint src = wxRotatePoint (x + x1a, y + y1a, cos_angle, -sin_angle, p0);
 

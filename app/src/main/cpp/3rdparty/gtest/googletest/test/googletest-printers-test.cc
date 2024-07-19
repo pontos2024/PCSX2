@@ -1061,7 +1061,7 @@ TEST(PrintStlContainerTest, HashMultiSet) {
   // the numbers in the result.
   ASSERT_EQ(expected_pattern.length(), result.length());
   std::vector<int> numbers;
-  for (size_t i = 0; i != result.length(); i++) {
+  for (size_t i = 0; i != result.length(); ++i) {
     if (expected_pattern[i] == 'd') {
       ASSERT_NE(isdigit(static_cast<unsigned char>(result[i])), 0);
       numbers.push_back(result[i] - '0');

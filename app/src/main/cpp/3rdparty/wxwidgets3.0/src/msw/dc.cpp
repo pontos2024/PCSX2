@@ -912,7 +912,7 @@ void wxMSWDCImpl::DoDrawPolygon(int n,
     {
         POINT *cpoints = new POINT[n];
         int i;
-        for (i = 0; i < n; i++)
+        for (i = 0; i < n; ++i)
         {
             cpoints[i].x = (int)(points[i].x + xoffset);
             cpoints[i].y = (int)(points[i].y + yoffset);
@@ -931,7 +931,7 @@ void wxMSWDCImpl::DoDrawPolygon(int n,
     else
     {
         int i;
-        for (i = 0; i < n; i++)
+        for (i = 0; i < n; ++i)
             CalcBoundingBox(points[i].x, points[i].y);
 
 #ifndef __WXWINCE__
@@ -959,14 +959,14 @@ wxMSWDCImpl::DoDrawPolyPolygon(int n,
 
     wxBrushAttrsSetter cc(*this); // needed for wxSTIPPLE_MASK_OPAQUE handling
     int i, cnt;
-    for (i = cnt = 0; i < n; i++)
+    for (i = cnt = 0; i < n; ++i)
         cnt += count[i];
 
     // Do things less efficiently if we have offsets
     if (xoffset != 0 || yoffset != 0)
     {
         POINT *cpoints = new POINT[cnt];
-        for (i = 0; i < cnt; i++)
+        for (i = 0; i < cnt; ++i)
         {
             cpoints[i].x = (int)(points[i].x + xoffset);
             cpoints[i].y = (int)(points[i].y + yoffset);
@@ -984,7 +984,7 @@ wxMSWDCImpl::DoDrawPolyPolygon(int n,
     }
     else
     {
-        for (i = 0; i < cnt; i++)
+        for (i = 0; i < cnt; ++i)
             CalcBoundingBox(points[i].x, points[i].y);
 
 #ifndef __WXWINCE__
@@ -1008,7 +1008,7 @@ void wxMSWDCImpl::DoDrawLines(int n, const wxPoint points[], wxCoord xoffset, wx
     {
         POINT *cpoints = new POINT[n];
         int i;
-        for (i = 0; i < n; i++)
+        for (i = 0; i < n; ++i)
         {
             cpoints[i].x = (int)(points[i].x + xoffset);
             cpoints[i].y = (int)(points[i].y + yoffset);
@@ -1021,7 +1021,7 @@ void wxMSWDCImpl::DoDrawLines(int n, const wxPoint points[], wxCoord xoffset, wx
     else
     {
         int i;
-        for (i = 0; i < n; i++)
+        for (i = 0; i < n; ++i)
             CalcBoundingBox(points[i].x, points[i].y);
 
         (void)Polyline(GetHdc(), (POINT*) points, n);

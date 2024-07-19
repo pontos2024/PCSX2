@@ -60,9 +60,9 @@ void iopMemoryReserve::Reset()
 		psxMemWLUT = (uptr*)_aligned_malloc(0x2000 * sizeof(uptr) * 2, 16);
 		psxMemRLUT = psxMemWLUT + 0x2000; //(uptr*)_aligned_malloc(0x10000 * sizeof(uptr),16);
 	}
-
+#ifdef PCSX2_DEBUG
 	DbgCon.WriteLn("IOP resetting main memory...");
-
+#endif
 	memset(psxMemWLUT, 0, 0x2000 * sizeof(uptr) * 2);	// clears both allocations, RLUT and WLUT
 
 	// Trick!  We're accessing RLUT here through WLUT, since it's the non-const pointer.
@@ -70,7 +70,7 @@ void iopMemoryReserve::Reset()
 
 	// Map IOP main memory, which is Read/Write, and mirrored three times
 	// at 0x0, 0x8000, and 0xa000:
-	for (int i=0; i<0x0080; i++)
+	for (int i=0; i<0x0080; ++i)
 	{
 		psxMemWLUT[i + 0x0000] = (uptr)&iopMem->Main[(i & 0x1f) << 16];
 
@@ -88,17 +88,17 @@ void iopMemoryReserve::Reset()
 	//psxMemWLUT[0xbf80] = (uptr)iopHw;
 
 	// Read-only memory areas, so don't map WLUT for these...
-	for (int i=0; i<0x0040; i++)
+	for (int i=0; i<0x0040; ++i)
 	{
 		psxMemWLUT[i + 0x2000 + 0x1fc0] = (uptr)&eeMem->ROM[i << 16];
 	}
 
-	for (int i=0; i<0x0004; i++)
+	for (int i=0; i<0x0004; ++i)
 	{
 		psxMemWLUT[i + 0x2000 + 0x1e00] = (uptr)&eeMem->ROM1[i << 16];
 	}
 
-	for (int i = 0; i < 0x0008; i++) 
+	for (int i = 0; i < 0x0008; ++i)
 	{
 		psxMemWLUT[i + 0x2000 + 0x1e40] = (uptr)&eeMem->ROM2[i << 16];
 	}
@@ -109,7 +109,7 @@ void iopMemoryReserve::Reset()
 
 	// this one looks like an old hack for some special write-only memory area,
 	// but leaving it in for reference (air)
-	//for (i=0; i<0x0008; i++) psxMemWLUT[i + 0xbfc0] = (uptr)&psR[i << 16];
+	//for (i=0; i<0x0008; ++i) psxMemWLUT[i + 0xbfc0] = (uptr)&psR[i << 16];
 }
 
 void iopMemoryReserve::Decommit()
@@ -154,7 +154,9 @@ u8 __fastcall iopMemRead8(u32 mem)
 		{
 			if (t == 0x1000)
 				return DEV9read8(mem);
+#ifdef PCSX2_DEBUG
 			PSXMEM_LOG("err lb %8.8lx", mem);
+#endif
 			return 0;
 		}
 	}
@@ -214,7 +216,9 @@ u16 __fastcall iopMemRead16(u32 mem)
 				return SPU2read(mem);
 			if (t == 0x1000)
 				return DEV9read16(mem);
+#ifdef PCSX2_DEBUG
 			PSXMEM_LOG("err lh %8.8lx", mem);
+#endif
 			return 0;
 		}
 	}
@@ -326,7 +330,9 @@ void __fastcall iopMemWrite8(u32 mem, u8 value)
 			{
 				DEV9write8(mem, value); return;
 			}
+#ifdef PCSX2_DEBUG
 			PSXMEM_LOG("err sb %8.8lx = %x", mem, value);
+#endif
 		}
 	}
 }
@@ -399,7 +405,9 @@ void __fastcall iopMemWrite16(u32 mem, u16 value)
 			if (t == 0x1000) {
 				DEV9write16(mem, value); return;
 			}
+#ifdef PCSX2_DEBUG
 			PSXMEM_LOG("err sh %8.8lx = %x", mem, value);
+#endif
 		}
 	}
 }
@@ -434,7 +442,9 @@ void __fastcall iopMemWrite32(u32 mem, u32 value)
 		{
 			if (t == 0x1d00)
 			{
+#ifdef PCSX2_DEBUG
 				MEM_LOG("iop Sif reg write %x value %x", mem, value);
+#endif
 				switch (mem & 0x8f0)
 				{
 					case 0x00:		// EE write path (EE/IOP readable)

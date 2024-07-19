@@ -18,64 +18,47 @@
 #include "GS.h"
 #include "common/boost_spsc_queue.hpp"
 #include "common/General.h"
+#include "common/Threading.h"
+#include <condition_variable>
+#include <functional>
+#include <mutex>
 
 template <class T, int CAPACITY>
 class GSJobQueue final
 {
 private:
 	std::thread m_thread;
+	std::function<void()> m_startup;
 	std::function<void(T&)> m_func;
+	std::function<void()> m_shutdown;
 	bool m_exit;
 	ringbuffer_base<T, CAPACITY> m_queue;
 
-	std::mutex m_lock;
-	std::mutex m_wait_lock;
-	std::condition_variable m_empty;
-	std::condition_variable m_notempty;
+	Threading::WorkSema m_sema;
 
 	void ThreadProc()
 	{
-		std::unique_lock<std::mutex> l(m_lock);
+		if (m_startup)
+			m_startup();
 
 		while (true)
 		{
-
-			while (m_queue.empty())
-			{
-				if (m_exit)
-					return;
-
-				m_notempty.wait(l);
-			}
-
-			l.unlock();
-
-			uint32 waited = 0;
-			while (true)
-			{
-				while (m_queue.consume_one(*this))
-					waited = 0;
-
-				if (waited == 0)
-				{
-					{
-						std::lock_guard<std::mutex> wait_guard(m_wait_lock);
-					}
-					m_empty.notify_one();
-				}
-
-				if (waited >= SPIN_TIME_NS)
-					break;
-				waited += ShortSpin();
-			}
-
-			l.lock();
+			m_sema.WaitForWorkWithSpin();
+			if (m_exit)
+				break;
+			while (m_queue.consume_one(*this))
+				;
 		}
+
+		if (m_shutdown)
+			m_shutdown();
 	}
 
 public:
-	GSJobQueue(std::function<void(T&)> func)
-		: m_func(func)
+	GSJobQueue(std::function<void()> startup, std::function<void(T&)> func, std::function<void()> shutdown)
+		: m_startup(std::move(startup))
+		, m_func(std::move(func))
+		, m_shutdown(std::move(shutdown))
 		, m_exit(false)
 	{
 		m_thread = std::thread(&GSJobQueue::ThreadProc, this);
@@ -83,12 +66,8 @@ public:
 
 	~GSJobQueue()
 	{
-		{
-			std::lock_guard<std::mutex> l(m_lock);
-			m_exit = true;
-		}
-		m_notempty.notify_one();
-
+		m_exit = true;
+		m_sema.NotifyOfWork();
 		m_thread.join();
 	}
 
@@ -101,29 +80,12 @@ public:
 	{
 		while (!m_queue.push(item))
 			std::this_thread::yield();
-
-		{
-			std::lock_guard<std::mutex> l(m_lock);
-		}
-		m_notempty.notify_one();
+		m_sema.NotifyOfWork();
 	}
 
 	void Wait()
 	{
-		uint32 waited = 0;
-		while (true)
-		{
-			if (IsEmpty())
-				return;
-			if (waited >= SPIN_TIME_NS)
-				break;
-			waited += ShortSpin();
-		}
-
-		std::unique_lock<std::mutex> l(m_wait_lock);
-		while (!IsEmpty())
-			m_empty.wait(l);
-
+		m_sema.WaitForEmptyWithSpin();
 		assert(IsEmpty());
 	}
 

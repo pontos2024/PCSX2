@@ -100,7 +100,7 @@ int CountSetBitsFallBack(uint64_t value, int width) {
       UINT64_C(0x00000000ffffffff),
   };
 
-  for (unsigned i = 0; i < (sizeof(kMasks) / sizeof(kMasks[0])); i++) {
+  for (unsigned i = 0; i < (sizeof(kMasks) / sizeof(kMasks[0])); ++i) {
     int shift = 1 << i;
     value = ((value >> shift) & kMasks[i]) + (value & kMasks[i]);
   }

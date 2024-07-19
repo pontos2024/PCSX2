@@ -142,7 +142,7 @@ kai_callback(PVOID cbdata, PVOID buffer, ULONG len)
     int16_t *b = buffer;
     int i;
 
-    for (i = 0; i < elements; i++)
+    for (i = 0; i < elements; ++i)
       *b++ *= soft_volume;
   }
 

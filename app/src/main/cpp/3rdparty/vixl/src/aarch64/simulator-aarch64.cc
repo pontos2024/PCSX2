@@ -122,7 +122,7 @@ void Simulator::ResetState() {
   // Reset registers to 0.
   pc_ = NULL;
   pc_modified_ = false;
-  for (unsigned i = 0; i < kNumberOfRegisters; i++) {
+  for (unsigned i = 0; i < kNumberOfRegisters; ++i) {
     WriteXRegister(i, 0xbadbeef);
   }
   // Set FP registers to a value that is a NaN in both 32-bit and 64-bit FP.
@@ -136,7 +136,7 @@ void Simulator::ResetState() {
   VIXL_ASSERT(sizeof(q_bits) == sizeof(nan_bits));
   memcpy(&q_bits, nan_bits, sizeof(nan_bits));
 
-  for (unsigned i = 0; i < kNumberOfVRegisters; i++) {
+  for (unsigned i = 0; i < kNumberOfVRegisters; ++i) {
     WriteQRegister(i, q_bits);
   }
   // Returning to address 0 exits the Simulator.
@@ -615,14 +615,14 @@ Simulator::PrintRegisterFormat Simulator::GetPrintRegisterFormatFP(
 
 
 void Simulator::PrintWrittenRegisters() {
-  for (unsigned i = 0; i < kNumberOfRegisters; i++) {
+  for (unsigned i = 0; i < kNumberOfRegisters; ++i) {
     if (registers_[i].WrittenSinceLastLog()) PrintRegister(i);
   }
 }
 
 
 void Simulator::PrintWrittenVRegisters() {
-  for (unsigned i = 0; i < kNumberOfVRegisters; i++) {
+  for (unsigned i = 0; i < kNumberOfVRegisters; ++i) {
     // At this point there is no type information, so print as a raw 1Q.
     if (vregisters_[i].WrittenSinceLastLog()) PrintVRegister(i, kPrintReg1Q);
   }
@@ -636,14 +636,14 @@ void Simulator::PrintSystemRegisters() {
 
 
 void Simulator::PrintRegisters() {
-  for (unsigned i = 0; i < kNumberOfRegisters; i++) {
+  for (unsigned i = 0; i < kNumberOfRegisters; ++i) {
     PrintRegister(i);
   }
 }
 
 
 void Simulator::PrintVRegisters() {
-  for (unsigned i = 0; i < kNumberOfVRegisters; i++) {
+  for (unsigned i = 0; i < kNumberOfVRegisters; ++i) {
     // At this point there is no type information, so print as a raw 1Q.
     PrintVRegister(i, kPrintReg1Q);
   }
@@ -698,7 +698,7 @@ void Simulator::PrintRegisterRawHelper(unsigned code,
 
   // Print leading padding spaces.
   VIXL_ASSERT(padding_chars < (kXRegSizeInBytes * 2));
-  for (unsigned i = 0; i < padding_chars; i++) {
+  for (unsigned i = 0; i < padding_chars; ++i) {
     putc(' ', stream_);
   }
 
@@ -4990,7 +4990,7 @@ void Simulator::NEONLoadStoreMultiStructHelper(const Instruction* instr,
 
   int reg[4];
   uint64_t addr[4];
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 4; ++i) {
     reg[i] = (instr->GetRt() + i) % kNumberOfVRegisters;
     addr[i] = addr_base + (i * reg_size);
   }
@@ -5102,7 +5102,7 @@ void Simulator::NEONLoadStoreMultiStructHelper(const Instruction* instr,
   }
 
   // Explicitly log the register update whilst we have type information.
-  for (int i = 0; i < count; i++) {
+  for (int i = 0; i < count; ++i) {
     // For de-interleaving loads, only print the base address.
     int lane_size = LaneSizeInBytesFromFormat(vf);
     PrintRegisterFormat format = GetPrintRegisterFormatTryFP(
@@ -6484,7 +6484,7 @@ void Simulator::DoPrintf(const Instruction* instr) {
   // Copy the format string and search for format placeholders.
   uint32_t placeholder_count = 0;
   char* format_scratch = format;
-  for (size_t i = 0; i < length; i++) {
+  for (size_t i = 0; i < length; ++i) {
     if (format_base[i] != '%') {
       *format_scratch++ = format_base[i];
     } else {
@@ -6519,7 +6519,7 @@ void Simulator::DoPrintf(const Instruction* instr) {
   int pcs_r = 1;  // Start at x1. x0 holds the format string.
   int pcs_f = 0;  // Start at d0.
   if (result >= 0) {
-    for (uint32_t i = 0; i < placeholder_count; i++) {
+    for (uint32_t i = 0; i < placeholder_count; ++i) {
       int part_result = -1;
 
       uint32_t arg_pattern = arg_pattern_list >> (i * kPrintfArgPatternBits);

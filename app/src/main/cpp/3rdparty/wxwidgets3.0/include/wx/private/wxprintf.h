@@ -680,13 +680,13 @@ int wxPrintfConvSpec<CharType>::Process(CharType *buf, size_t lenMax, wxPrintfAr
                 size_t i;
 
                 if (!m_bAlignLeft)
-                    for (i = 1; i < (size_t)m_nMinWidth; i++)
+                    for (i = 1; i < (size_t)m_nMinWidth; ++i)
                         APPEND_CH(wxT(' '));
 
                 APPEND_CH(val);
 
                 if (m_bAlignLeft)
-                    for (i = 1; i < (size_t)m_nMinWidth; i++)
+                    for (i = 1; i < (size_t)m_nMinWidth; ++i)
                         APPEND_CH(wxT(' '));
             }
             break;
@@ -716,7 +716,7 @@ int wxPrintfConvSpec<CharType>::Process(CharType *buf, size_t lenMax, wxPrintfAr
 
                 if (!m_bAlignLeft)
                 {
-                    for (i = len; i < m_nMinWidth; i++)
+                    for (i = len; i < m_nMinWidth; ++i)
                         APPEND_CH(wxT(' '));
                 }
 
@@ -726,7 +726,7 @@ int wxPrintfConvSpec<CharType>::Process(CharType *buf, size_t lenMax, wxPrintfAr
 
                 if (m_bAlignLeft)
                 {
-                    for (i = len; i < m_nMinWidth; i++)
+                    for (i = len; i < m_nMinWidth; ++i)
                         APPEND_CH(wxT(' '));
                 }
             }

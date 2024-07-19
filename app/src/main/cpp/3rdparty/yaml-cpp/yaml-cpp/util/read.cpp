@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
   int N = 1;
   bool cache = false;
   std::string filename;
-  for (int i = 1; i < argc; i++) {
+  for (int i = 1; i < argc; ++i) {
     std::string arg = argv[i];
     if (arg == "-n") {
       i++;
@@ -82,19 +82,19 @@ int main(int argc, char** argv) {
       input = read_stream(std::cin);
     }
     std::istringstream in(input);
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < N; ++i) {
       in.seekg(std::ios_base::beg);
       run(in);
     }
   } else {
     if (!filename.empty()) {
       std::ifstream in(filename);
-      for (int i = 0; i < N; i++) {
+      for (int i = 0; i < N; ++i) {
         in.seekg(std::ios_base::beg);
         run(in);
       }
     } else {
-      for (int i = 0; i < N; i++) {
+      for (int i = 0; i < N; ++i) {
         run(std::cin);
       }
     }

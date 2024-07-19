@@ -14,27 +14,69 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GS/GS.h"
 #include "GSDevice.h"
+#include "GS/GSGL.h"
+#include "GS/GS.h"
 
-GSDevice::GSDevice()
-	: m_merge(NULL)
-	, m_weavebob(NULL)
-	, m_blend(NULL)
-	, m_target_tmp(NULL)
-	, m_current(NULL)
-	, m_frame(0)
-	, m_rbswapped(false)
-	, m_prefer_new_textures(false)
+const char* shaderName(ShaderConvert value)
 {
-	memset(&m_vertex, 0, sizeof(m_vertex));
-	memset(&m_index, 0, sizeof(m_index));
+	switch (value)
+	{
+			// clang-format off
+		case ShaderConvert::COPY:                return "ps_copy";
+		case ShaderConvert::RGBA8_TO_16_BITS:    return "ps_convert_rgba8_16bits";
+		case ShaderConvert::DATM_1:              return "ps_datm1";
+		case ShaderConvert::DATM_0:              return "ps_datm0";
+		case ShaderConvert::MOD_256:             return "ps_mod256";
+		case ShaderConvert::TRANSPARENCY_FILTER: return "ps_filter_transparency";
+		case ShaderConvert::FLOAT32_TO_16_BITS:  return "ps_convert_float32_32bits";
+		case ShaderConvert::FLOAT32_TO_32_BITS:  return "ps_convert_float32_32bits";
+		case ShaderConvert::FLOAT32_TO_RGBA8:    return "ps_convert_float32_rgba8";
+		case ShaderConvert::FLOAT16_TO_RGB5A1:   return "ps_convert_float16_rgb5a1";
+		case ShaderConvert::RGBA8_TO_FLOAT32:    return "ps_convert_rgba8_float32";
+		case ShaderConvert::RGBA8_TO_FLOAT24:    return "ps_convert_rgba8_float24";
+		case ShaderConvert::RGBA8_TO_FLOAT16:    return "ps_convert_rgba8_float16";
+		case ShaderConvert::RGB5A1_TO_FLOAT16:   return "ps_convert_rgb5a1_float16";
+		case ShaderConvert::DEPTH_COPY:          return "ps_depth_copy";
+		case ShaderConvert::RGBA_TO_8I:          return "ps_convert_rgba_8i";
+		case ShaderConvert::YUV:                 return "ps_yuv";
+			// clang-format on
+		default:
+			ASSERT(0);
+			return "ShaderConvertUnknownShader";
+	}
 }
+
+const char* shaderName(PresentShader value)
+{
+	switch (value)
+	{
+			// clang-format off
+		case PresentShader::COPY:              return "ps_copy";
+		case PresentShader::SCANLINE:          return "ps_filter_scanlines";
+		case PresentShader::DIAGONAL_FILTER:   return "ps_filter_diagonal";
+		case PresentShader::TRIANGULAR_FILTER: return "ps_filter_triangular";
+		case PresentShader::COMPLEX_FILTER:    return "ps_filter_complex";
+		case PresentShader::LOTTES_FILTER:     return "ps_filter_lottes";
+			// clang-format on
+		default:
+			ASSERT(0);
+			return "DisplayShaderUnknownShader";
+	}
+}
+
+static int MipmapLevelsForSize(int width, int height)
+{
+	return std::min(static_cast<int>(std::log2(std::max(width, height))) + 1, MAXIMUM_TEXTURE_MIPMAP_LEVELS);
+}
+
+std::unique_ptr<GSDevice> g_gs_device;
+
+GSDevice::GSDevice() = default;
 
 GSDevice::~GSDevice()
 {
-	for (auto t : m_pool)
-		delete t;
+	PurgePool();
 
 	delete m_merge;
 	delete m_weavebob;
@@ -50,6 +92,19 @@ bool GSDevice::Create(HostDisplay* display)
 
 void GSDevice::Destroy()
 {
+	PurgePool();
+
+	delete m_merge;
+	delete m_weavebob;
+	delete m_blend;
+	delete m_target_tmp;
+
+	m_merge = nullptr;
+	m_weavebob = nullptr;
+	m_blend = nullptr;
+	m_target_tmp = nullptr;
+
+	m_current = nullptr; // current is special, points to other textures, no need to delete
 }
 
 void GSDevice::ResetAPIState()
@@ -60,45 +115,84 @@ void GSDevice::RestoreAPIState()
 {
 }
 
-GSTexture* GSDevice::FetchSurface(int type, int w, int h, int format)
+GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format, bool clear, bool prefer_reuse)
 {
-	const GSVector2i size(w, h);
+	const GSVector2i size(width, height);
+    const bool prefer_new_texture = (m_features.prefer_new_textures && type == GSTexture::Type::Texture && !prefer_reuse);
 
+	GSTexture* t = nullptr;
 	auto fallback = m_pool.end();
-
-	const bool prefer_new_texture = (m_prefer_new_textures && type == GSTexture::Texture);
 
 	for (auto i = m_pool.begin(); i != m_pool.end(); ++i)
 	{
-		GSTexture* t = *i;
+		t = *i;
 
-		if (t->GetType() == type && t->GetFormat() == format && t->GetSize() == size)
+		assert(t);
+
+        if(m_features.dual_source_blend) {
+            if (t->GetType() == type && t->GetFormat() == format && t->GetSize() == size &&
+                t->GetMipmapLevels() == levels) {
+                if (!prefer_new_texture || t->last_frame_used != m_frame) {
+                    m_pool.erase(i);
+                    break;
+                } else if (fallback == m_pool.end()) {
+                    fallback = i;
+                }
+            }
+        }
+
+		t = nullptr;
+	}
+
+	if (!t)
+	{
+		if (m_pool.size() >= MAX_POOLED_TEXTURES && fallback != m_pool.end())
 		{
-			if (!prefer_new_texture)
-			{
-				m_pool.erase(i);
-				return t;
-			}
-
-			if (fallback != m_pool.end())
-				fallback = i;
+			t = *fallback;
+			m_pool.erase(fallback);
+		}
+		else
+		{
+			t = CreateSurface(type, width, height, levels, format);
+			if (!t)
+				throw std::bad_alloc();
 		}
 	}
 
-	if (m_pool.size() >= MAX_POOLED_TEXTURES && fallback != m_pool.end())
+	t->SetScale(GSVector2(1, 1)); // Things seem to assume that all textures come out of here with scale 1...
+	t->Commit(); // Clear won't be done if the texture isn't committed.
+
+	switch (type)
 	{
-		GSTexture* t = *fallback;
-		m_pool.erase(fallback);
-		return t;
+	case GSTexture::Type::RenderTarget:
+	case GSTexture::Type::SparseRenderTarget:
+		{
+			if (clear)
+				ClearRenderTarget(t, 0);
+			else
+				InvalidateRenderTarget(t);
+		}
+		break;
+	case GSTexture::Type::DepthStencil:
+	case GSTexture::Type::SparseDepthStencil:
+		{
+			if (clear)
+				ClearDepth(t);
+			else
+				InvalidateRenderTarget(t);
+		}
+		break;
+	default:
+		break;
 	}
 
-	return CreateSurface(type, w, h, format);
+	return t;
 }
 
 void GSDevice::PrintMemoryUsage()
 {
 #ifdef ENABLE_OGL_DEBUG
-	uint32 pool = 0;
+	u32 pool = 0;
 	for (auto t : m_pool)
 	{
 		if (t)
@@ -127,7 +221,6 @@ void GSDevice::Recycle(GSTexture* t)
 		t->Uncommit();
 #endif
 		t->last_frame_used = m_frame;
-		t->SetDiscarded();
 
 		m_pool.push_front(t);
 
@@ -156,48 +249,89 @@ void GSDevice::AgePool()
 
 void GSDevice::PurgePool()
 {
-	// OOM emergency. Let's free this useless pool
-	while (!m_pool.empty())
-	{
-		delete m_pool.back();
-
-		m_pool.pop_back();
-	}
+	for (auto t : m_pool)
+		delete t;
+	m_pool.clear();
 }
 
-GSTexture* GSDevice::CreateSparseRenderTarget(int w, int h, int format)
+void GSDevice::ClearSamplerCache()
 {
-	return FetchSurface(HasColorSparse() ? GSTexture::SparseRenderTarget : GSTexture::RenderTarget, w, h, format);
 }
 
-GSTexture* GSDevice::CreateSparseDepthStencil(int w, int h, int format)
+GSTexture* GSDevice::CreateSparseRenderTarget(int w, int h, GSTexture::Format format, bool clear)
 {
-	return FetchSurface(HasDepthSparse() ? GSTexture::SparseDepthStencil : GSTexture::DepthStencil, w, h, format);
+	return FetchSurface(HasColorSparse() ? GSTexture::Type::SparseRenderTarget : GSTexture::Type::RenderTarget, w, h, 1, format, clear, true);
 }
 
-GSTexture* GSDevice::CreateRenderTarget(int w, int h, int format)
+GSTexture* GSDevice::CreateSparseDepthStencil(int w, int h, GSTexture::Format format, bool clear)
 {
-	return FetchSurface(GSTexture::RenderTarget, w, h, format);
+	return FetchSurface(HasDepthSparse() ? GSTexture::Type::SparseDepthStencil : GSTexture::Type::DepthStencil, w, h, 1, format, clear, true);
 }
 
-GSTexture* GSDevice::CreateDepthStencil(int w, int h, int format)
+GSTexture* GSDevice::CreateRenderTarget(int w, int h, GSTexture::Format format, bool clear)
 {
-	return FetchSurface(GSTexture::DepthStencil, w, h, format);
+	return FetchSurface(GSTexture::Type::RenderTarget, w, h, 1, format, clear, true);
 }
 
-GSTexture* GSDevice::CreateTexture(int w, int h, int format)
+GSTexture* GSDevice::CreateDepthStencil(int w, int h, GSTexture::Format format, bool clear)
 {
-	return FetchSurface(GSTexture::Texture, w, h, format);
+	return FetchSurface(GSTexture::Type::DepthStencil, w, h, 1, format, clear, true);
 }
 
-GSTexture* GSDevice::CreateOffscreen(int w, int h, int format)
+GSTexture* GSDevice::CreateTexture(int w, int h, bool mipmap, GSTexture::Format format, bool prefer_reuse /* = false */)
 {
-	return FetchSurface(GSTexture::Offscreen, w, h, format);
+	const int levels = mipmap ? MipmapLevelsForSize(w, h) : 1;
+	return FetchSurface(GSTexture::Type::Texture, w, h, levels, format, false, prefer_reuse);
 }
 
-void GSDevice::StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, int shader, bool linear)
+GSTexture* GSDevice::CreateOffscreen(int w, int h, GSTexture::Format format)
+{
+	return FetchSurface(GSTexture::Type::Offscreen, w, h, 1, format, false, true);
+}
+
+GSTexture::Format GSDevice::GetDefaultTextureFormat(GSTexture::Type type)
+{
+	if (type == GSTexture::Type::DepthStencil || type == GSTexture::Type::SparseDepthStencil)
+		return GSTexture::Format::DepthStencil;
+	else
+		return GSTexture::Format::Color;
+}
+
+bool GSDevice::DownloadTextureConvert(GSTexture* src, const GSVector4& sRect, const GSVector2i& dSize, GSTexture::Format format, ShaderConvert ps_shader, GSTexture::GSMap& out_map, const bool linear)
+{
+	ASSERT(src);
+	ASSERT(format == GSTexture::Format::Color || format == GSTexture::Format::UInt16 || format == GSTexture::Format::UInt32);
+
+	GSTexture* dst = CreateRenderTarget(dSize.x, dSize.y, format);
+	if (!dst)
+		return false;
+
+	GSVector4i dRect(0, 0, dSize.x, dSize.y);
+	StretchRect(src, sRect, dst, GSVector4(dRect), ps_shader, linear);
+
+	bool ret = DownloadTexture(dst, dRect, out_map);
+	Recycle(dst);
+	return ret;
+}
+
+void GSDevice::StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader, bool linear)
 {
 	StretchRect(sTex, GSVector4(0, 0, 1, 1), dTex, dRect, shader, linear);
+}
+
+void GSDevice::ClearCurrent()
+{
+	m_current = nullptr;
+
+	delete m_merge;
+	delete m_weavebob;
+	delete m_blend;
+	delete m_target_tmp;
+
+	m_merge = nullptr;
+	m_weavebob = nullptr;
+	m_blend = nullptr;
+	m_target_tmp = nullptr;
 }
 
 void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, const GSVector2i& fs, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c)
@@ -210,7 +344,7 @@ void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, con
 	{
 		GSTexture* tex[3] = {NULL, NULL, NULL};
 
-		for (size_t i = 0; i < countof(tex); i++)
+		for (size_t i = 0; i < std::size(tex); ++i)
 		{
 			if (sTex[i] != NULL)
 			{
@@ -220,7 +354,7 @@ void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, con
 
 		DoMerge(tex, sRect, m_merge, dRect, PMODE, EXTBUF, c);
 
-		for (size_t i = 0; i < countof(tex); i++)
+		for (size_t i = 0; i < std::size(tex); ++i)
 		{
 			if (tex[i] != sTex[i])
 			{
@@ -243,8 +377,9 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 	if (mode == 0 || mode == 2) // weave or blend
 	{
 		// weave first
+		const float offset = yoffset * static_cast<float>(field);
 
-		DoInterlace(m_merge, m_weavebob, field, false, 0);
+		DoInterlace(m_merge, m_weavebob, field, false, GSConfig.DisableInterlaceOffset ? 0.0f : offset);
 
 		if (mode == 2)
 		{
@@ -263,7 +398,8 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 	}
 	else if (mode == 1) // bob
 	{
-		DoInterlace(m_merge, m_weavebob, 3, true, yoffset * field);
+		// Field is reversed here as we are countering the bounce.
+		DoInterlace(m_merge, m_weavebob, 3, true, yoffset * (1-field));
 
 		m_current = m_weavebob;
 	}
@@ -282,7 +418,7 @@ void GSDevice::ExternalFX()
 		const GSVector4 sRect(0, 0, 1, 1);
 		const GSVector4 dRect(0, 0, s.x, s.y);
 
-		StretchRect(m_current, sRect, m_target_tmp, dRect, ShaderConvert_TRANSPARENCY_FILTER, false);
+		StretchRect(m_current, sRect, m_target_tmp, dRect, ShaderConvert::TRANSPARENCY_FILTER, false);
 		DoExternalFX(m_target_tmp, m_current);
 	}
 }
@@ -296,7 +432,7 @@ void GSDevice::FXAA()
 		const GSVector4 sRect(0, 0, 1, 1);
 		const GSVector4 dRect(0, 0, s.x, s.y);
 
-		StretchRect(m_current, sRect, m_target_tmp, dRect, ShaderConvert_TRANSPARENCY_FILTER, false);
+		StretchRect(m_current, sRect, m_target_tmp, dRect, ShaderConvert::TRANSPARENCY_FILTER, false);
 		DoFXAA(m_target_tmp, m_current);
 	}
 }
@@ -310,12 +446,19 @@ void GSDevice::ShadeBoost()
 		const GSVector4 sRect(0, 0, 1, 1);
 		const GSVector4 dRect(0, 0, s.x, s.y);
 
-		StretchRect(m_current, sRect, m_target_tmp, dRect, ShaderConvert_COPY, false);
-		DoShadeBoost(m_target_tmp, m_current);
+		// predivide to avoid the divide (multiply) in the shader
+		const float params[4] = {
+			static_cast<float>(GSConfig.ShadeBoost_Brightness) * (1.0f / 50.0f),
+			static_cast<float>(GSConfig.ShadeBoost_Contrast) * (1.0f / 50.0f),
+			static_cast<float>(GSConfig.ShadeBoost_Saturation) * (1.0f / 50.0f),
+		};
+
+		StretchRect(m_current, sRect, m_target_tmp, dRect, ShaderConvert::COPY, false);
+		DoShadeBoost(m_target_tmp, m_current, params);
 	}
 }
 
-bool GSDevice::ResizeTexture(GSTexture** t, int type, int w, int h)
+bool GSDevice::ResizeTexture(GSTexture** t, GSTexture::Type type, int w, int h, bool clear, bool prefer_reuse)
 {
 	if (t == NULL)
 	{
@@ -327,9 +470,11 @@ bool GSDevice::ResizeTexture(GSTexture** t, int type, int w, int h)
 
 	if (t2 == NULL || t2->GetWidth() != w || t2->GetHeight() != h)
 	{
+		const GSTexture::Format fmt = t2 ? t2->GetFormat() : GetDefaultTextureFormat(type);
+		const int levels = t2 ? (t2->IsMipmap() ? MipmapLevelsForSize(w, h) : 1) : 1;
 		delete t2;
 
-		t2 = FetchSurface(type, w, h, 0);
+		t2 = FetchSurface(type, w, h, levels, fmt, clear, prefer_reuse);
 
 		*t = t2;
 	}
@@ -337,20 +482,47 @@ bool GSDevice::ResizeTexture(GSTexture** t, int type, int w, int h)
 	return t2 != NULL;
 }
 
-bool GSDevice::ResizeTexture(GSTexture** t, int w, int h)
+bool GSDevice::ResizeTexture(GSTexture** t, int w, int h, bool prefer_reuse)
 {
-	return ResizeTexture(t, GSTexture::Texture, w, h);
+	return ResizeTexture(t, GSTexture::Type::Texture, w, h, false, prefer_reuse);
 }
 
 bool GSDevice::ResizeTarget(GSTexture** t, int w, int h)
 {
-	return ResizeTexture(t, GSTexture::RenderTarget, w, h);
+	return ResizeTexture(t, GSTexture::Type::RenderTarget, w, h);
 }
 
 bool GSDevice::ResizeTarget(GSTexture** t)
 {
 	GSVector2i s = m_current->GetSize();
-	return ResizeTexture(t, GSTexture::RenderTarget, s.x, s.y);
+	return ResizeTexture(t, GSTexture::Type::RenderTarget, s.x, s.y);
+}
+
+void GSDevice::SetHWDrawConfigForAlphaPass(GSHWDrawConfig::PSSelector* ps,
+	GSHWDrawConfig::ColorMaskSelector* cms,
+	GSHWDrawConfig::BlendState* bs,
+	GSHWDrawConfig::DepthStencilSelector* dss)
+{
+	// only need to compute the alpha component (allow the shader to optimize better)
+	ps->no_ablend = false;
+	ps->only_alpha = true;
+
+	// definitely don't need to compute software blend (this may get rid of some barriers)
+	ps->blend_a = ps->blend_b = ps->blend_c = ps->blend_d = 0;
+
+	// only write alpha (RGB=0,A=1)
+	cms->wrgba = (1 << 3);
+
+	// no need for hardware blending, since we're not writing RGB
+	bs->enable = false;
+
+	// if depth writes are on, we can optimize to an EQUAL test, otherwise we leave the tests alone
+	// since the alpha channel isn't blended, the last fragment wins and this'll be okay
+	if (dss->zwe)
+	{
+		dss->zwe = false;
+		dss->ztst = ZTST_GEQUAL;
+	}
 }
 
 GSAdapter::operator std::string() const
@@ -381,80 +553,89 @@ GSAdapter::GSAdapter(const DXGI_ADAPTER_DESC1& desc_dxgi)
 // TODO
 #endif
 
-HWBlend GSDevice::GetBlend(size_t index)
-{
-	HWBlend blend = m_blendMap[index];
-	blend.op  = ConvertBlendEnum(blend.op);
-	blend.src = ConvertBlendEnum(blend.src);
-	blend.dst = ConvertBlendEnum(blend.dst);
-	return blend;
-}
-
-uint16 GSDevice::GetBlendFlags(size_t index) { return m_blendMap[index].flags; }
-
 // clang-format off
 
-std::array<HWBlend, 3*3*3*3 + 1> GSDevice::m_blendMap =
+const std::array<u8, 16> GSDevice::m_replaceDualSrcBlendMap =
+{{
+	SRC_COLOR,        // SRC_COLOR
+	INV_SRC_COLOR,    // INV_SRC_COLOR
+	DST_COLOR,        // DST_COLOR
+	INV_DST_COLOR,    // INV_DST_COLOR
+	SRC_COLOR,        // SRC1_COLOR
+	INV_SRC_COLOR,    // INV_SRC1_COLOR
+	SRC_ALPHA,        // SRC_ALPHA
+	INV_SRC_ALPHA,    // INV_SRC_ALPHA
+	DST_ALPHA,        // DST_ALPHA
+	INV_DST_ALPHA,    // INV_DST_ALPHA
+	SRC_ALPHA,        // SRC1_ALPHA
+	INV_SRC_ALPHA,    // INV_SRC1_ALPHA
+	CONST_COLOR,      // CONST_COLOR
+	INV_CONST_COLOR,  // INV_CONST_COLOR
+	CONST_ONE,        // CONST_ONE
+	CONST_ZERO        // CONST_ZERO
+}};
+
+const std::array<HWBlend, 3*3*3*3> GSDevice::m_blendMap =
 {{
 	{ BLEND_NO_REC               , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 0000: (Cs - Cs)*As + Cs ==> Cs
-	{ 0                          , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 0001: (Cs - Cs)*As + Cd ==> Cd
+	{ BLEND_CD                   , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 0001: (Cs - Cs)*As + Cd ==> Cd
 	{ BLEND_NO_REC               , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 0002: (Cs - Cs)*As +  0 ==> 0
 	{ BLEND_NO_REC               , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 0010: (Cs - Cs)*Ad + Cs ==> Cs
-	{ 0                          , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 0011: (Cs - Cs)*Ad + Cd ==> Cd
+	{ BLEND_CD                   , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 0011: (Cs - Cs)*Ad + Cd ==> Cd
 	{ BLEND_NO_REC               , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 0012: (Cs - Cs)*Ad +  0 ==> 0
 	{ BLEND_NO_REC               , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 0020: (Cs - Cs)*F  + Cs ==> Cs
-	{ 0                          , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 0021: (Cs - Cs)*F  + Cd ==> Cd
+	{ BLEND_CD                   , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 0021: (Cs - Cs)*F  + Cd ==> Cd
 	{ BLEND_NO_REC               , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 0022: (Cs - Cs)*F  +  0 ==> 0
-	{ BLEND_A_MAX                , OP_SUBTRACT     , CONST_ONE       , SRC1_ALPHA}      , //*0100: (Cs - Cd)*As + Cs ==> Cs*(As + 1) - Cd*As
-	{ 0                          , OP_ADD          , SRC1_ALPHA      , INV_SRC1_ALPHA}  , // 0101: (Cs - Cd)*As + Cd ==> Cs*As + Cd*(1 - As)
-	{ 0                          , OP_SUBTRACT     , SRC1_ALPHA      , SRC1_ALPHA}      , // 0102: (Cs - Cd)*As +  0 ==> Cs*As - Cd*As
+	{ BLEND_A_MAX | BLEND_MIX2   , OP_SUBTRACT     , CONST_ONE       , SRC1_ALPHA}      , //*0100: (Cs - Cd)*As + Cs ==> Cs*(As + 1) - Cd*As
+	{ BLEND_MIX1                 , OP_ADD          , SRC1_ALPHA      , INV_SRC1_ALPHA}  , // 0101: (Cs - Cd)*As + Cd ==> Cs*As + Cd*(1 - As)
+	{ BLEND_MIX1                 , OP_SUBTRACT     , SRC1_ALPHA      , SRC1_ALPHA}      , // 0102: (Cs - Cd)*As +  0 ==> Cs*As - Cd*As
 	{ BLEND_A_MAX                , OP_SUBTRACT     , CONST_ONE       , DST_ALPHA}       , //*0110: (Cs - Cd)*Ad + Cs ==> Cs*(Ad + 1) - Cd*Ad
 	{ 0                          , OP_ADD          , DST_ALPHA       , INV_DST_ALPHA}   , // 0111: (Cs - Cd)*Ad + Cd ==> Cs*Ad + Cd*(1 - Ad)
 	{ 0                          , OP_SUBTRACT     , DST_ALPHA       , DST_ALPHA}       , // 0112: (Cs - Cd)*Ad +  0 ==> Cs*Ad - Cd*Ad
-	{ BLEND_A_MAX                , OP_SUBTRACT     , CONST_ONE       , CONST_COLOR}     , //*0120: (Cs - Cd)*F  + Cs ==> Cs*(F + 1) - Cd*F
-	{ 0                          , OP_ADD          , CONST_COLOR     , INV_CONST_COLOR} , // 0121: (Cs - Cd)*F  + Cd ==> Cs*F + Cd*(1 - F)
-	{ 0                          , OP_SUBTRACT     , CONST_COLOR     , CONST_COLOR}     , // 0122: (Cs - Cd)*F  +  0 ==> Cs*F - Cd*F
+	{ BLEND_A_MAX | BLEND_MIX2   , OP_SUBTRACT     , CONST_ONE       , CONST_COLOR}     , //*0120: (Cs - Cd)*F  + Cs ==> Cs*(F + 1) - Cd*F
+	{ BLEND_MIX1                 , OP_ADD          , CONST_COLOR     , INV_CONST_COLOR} , // 0121: (Cs - Cd)*F  + Cd ==> Cs*F + Cd*(1 - F)
+	{ BLEND_MIX1                 , OP_SUBTRACT     , CONST_COLOR     , CONST_COLOR}     , // 0122: (Cs - Cd)*F  +  0 ==> Cs*F - Cd*F
 	{ BLEND_NO_REC | BLEND_A_MAX , OP_ADD          , CONST_ONE       , CONST_ZERO}      , //*0200: (Cs -  0)*As + Cs ==> Cs*(As + 1)
 	{ BLEND_ACCU                 , OP_ADD          , SRC1_ALPHA      , CONST_ONE}       , //?0201: (Cs -  0)*As + Cd ==> Cs*As + Cd
 	{ BLEND_NO_REC               , OP_ADD          , SRC1_ALPHA      , CONST_ZERO}      , // 0202: (Cs -  0)*As +  0 ==> Cs*As
 	{ BLEND_A_MAX                , OP_ADD          , CONST_ONE       , CONST_ZERO}      , //*0210: (Cs -  0)*Ad + Cs ==> Cs*(Ad + 1)
-	{ 0                          , OP_ADD          , DST_ALPHA       , CONST_ONE}       , // 0211: (Cs -  0)*Ad + Cd ==> Cs*Ad + Cd
-	{ 0                          , OP_ADD          , DST_ALPHA       , CONST_ZERO}      , // 0212: (Cs -  0)*Ad +  0 ==> Cs*Ad
+	{ BLEND_C_CLR3               , OP_ADD          , DST_ALPHA       , CONST_ONE}       , // 0211: (Cs -  0)*Ad + Cd ==> Cs*Ad + Cd
+	{ BLEND_C_CLR3               , OP_ADD          , DST_ALPHA       , CONST_ZERO}      , // 0212: (Cs -  0)*Ad +  0 ==> Cs*Ad
 	{ BLEND_NO_REC | BLEND_A_MAX , OP_ADD          , CONST_ONE       , CONST_ZERO}      , //*0220: (Cs -  0)*F  + Cs ==> Cs*(F + 1)
 	{ BLEND_ACCU                 , OP_ADD          , CONST_COLOR     , CONST_ONE}       , //?0221: (Cs -  0)*F  + Cd ==> Cs*F + Cd
 	{ BLEND_NO_REC               , OP_ADD          , CONST_COLOR     , CONST_ZERO}      , // 0222: (Cs -  0)*F  +  0 ==> Cs*F
-	{ 0                          , OP_ADD          , INV_SRC1_ALPHA  , SRC1_ALPHA}      , // 1000: (Cd - Cs)*As + Cs ==> Cd*As + Cs*(1 - As)
-	{ BLEND_A_MAX                , OP_REV_SUBTRACT , SRC1_ALPHA      , CONST_ONE}       , //*1001: (Cd - Cs)*As + Cd ==> Cd*(As + 1) - Cs*As
-	{ 0                          , OP_REV_SUBTRACT , SRC1_ALPHA      , SRC1_ALPHA}      , // 1002: (Cd - Cs)*As +  0 ==> Cd*As - Cs*As
+	{ BLEND_MIX3                 , OP_ADD          , INV_SRC1_ALPHA  , SRC1_ALPHA}      , // 1000: (Cd - Cs)*As + Cs ==> Cd*As + Cs*(1 - As)
+	{ BLEND_A_MAX | BLEND_MIX1   , OP_REV_SUBTRACT , SRC1_ALPHA      , CONST_ONE}       , //*1001: (Cd - Cs)*As + Cd ==> Cd*(As + 1) - Cs*As
+	{ BLEND_MIX1                 , OP_REV_SUBTRACT , SRC1_ALPHA      , SRC1_ALPHA}      , // 1002: (Cd - Cs)*As +  0 ==> Cd*As - Cs*As
 	{ 0                          , OP_ADD          , INV_DST_ALPHA   , DST_ALPHA}       , // 1010: (Cd - Cs)*Ad + Cs ==> Cd*Ad + Cs*(1 - Ad)
 	{ BLEND_A_MAX                , OP_REV_SUBTRACT , DST_ALPHA       , CONST_ONE}       , //*1011: (Cd - Cs)*Ad + Cd ==> Cd*(Ad + 1) - Cs*Ad
 	{ 0                          , OP_REV_SUBTRACT , DST_ALPHA       , DST_ALPHA}       , // 1012: (Cd - Cs)*Ad +  0 ==> Cd*Ad - Cs*Ad
-	{ 0                          , OP_ADD          , INV_CONST_COLOR , CONST_COLOR}     , // 1020: (Cd - Cs)*F  + Cs ==> Cd*F + Cs*(1 - F)
-	{ BLEND_A_MAX                , OP_REV_SUBTRACT , CONST_COLOR     , CONST_ONE}       , //*1021: (Cd - Cs)*F  + Cd ==> Cd*(F + 1) - Cs*F
-	{ 0                          , OP_REV_SUBTRACT , CONST_COLOR     , CONST_COLOR}     , // 1022: (Cd - Cs)*F  +  0 ==> Cd*F - Cs*F
+	{ BLEND_MIX3                 , OP_ADD          , INV_CONST_COLOR , CONST_COLOR}     , // 1020: (Cd - Cs)*F  + Cs ==> Cd*F + Cs*(1 - F)
+	{ BLEND_A_MAX | BLEND_MIX1   , OP_REV_SUBTRACT , CONST_COLOR     , CONST_ONE}       , //*1021: (Cd - Cs)*F  + Cd ==> Cd*(F + 1) - Cs*F
+	{ BLEND_MIX1                 , OP_REV_SUBTRACT , CONST_COLOR     , CONST_COLOR}     , // 1022: (Cd - Cs)*F  +  0 ==> Cd*F - Cs*F
 	{ BLEND_NO_REC               , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 1100: (Cd - Cd)*As + Cs ==> Cs
-	{ 0                          , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 1101: (Cd - Cd)*As + Cd ==> Cd
+	{ BLEND_CD                   , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 1101: (Cd - Cd)*As + Cd ==> Cd
 	{ BLEND_NO_REC               , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 1102: (Cd - Cd)*As +  0 ==> 0
 	{ BLEND_NO_REC               , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 1110: (Cd - Cd)*Ad + Cs ==> Cs
-	{ 0                          , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 1111: (Cd - Cd)*Ad + Cd ==> Cd
+	{ BLEND_CD                   , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 1111: (Cd - Cd)*Ad + Cd ==> Cd
 	{ BLEND_NO_REC               , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 1112: (Cd - Cd)*Ad +  0 ==> 0
 	{ BLEND_NO_REC               , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 1120: (Cd - Cd)*F  + Cs ==> Cs
-	{ 0                          , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 1121: (Cd - Cd)*F  + Cd ==> Cd
+	{ BLEND_CD                   , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 1121: (Cd - Cd)*F  + Cd ==> Cd
 	{ BLEND_NO_REC               , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 1122: (Cd - Cd)*F  +  0 ==> 0
 	{ 0                          , OP_ADD          , CONST_ONE       , SRC1_ALPHA}      , // 1200: (Cd -  0)*As + Cs ==> Cs + Cd*As
-	{ BLEND_C_CLR                , OP_ADD          , DST_COLOR       , SRC1_ALPHA}      , //#1201: (Cd -  0)*As + Cd ==> Cd*(1 + As) // ffxii main menu background
-	{ 0                          , OP_ADD          , CONST_ZERO      , SRC1_ALPHA}      , // 1202: (Cd -  0)*As +  0 ==> Cd*As
+	{ BLEND_C_CLR1               , OP_ADD          , DST_COLOR       , SRC1_ALPHA}      , //#1201: (Cd -  0)*As + Cd ==> Cd*(1 + As)
+	{ BLEND_C_CLR2_AS            , OP_ADD          , DST_COLOR       , SRC1_ALPHA}      , // 1202: (Cd -  0)*As +  0 ==> Cd*As
 	{ 0                          , OP_ADD          , CONST_ONE       , DST_ALPHA}       , // 1210: (Cd -  0)*Ad + Cs ==> Cs + Cd*Ad
-	{ BLEND_C_CLR                , OP_ADD          , DST_COLOR       , DST_ALPHA}       , //#1211: (Cd -  0)*Ad + Cd ==> Cd*(1 + Ad)
+	{ BLEND_C_CLR1               , OP_ADD          , DST_COLOR       , DST_ALPHA}       , //#1211: (Cd -  0)*Ad + Cd ==> Cd*(1 + Ad)
 	{ 0                          , OP_ADD          , CONST_ZERO      , DST_ALPHA}       , // 1212: (Cd -  0)*Ad +  0 ==> Cd*Ad
 	{ 0                          , OP_ADD          , CONST_ONE       , CONST_COLOR}     , // 1220: (Cd -  0)*F  + Cs ==> Cs + Cd*F
-	{ BLEND_C_CLR                , OP_ADD          , DST_COLOR       , CONST_COLOR}     , //#1221: (Cd -  0)*F  + Cd ==> Cd*(1 + F)
-	{ 0                          , OP_ADD          , CONST_ZERO      , CONST_COLOR}     , // 1222: (Cd -  0)*F  +  0 ==> Cd*F
+	{ BLEND_C_CLR1               , OP_ADD          , DST_COLOR       , CONST_COLOR}     , //#1221: (Cd -  0)*F  + Cd ==> Cd*(1 + F)
+	{ BLEND_C_CLR2_AF            , OP_ADD          , DST_COLOR       , CONST_COLOR}     , // 1222: (Cd -  0)*F  +  0 ==> Cd*F
 	{ BLEND_NO_REC               , OP_ADD          , INV_SRC1_ALPHA  , CONST_ZERO}      , // 2000: (0  - Cs)*As + Cs ==> Cs*(1 - As)
 	{ BLEND_ACCU                 , OP_REV_SUBTRACT , SRC1_ALPHA      , CONST_ONE}       , //?2001: (0  - Cs)*As + Cd ==> Cd - Cs*As
 	{ BLEND_NO_REC               , OP_REV_SUBTRACT , SRC1_ALPHA      , CONST_ZERO}      , // 2002: (0  - Cs)*As +  0 ==> 0 - Cs*As
 	{ 0                          , OP_ADD          , INV_DST_ALPHA	 , CONST_ZERO}      , // 2010: (0  - Cs)*Ad + Cs ==> Cs*(1 - Ad)
-	{ 0                          , OP_REV_SUBTRACT , DST_ALPHA       , CONST_ONE}       , // 2011: (0  - Cs)*Ad + Cd ==> Cd - Cs*Ad
+	{ BLEND_C_CLR3               , OP_REV_SUBTRACT , DST_ALPHA       , CONST_ONE}       , // 2011: (0  - Cs)*Ad + Cd ==> Cd - Cs*Ad
 	{ 0                          , OP_REV_SUBTRACT , DST_ALPHA       , CONST_ZERO}      , // 2012: (0  - Cs)*Ad +  0 ==> 0 - Cs*Ad
 	{ BLEND_NO_REC               , OP_ADD          , INV_CONST_COLOR , CONST_ZERO}      , // 2020: (0  - Cs)*F  + Cs ==> Cs*(1 - F)
 	{ BLEND_ACCU                 , OP_REV_SUBTRACT , CONST_COLOR     , CONST_ONE}       , //?2021: (0  - Cs)*F  + Cd ==> Cd - Cs*F
@@ -469,13 +650,12 @@ std::array<HWBlend, 3*3*3*3 + 1> GSDevice::m_blendMap =
 	{ 0                          , OP_ADD          , CONST_ZERO      , INV_CONST_COLOR} , // 2121: (0  - Cd)*F  + Cd ==> Cd*(1 - F)
 	{ 0                          , OP_SUBTRACT     , CONST_ONE       , CONST_COLOR}     , // 2122: (0  - Cd)*F  +  0 ==> 0 - Cd*F
 	{ BLEND_NO_REC               , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 2200: (0  -  0)*As + Cs ==> Cs
-	{ 0                          , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 2201: (0  -  0)*As + Cd ==> Cd
+	{ BLEND_CD                   , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 2201: (0  -  0)*As + Cd ==> Cd
 	{ BLEND_NO_REC               , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 2202: (0  -  0)*As +  0 ==> 0
 	{ BLEND_NO_REC               , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 2210: (0  -  0)*Ad + Cs ==> Cs
-	{ 0                          , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 2211: (0  -  0)*Ad + Cd ==> Cd
+	{ BLEND_CD                   , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 2211: (0  -  0)*Ad + Cd ==> Cd
 	{ BLEND_NO_REC               , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 2212: (0  -  0)*Ad +  0 ==> 0
 	{ BLEND_NO_REC               , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 2220: (0  -  0)*F  + Cs ==> Cs
-	{ 0                          , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 2221: (0  -  0)*F  + Cd ==> Cd
+	{ BLEND_CD                   , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 2221: (0  -  0)*F  + Cd ==> Cd
 	{ BLEND_NO_REC               , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 2222: (0  -  0)*F  +  0 ==> 0
-	{ 0                          , OP_ADD          , SRC_ALPHA       , INV_SRC_ALPHA}   , // extra for merge operation
 }};

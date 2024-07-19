@@ -105,7 +105,7 @@ private:
 
 			int packets = framesPerBuffer / SndOutPacketSize;
 
-			for (int p = 0; p < packets; p++, p1 += SndOutPacketSize)
+			for (int p = 0; p < packets; ++p, p1 += SndOutPacketSize)
 				SndBuffer::ReadSamples(p1);
 
 			(*written) += packets * SndOutPacketSize;
@@ -151,7 +151,7 @@ public:
 		int deviceIndex = -1;
 
 		fprintf(stderr, "* SPU2: Enumerating PortAudio devices:\n");
-		for (int i = 0, j = 0; i < Pa_GetDeviceCount(); i++)
+		for (int i = 0, j = 0; i < Pa_GetDeviceCount(); ++i)
 		{
 			const PaDeviceInfo* info = Pa_GetDeviceInfo(i);
 
@@ -178,7 +178,7 @@ public:
 
 		if (deviceIndex < 0 && m_ApiId >= 0)
 		{
-			for (int i = 0; i < Pa_GetHostApiCount(); i++)
+			for (int i = 0; i < Pa_GetHostApiCount(); ++i)
 			{
 				const PaHostApiInfo* apiinfo = Pa_GetHostApiInfo(i);
 				if (apiinfo->type == m_ApiId)
@@ -396,7 +396,7 @@ private:
 				SendMessage(GetDlgItem(hWnd, IDC_PA_HOSTAPI), CB_RESETCONTENT, 0, 0);
 				SendMessageA(GetDlgItem(hWnd, IDC_PA_HOSTAPI), CB_ADDSTRING, 0, (LPARAM) "Unspecified");
 				int idx = 0;
-				for (int i = 0; i < Pa_GetHostApiCount(); i++)
+				for (int i = 0; i < Pa_GetHostApiCount(); ++i)
 				{
 					const PaHostApiInfo* apiinfo = Pa_GetHostApiInfo(i);
 					if (apiinfo->deviceCount > 0)
@@ -419,7 +419,7 @@ private:
 					SendMessage(GetDlgItem(hWnd, IDC_PA_DEVICE), CB_SETITEMDATA, 0, 0);
 					int _idx = 0;
 					int i = 1;
-					for (int j = 0; j < Pa_GetDeviceCount(); j++)
+					for (int j = 0; j < Pa_GetDeviceCount(); ++j)
 					{
 						const PaDeviceInfo* info = Pa_GetDeviceInfo(j);
 						if (info->hostApi == api_idx && info->maxOutputChannels > 0)
@@ -501,7 +501,7 @@ private:
 							SendMessage(GetDlgItem(hWnd, IDC_PA_DEVICE), CB_SETITEMDATA, 0, 0);
 							int idx = 0;
 							int i = 1;
-							for (int j = 0; j < Pa_GetDeviceCount(); j++)
+							for (int j = 0; j < Pa_GetDeviceCount(); ++j)
 							{
 								const PaDeviceInfo* info = Pa_GetDeviceInfo(j);
 								if (info->hostApi == api_idx && info->maxOutputChannels > 0)

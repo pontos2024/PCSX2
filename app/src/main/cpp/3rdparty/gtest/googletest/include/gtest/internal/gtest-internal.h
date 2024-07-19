@@ -1030,7 +1030,7 @@ inline bool ArrayEq(const T(&lhs)[N], const U(&rhs)[N]) {
 // lead to different copies of the template code.
 template <typename T, typename U>
 bool ArrayEq(const T* lhs, size_t size, const U* rhs) {
-  for (size_t i = 0; i != size; i++) {
+  for (size_t i = 0; i != size; ++i) {
     if (!internal::ArrayEq(lhs[i], rhs[i]))
       return false;
   }
@@ -1070,7 +1070,7 @@ inline void CopyArray(const T(&from)[N], U(*to)[N]) {
 // would lead to different copies of the template code.
 template <typename T, typename U>
 void CopyArray(const T* from, size_t size, U* to) {
-  for (size_t i = 0; i != size; i++) {
+  for (size_t i = 0; i != size; ++i) {
     internal::CopyArray(from[i], to + i);
   }
 }

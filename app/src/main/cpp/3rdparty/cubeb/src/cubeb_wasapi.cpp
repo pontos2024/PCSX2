@@ -1513,7 +1513,7 @@ stream_set_volume(cubeb_stream * stm, float volume)
   }
 
   float volumes[10];
-  for (uint32_t i = 0; i < channels; i++) {
+  for (uint32_t i = 0; i < channels; ++i) {
     volumes[i] = volume;
   }
 
@@ -2210,7 +2210,7 @@ void wasapi_find_matching_output_device(cubeb_stream * stm) {
 
   // Find the input device, and then find the output device with the same group
   // id and the same rate.
-  for (uint32_t i = 0; i < collection.count; i++) {
+  for (uint32_t i = 0; i < collection.count; ++i) {
     cubeb_device_info dev = collection.device[i];
     if (dev.devid == input_device_id) {
       input_device = &dev;
@@ -2218,7 +2218,7 @@ void wasapi_find_matching_output_device(cubeb_stream * stm) {
     }
   }
 
-  for (uint32_t i = 0; i < collection.count; i++) {
+  for (uint32_t i = 0; i < collection.count; ++i) {
     cubeb_device_info dev = collection.device[i];
     if (dev.type == CUBEB_DEVICE_TYPE_OUTPUT && dev.group_id && input_device &&
         !strcmp(dev.group_id, input_device->group_id) &&
@@ -3145,7 +3145,7 @@ wasapi_enumerate_devices(cubeb * context, cubeb_device_type type,
 
   PodZero(devices, cc);
   out->count = 0;
-  for (i = 0; i < cc; i++) {
+  for (i = 0; i < cc; ++i) {
     com_ptr<IMMDevice> dev;
     hr = collection->Item(i, dev.receive());
     if (FAILED(hr)) {

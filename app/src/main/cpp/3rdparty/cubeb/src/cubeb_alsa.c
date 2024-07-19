@@ -441,12 +441,12 @@ alsa_process_stream(cubeb_stream * stm)
 
     if (stm->params.format == CUBEB_SAMPLE_FLOAT32NE) {
       float * b = (float *) stm->buffer;
-      for (uint32_t i = 0; i < avail * stm->params.channels; i++) {
+      for (uint32_t i = 0; i < avail * stm->params.channels; ++i) {
         b[i] *= stm->volume;
       }
     } else {
       short * b = (short *) stm->buffer;
-      for (uint32_t i = 0; i < avail * stm->params.channels; i++) {
+      for (uint32_t i = 0; i < avail * stm->params.channels; ++i) {
         b[i] *= stm->volume;
       }
     }

@@ -14,8 +14,8 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GS.h"
 #include "GSVector.h"
+#include <cfloat>
 
 CONSTINIT const GSVector4i GSVector4i::m_xff[17] =
 {
@@ -67,6 +67,7 @@ CONSTINIT const GSVector4 GSVector4::m_two = cxpr(2.0f);
 CONSTINIT const GSVector4 GSVector4::m_four = cxpr(4.0f);
 CONSTINIT const GSVector4 GSVector4::m_x4b000000 = cxpr(0x4b000000);
 CONSTINIT const GSVector4 GSVector4::m_x4f800000 = cxpr(0x4f800000);
+CONSTINIT const GSVector4 GSVector4::m_xc1e00000000fffff = cxpr64(0xc1e00000000fffffull);
 CONSTINIT const GSVector4 GSVector4::m_max = cxpr(FLT_MAX);
 CONSTINIT const GSVector4 GSVector4::m_min = cxpr(FLT_MIN);
 
@@ -78,6 +79,7 @@ CONSTINIT const GSVector8 GSVector8::m_x7fffffff = cxpr(0x7fffffff);
 CONSTINIT const GSVector8 GSVector8::m_x80000000 = cxpr(0x80000000);
 CONSTINIT const GSVector8 GSVector8::m_x4b000000 = cxpr(0x4b000000);
 CONSTINIT const GSVector8 GSVector8::m_x4f800000 = cxpr(0x4f800000);
+CONSTINIT const GSVector8 GSVector8::m_xc1e00000000fffff = cxpr64(0xc1e00000000fffffull);
 CONSTINIT const GSVector8 GSVector8::m_max = cxpr(FLT_MAX);
 CONSTINIT const GSVector8 GSVector8::m_min = cxpr(FLT_MAX);
 
@@ -201,7 +203,7 @@ GSVector4i GSVector4i::fit(int preset) const
 {
 	GSVector4i r;
 
-	if (preset > 0 && preset < (int)countof(s_ar))
+	if (preset > 0 && preset < (int)std::size(s_ar))
 	{
 		r = fit(s_ar[preset][0], s_ar[preset][1]);
 	}

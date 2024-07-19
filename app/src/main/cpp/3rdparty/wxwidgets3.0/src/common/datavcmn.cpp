@@ -98,7 +98,7 @@ bool wxDataViewModelNotifier::ItemsAdded( const wxDataViewItem &parent, const wx
 {
     size_t count = items.GetCount();
     size_t i;
-    for (i = 0; i < count; i++)
+    for (i = 0; i < count; ++i)
         if (!ItemAdded( parent, items[i] )) return false;
 
     return true;
@@ -108,7 +108,7 @@ bool wxDataViewModelNotifier::ItemsDeleted( const wxDataViewItem &parent, const 
 {
     size_t count = items.GetCount();
     size_t i;
-    for (i = 0; i < count; i++)
+    for (i = 0; i < count; ++i)
         if (!ItemDeleted( parent, items[i] )) return false;
 
     return true;
@@ -118,7 +118,7 @@ bool wxDataViewModelNotifier::ItemsChanged( const wxDataViewItemArray &items )
 {
     size_t count = items.GetCount();
     size_t i;
-    for (i = 0; i < count; i++)
+    for (i = 0; i < count; ++i)
         if (!ItemChanged( items[i] )) return false;
 
     return true;
@@ -398,7 +398,7 @@ wxDataViewIndexListModel::wxDataViewIndexListModel( unsigned int initial_size )
 
     // build initial index
     unsigned int i;
-    for (i = 1; i < initial_size+1; i++)
+    for (i = 1; i < initial_size+1; ++i)
             m_hash.Add( wxDataViewItem(wxUIntToPtr(i)) );
     m_nextFreeID = initial_size + 1;
 }
@@ -414,7 +414,7 @@ void wxDataViewIndexListModel::Reset( unsigned int new_size )
 
     // build initial index
     unsigned int i;
-    for (i = 1; i < new_size+1; i++)
+    for (i = 1; i < new_size+1; ++i)
             m_hash.Add( wxDataViewItem(wxUIntToPtr(i)) );
 
     m_nextFreeID = new_size + 1;
@@ -472,7 +472,7 @@ void wxDataViewIndexListModel::RowsDeleted( const wxArrayInt &rows )
 
     wxDataViewItemArray array;
     unsigned int i;
-    for (i = 0; i < rows.GetCount(); i++)
+    for (i = 0; i < rows.GetCount(); ++i)
     {
             wxDataViewItem item( m_hash[rows[i]] );
             array.Add( item );
@@ -480,7 +480,7 @@ void wxDataViewIndexListModel::RowsDeleted( const wxArrayInt &rows )
 
     wxArrayInt sorted = rows;
     sorted.Sort( my_sort );
-    for (i = 0; i < sorted.GetCount(); i++)
+    for (i = 0; i < sorted.GetCount(); ++i)
            m_hash.RemoveAt( sorted[i] );
 
     /* wxDataViewModel:: */ ItemsDeleted( wxDataViewItem(0), array );
@@ -578,7 +578,7 @@ void wxDataViewVirtualListModel::RowsDeleted( const wxArrayInt &rows )
 
     wxDataViewItemArray array;
     unsigned int i;
-    for (i = 0; i < sorted.GetCount(); i++)
+    for (i = 0; i < sorted.GetCount(); ++i)
     {
         wxDataViewItem item( wxUIntToPtr(sorted[i]+1) );
         array.Add( item );

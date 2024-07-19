@@ -43,7 +43,7 @@ static void MultiPause()
 __noinline static void UpdatePauseTime()
 {
 	u64 start = GetCPUTicks();
-	for (int i = 0; i < 64; i++)
+	for (int i = 0; i < 64; ++i)
 	{
 		MultiPause();
 	}

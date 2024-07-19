@@ -195,3 +195,50 @@ static const int __pagesize = PCSX2_PAGESIZE;
 #define __ri __releaseinline
 #define __fi __forceinline
 #define __fc __fastcall
+
+typedef unsigned char uint8;
+typedef signed char int8;
+typedef unsigned short uint16;
+typedef signed short int16;
+typedef unsigned int uint32;
+typedef signed int int32;
+typedef unsigned long long uint64;
+typedef signed long long int64;
+typedef signed long long sint64;
+
+// Makes sure that if anyone includes xbyak, it doesn't do anything bad
+#define XBYAK_ENABLE_OMITTED_OPERAND
+
+#ifdef __x86_64__
+#define _M_AMD64
+#endif
+
+#ifndef RESTRICT
+#ifdef __INTEL_COMPILER
+#define RESTRICT restrict
+#elif defined(_MSC_VER)
+#define RESTRICT __restrict
+#elif defined(__GNUC__)
+#define RESTRICT __restrict__
+#else
+#define RESTRICT
+#endif
+#endif
+
+#ifndef __has_attribute
+#define __has_attribute(x) 0
+#endif
+
+#ifndef __has_builtin
+#define __has_builtin(x) 0
+#endif
+
+#ifdef __cpp_constinit
+#define CONSTINIT constinit
+#elif __has_attribute(require_constant_initialization)
+#define CONSTINIT __attribute__((require_constant_initialization))
+#else
+#define CONSTINIT
+#endif
+
+#define ASSERT assert

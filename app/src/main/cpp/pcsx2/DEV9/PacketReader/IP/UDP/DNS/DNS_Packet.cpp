@@ -128,22 +128,22 @@ namespace PacketReader::IP::UDP::DNS
 		NetLib::ReadUInt16(buffer, &offset, &auCount);
 		NetLib::ReadUInt16(buffer, &offset, &adCount);
 		//Bits 96+   //Bytes 8+
-		for (int i = 0; i < qCount; i++)
+		for (int i = 0; i < qCount; ++i)
 		{
 			DNS_QuestionEntry entry(buffer, &offset);
 			questions.push_back(entry);
 		}
-		for (int i = 0; i < aCount; i++)
+		for (int i = 0; i < aCount; ++i)
 		{
 			DNS_ResponseEntry entry(buffer, &offset);
 			answers.push_back(entry);
 		}
-		for (int i = 0; i < auCount; i++)
+		for (int i = 0; i < auCount; ++i)
 		{
 			DNS_ResponseEntry entry(buffer, &offset);
 			authorities.push_back(entry);
 		}
-		for (int i = 0; i < adCount; i++)
+		for (int i = 0; i < adCount; ++i)
 		{
 			DNS_ResponseEntry entry(buffer, &offset);
 			additional.push_back(entry);
@@ -154,17 +154,17 @@ namespace PacketReader::IP::UDP::DNS
 	{
 		int length = 2 * 2 + 4 * 2;
 
-		for (size_t i = 0; i < questions.size(); i++)
-			length += questions[i].GetLength();
+		for (auto & question : questions)
+			length += question.GetLength();
 
-		for (size_t i = 0; i < answers.size(); i++)
-			length += answers[i].GetLength();
+		for (auto & answer : answers)
+			length += answer.GetLength();
 
-		for (size_t i = 0; i < authorities.size(); i++)
-			length += authorities[i].GetLength();
+		for (auto & authoritie : authorities)
+			length += authoritie.GetLength();
 
-		for (size_t i = 0; i < additional.size(); i++)
-			length += additional[i].GetLength();
+		for (auto & i : additional)
+			length += i.GetLength();
 
 		return length;
 	}
@@ -179,16 +179,16 @@ namespace PacketReader::IP::UDP::DNS
 		NetLib::WriteUInt16(buffer, offset, authorities.size());
 		NetLib::WriteUInt16(buffer, offset, additional.size());
 
-		for (size_t i = 0; i < questions.size(); i++)
-			questions[i].WriteBytes(buffer, offset);
+		for (auto & question : questions)
+			question.WriteBytes(buffer, offset);
 
-		for (size_t i = 0; i < answers.size(); i++)
-			answers[i].WriteBytes(buffer, offset);
+		for (auto & answer : answers)
+			answer.WriteBytes(buffer, offset);
 
-		for (size_t i = 0; i < authorities.size(); i++)
-			authorities[i].WriteBytes(buffer, offset);
+		for (auto & authoritie : authorities)
+			authoritie.WriteBytes(buffer, offset);
 
-		for (size_t i = 0; i < additional.size(); i++)
-			additional[i].WriteBytes(buffer, offset);
+		for (auto & i : additional)
+			i.WriteBytes(buffer, offset);
 	}
 } // namespace PacketReader::IP::UDP::DNS

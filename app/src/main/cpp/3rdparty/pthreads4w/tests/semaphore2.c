@@ -95,7 +95,7 @@ main()
 			assert(value == i);
 		}
 
-	for (i = 1; i <= MAX_COUNT; i++)
+	for (i = 1; i <= MAX_COUNT; ++i)
 		{
 			assert(sem_post(&s) == 0);
 			assert(sem_getvalue(&s, &value) == 0);

@@ -316,7 +316,7 @@ struct TSymbolValidater
             preStage = currentStage;
             currentStage = stage;
             nextStage = EShLangCount;
-            for (int i = currentStage + 1; i < EShLangCount; i++) {
+            for (int i = currentStage + 1; i < EShLangCount; ++i) {
                 if (inVarMaps[i] != nullptr)
                     nextStage = static_cast<EShLanguage>(i);
             }
@@ -359,7 +359,7 @@ struct TSymbolValidater
             }
         } else if (base->getQualifier().isUniformOrBuffer() && ! base->getQualifier().isPushConstant()) {
             // validate uniform type;
-            for (int i = 0; i < EShLangCount; i++) {
+            for (int i = 0; i < EShLangCount; ++i) {
                 if (i != currentStage && outVarMaps[i] != nullptr) {
                     auto ent2 = uniformVarMap[i]->find(name);
                     if (ent2 != uniformVarMap[i]->end()) {
@@ -435,7 +435,7 @@ int TDefaultIoResolverBase::reserveSlot(int set, int slot, int size) {
     TSlotSet::iterator at = findSlot(set, slot);
     // tolerate aliasing, by not double-recording aliases
     // (policy about appropriateness of the alias is higher up)
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < size; ++i) {
         if (at == slots[set].end() || *at != slot + i)
             at = slots[set].insert(at, slot + i);
         ++at;

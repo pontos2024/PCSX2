@@ -201,7 +201,7 @@ bool wxXPMHandler::SaveFile(wxImage * image,
         symbols[index] = symbols_data + index * (chars_per_pixel+1);
         char *sym = symbols[index];
 
-        for (j = 0; j < chars_per_pixel; j++)
+        for (j = 0; j < chars_per_pixel; ++j)
         {
             sym[j] = Cixel[index % MaxCixels];
             index /= MaxCixels;
@@ -227,7 +227,7 @@ bool wxXPMHandler::SaveFile(wxImage * image,
     stream.Write("/* pixels */\n", 13);
 
     unsigned char *data = image->GetData();
-    for (j = 0; j < image->GetHeight(); j++)
+    for (j = 0; j < image->GetHeight(); ++j)
     {
         char tmp_c;
         tmp_c = '\"'; stream.Write(&tmp_c, 1);

@@ -97,7 +97,7 @@ main()
 //	printf("Value = %d\n", value);	fflush(stdout);
 	assert(value == 0);
 
-	for (i = 1; i <= MAX_COUNT; i++)
+	for (i = 1; i <= MAX_COUNT; ++i)
 		{
 			assert(pthread_create(&t[i], NULL, thr, NULL) == 0);
 			do {

@@ -1773,7 +1773,7 @@ CDispParams::CDispParams(UINT nArgs, __in_ecount(nArgs) VARIANT* pArgs, __inout_
             return;
         }
 
-	for (UINT i = 0; i < cArgs; i++) {
+	for (UINT i = 0; i < cArgs; ++i) {
 
             //  Why aren't we using VariantCopy?
 
@@ -1869,7 +1869,7 @@ CDispParams::CDispParams(UINT nArgs, __in_ecount(nArgs) VARIANT* pArgs, __inout_
 
 CDispParams::~CDispParams()
 {
-    for (UINT i = 0; i < cArgs; i++) {
+    for (UINT i = 0; i < cArgs; ++i) {
 	switch(rgvarg[i].vt) {
         case VT_BSTR:
             //  Explicitly cast BSTR to PVOID to tell code scanning tools we really mean to test the pointer

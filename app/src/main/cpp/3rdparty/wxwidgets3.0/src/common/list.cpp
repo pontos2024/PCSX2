@@ -669,7 +669,7 @@ wxChar **wxStringList::ListToArray(bool new_copies) const
 {
     wxChar **string_array = new wxChar *[GetCount()];
     wxStringListNode *node = GetFirst();
-    for (size_t i = 0; i < GetCount(); i++)
+    for (size_t i = 0; i < GetCount(); ++i)
     {
         wxChar *s = node->GetData();
         if ( new_copies )

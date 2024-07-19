@@ -282,7 +282,7 @@ void NetAdapter::SetMACAddress(u8* mac)
 	else
 		memcpy(ps2MAC, mac, 6);
 
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < 3; ++i)
 		dev9.eeprom[i] = ((u16*)ps2MAC)[i];
 
 	//The checksum seems to be all the values of the mac added up in 16bit chunks

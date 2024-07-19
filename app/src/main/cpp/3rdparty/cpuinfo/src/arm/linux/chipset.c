@@ -150,7 +150,7 @@ static bool match_msm_apq(
 
 	/* Validate and parse 4-digit model number */
 	uint32_t model = 0;
-	for (uint32_t i = 0; i < 4; i++) {
+	for (uint32_t i = 0; i < 4; ++i) {
 		const uint32_t digit = (uint32_t) (uint8_t) (*pos++) - '0';
 		if (digit >= 10) {
 			/* Not really a digit */
@@ -167,7 +167,7 @@ static bool match_msm_apq(
 	};
 
 	/* Parse as many suffix characters as match the pattern [A-Za-z\-] */
-	for (uint32_t i = 0; i < CPUINFO_ARM_CHIPSET_SUFFIX_MAX; i++) {
+	for (uint32_t i = 0; i < CPUINFO_ARM_CHIPSET_SUFFIX_MAX; ++i) {
 		if (pos + i == end) {
 			break;
 		}
@@ -216,7 +216,7 @@ static bool match_sdm(
 
 	/* Validate and parse 3-digit model number */
 	uint32_t model = 0;
-	for (uint32_t i = 3; i < 6; i++) {
+	for (uint32_t i = 3; i < 6; ++i) {
 		const uint32_t digit = (uint32_t) (uint8_t) start[i] - '0';
 		if (digit >= 10) {
 			/* Not really a digit */
@@ -263,7 +263,7 @@ static bool match_sm(
 
 	/* Validate and parse 4-digit model number */
 	uint32_t model = 0;
-	for (uint32_t i = 2; i < 6; i++) {
+	for (uint32_t i = 2; i < 6; ++i) {
 		const uint32_t digit = (uint32_t) (uint8_t) start[i] - '0';
 		if (digit >= 10) {
 			/* Not really a digit */
@@ -344,7 +344,7 @@ static bool match_samsung_exynos(
 
 	/* Validate and parse 4-digit model number */
 	uint32_t model = 0;
-	for (uint32_t i = 0; i < 4; i++) {
+	for (uint32_t i = 0; i < 4; ++i) {
 		const uint32_t digit = (uint32_t) (uint8_t) (*pos++) - '0';
 		if (digit >= 10) {
 			/* Not really a digit */
@@ -395,7 +395,7 @@ static bool match_exynos(
 
 	/* Check and parse 4-digit model number */
 	uint32_t model = 0;
-	for (uint32_t i = 6; i < 10; i++) {
+	for (uint32_t i = 6; i < 10; ++i) {
 		const uint32_t digit = (uint32_t) (uint8_t) start[i] - '0';
 		if (digit >= 10) {
 			/* Not really a digit */
@@ -454,7 +454,7 @@ static bool match_universal(
 
 	/* Validate and parse 4-digit model number */
 	uint32_t model = 0;
-	for (uint32_t i = 9; i < 13; i++) {
+	for (uint32_t i = 9; i < 13; ++i) {
 		const uint32_t digit = (uint32_t) (uint8_t) start[i] - '0';
 		if (digit >= 10) {
 			/* Not really a digit */
@@ -584,7 +584,7 @@ static bool match_mt(
 
 	/* Validate and parse 4-digit model number */
 	uint32_t model = 0;
-	for (uint32_t i = 0; i < 4; i++) {
+	for (uint32_t i = 0; i < 4; ++i) {
 		const uint32_t digit = (uint32_t) (uint8_t) (*pos++) - '0';
 		if (digit >= 10) {
 			/* Not really a digit */
@@ -608,7 +608,7 @@ static bool match_mt(
 		}
 
 		/* Validate suffix characters and copy them to chipset structure */
-		for (size_t i = 0; i < suffix_length; i++) {
+		for (size_t i = 0; i < suffix_length; ++i) {
 			const char c = (*pos++);
 			if (is_ascii_alphabetic(c)) {
 				/* Matched a letter [A-Za-z], convert to uppercase */
@@ -623,7 +623,7 @@ static bool match_mt(
 		}
 	} else {
 		/* Validate and parse as many suffix characters as we can */
-		for (size_t i = 0; i < CPUINFO_ARM_CHIPSET_SUFFIX_MAX; i++) {
+		for (size_t i = 0; i < CPUINFO_ARM_CHIPSET_SUFFIX_MAX; ++i) {
 			if (pos + i == end) {
 				break;
 			}
@@ -689,7 +689,7 @@ static bool match_kirin(
 
 	/* Validate and parse 3-digit model number */
 	uint32_t model = 0;
-	for (int32_t i = 0; i < 3; i++) {
+	for (int32_t i = 0; i < 3; ++i) {
 		const uint32_t digit = (uint32_t) (uint8_t) end[i - 3] - '0';
 		if (digit >= 10) {
 			/* Not really a digit */
@@ -746,7 +746,7 @@ static bool match_rk(
 
 	/* Validate and parse 4-digit model number */
 	uint32_t model = 0;
-	for (uint32_t i = 2; i < 6; i++) {
+	for (uint32_t i = 2; i < 6; ++i) {
 		const uint32_t digit = (uint32_t) (uint8_t) start[i] - '0';
 		if (digit >= 10) {
 			/* Not really a digit */
@@ -843,7 +843,7 @@ static bool match_sc(
 
 	/* Validate and parse 4-digit model number */
 	uint32_t model = 0;
-	for (uint32_t i = 2; i < 6; i++) {
+	for (uint32_t i = 2; i < 6; ++i) {
 		const uint32_t digit = (uint32_t) (uint8_t) start[i] - '0';
 		if (digit >= 10) {
 			/* Not really a digit */
@@ -861,7 +861,7 @@ static bool match_sc(
 
 	/* Validate and copy suffix letters. If suffix is too long, truncate at CPUINFO_ARM_CHIPSET_SUFFIX_MAX letters. */
 	const char* suffix = start + 6;
-	for (size_t i = 0; i < CPUINFO_ARM_CHIPSET_SUFFIX_MAX; i++) {
+	for (size_t i = 0; i < CPUINFO_ARM_CHIPSET_SUFFIX_MAX; ++i) {
 		if (suffix + i == end) {
 			break;
 		}
@@ -909,7 +909,7 @@ static bool match_lc(
 
 	/* Validate and parse 4-digit model number */
 	uint32_t model = 0;
-	for (uint32_t i = 2; i < 6; i++) {
+	for (uint32_t i = 2; i < 6; ++i) {
 		const uint32_t digit = (uint32_t) (uint8_t) start[i] - '0';
 		if (digit >= 10) {
 			/* Not really a digit */
@@ -992,7 +992,7 @@ static bool match_pxa(
 	}
 
 	/* Check and parse 3-4 digit model number */
-	for (uint32_t i = 3; i < length; i++) {
+	for (uint32_t i = 3; i < length; ++i) {
 		const uint32_t digit = (uint32_t) (uint8_t) start[i] - '0';
 		if (digit >= 10) {
 			/* Not really a digit */
@@ -1040,7 +1040,7 @@ static bool match_bcm(
 
 	/* Validate and parse 4-digit model number */
 	uint32_t model = 0;
-	for (uint32_t i = 3; i < 7; i++) {
+	for (uint32_t i = 3; i < 7; ++i) {
 		const uint32_t digit = (uint32_t) (uint8_t) start[i] - '0';
 		if (digit >= 10) {
 			/* Not really a digit */
@@ -1085,7 +1085,7 @@ static bool match_omap(
 
 	/* Validate and parse 4-digit model number */
 	uint32_t model = 0;
-	for (uint32_t i = 4; i < 8; i++) {
+	for (uint32_t i = 4; i < 8; ++i) {
 		const uint32_t digit = (uint32_t) (uint8_t) start[i] - '0';
 		if (digit >= 10) {
 			/* Not really a digit */
@@ -1354,7 +1354,7 @@ static bool match_and_parse_sunxi(
 	/* Compare sunXi platform id and number of cores to tabluted values to decode chipset name */
 	uint32_t model = 0;
 	char suffix = 0;
-	for (size_t i = 0; i < CPUINFO_COUNT_OF(sunxi_map_entries); i++) {
+	for (size_t i = 0; i < CPUINFO_COUNT_OF(sunxi_map_entries); ++i) {
 		if (sunxi_platform == sunxi_map_entries[i].sunxi && cores == sunxi_map_entries[i].cores) {
 			model = sunxi_map_entries[i].model;
 			suffix = sunxi_map_entries[i].suffix;
@@ -1624,7 +1624,7 @@ static bool match_and_parse_huawei(
 	 */
 	uint32_t model = 0;
 	const uint32_t target_platform_id = load_u24le(start);
-	for (uint32_t i = 0; i < CPUINFO_COUNT_OF(huawei_platform_map); i++) {
+	for (uint32_t i = 0; i < CPUINFO_COUNT_OF(huawei_platform_map); ++i) {
 		if (huawei_platform_map[i].platform == target_platform_id) {
 			model = huawei_platform_map[i].model;
 			break;
@@ -1693,7 +1693,7 @@ static bool match_tcc(
 
 	/* Check and parse 3-digit model number */
 	uint32_t model = 0;
-	for (uint32_t i = 3; i < 6; i++) {
+	for (uint32_t i = 3; i < 6; ++i) {
 		const uint32_t digit = (uint32_t) (uint8_t) start[i] - '0';
 		if (digit >= 10) {
 			/* Not really a digit */
@@ -2238,7 +2238,7 @@ struct cpuinfo_arm_chipset cpuinfo_arm_linux_decode_chipset_from_proc_cpuinfo_ha
 		 * This path is only used when ro.board.platform indicates a Tegra chipset
 		 * (albeit does not indicate which exactly Tegra chipset).
 		 */
-		for (size_t i = 0; i < CPUINFO_COUNT_OF(tegra_hardware_map_entries); i++) {
+		for (size_t i = 0; i < CPUINFO_COUNT_OF(tegra_hardware_map_entries); ++i) {
 			if (strncmp(tegra_hardware_map_entries[i].platform, hardware, hardware_length) == 0 &&
 					tegra_hardware_map_entries[i].platform[hardware_length] == 0)
 			{
@@ -2411,7 +2411,7 @@ struct cpuinfo_arm_chipset cpuinfo_arm_linux_decode_chipset_from_proc_cpuinfo_ha
 		}
 
 		/* Compare to tabulated Hardware values for popular chipsets/devices which can't be otherwise detected */
-		for (size_t i = 0; i < CPUINFO_COUNT_OF(special_hardware_map_entries); i++) {
+		for (size_t i = 0; i < CPUINFO_COUNT_OF(special_hardware_map_entries); ++i) {
 			if (strncmp(special_hardware_map_entries[i].platform, hardware, hardware_length) == 0 &&
 					special_hardware_map_entries[i].platform[hardware_length] == 0)
 			{
@@ -2658,7 +2658,7 @@ struct cpuinfo_arm_chipset cpuinfo_arm_linux_decode_chipset_from_proc_cpuinfo_ha
 		}
 
 		/* Compare to tabulated ro.product.board values for popular chipsets/devices which can't be otherwise detected */
-		for (size_t i = 0; i < CPUINFO_COUNT_OF(special_board_map_entries); i++) {
+		for (size_t i = 0; i < CPUINFO_COUNT_OF(special_board_map_entries); ++i) {
 			if (strncmp(special_board_map_entries[i].platform, board, board_length) == 0 &&
 					special_board_map_entries[i].platform[board_length] == 0)
 			{
@@ -2961,7 +2961,7 @@ struct cpuinfo_arm_chipset cpuinfo_arm_linux_decode_chipset_from_proc_cpuinfo_ha
 		 * The tabulated Amlogic ro.board.platform values have not more than 6 characters.
 		 */
 		if (platform_length <= 6) {
-			for (size_t i = 0; i < CPUINFO_COUNT_OF(amlogic_map_entries); i++) {
+			for (size_t i = 0; i < CPUINFO_COUNT_OF(amlogic_map_entries); ++i) {
 				if (strncmp(amlogic_map_entries[i].ro_board_platform, platform, 6) == 0) {
 					cpuinfo_log_debug(
 						"found ro.board.platform string \"%.*s\" in Amlogic chipset table",
@@ -2982,7 +2982,7 @@ struct cpuinfo_arm_chipset cpuinfo_arm_linux_decode_chipset_from_proc_cpuinfo_ha
 		}
 
 		/* Compare to tabulated ro.board.platform values for popular chipsets/devices which can't be otherwise detected */
-		for (size_t i = 0; i < CPUINFO_COUNT_OF(special_platform_map_entries); i++) {
+		for (size_t i = 0; i < CPUINFO_COUNT_OF(special_platform_map_entries); ++i) {
 			if (strncmp(special_platform_map_entries[i].platform, platform, platform_length) == 0 &&
 					special_platform_map_entries[i].platform[platform_length] == 0)
 			{
@@ -3649,7 +3649,7 @@ void cpuinfo_arm_chipset_to_string(
 				cpuinfo_arm_android_decode_chipset_from_ro_chipname(properties->ro_hardware_chipname),
 		};
 		enum cpuinfo_arm_chipset_vendor vendor = cpuinfo_arm_chipset_vendor_unknown;
-		for (size_t i = 0; i < cpuinfo_android_chipset_property_max; i++) {
+		for (size_t i = 0; i < cpuinfo_android_chipset_property_max; ++i) {
 			const enum cpuinfo_arm_chipset_vendor decoded_vendor = chipsets[i].vendor;
 			if (decoded_vendor != cpuinfo_arm_chipset_vendor_unknown) {
 				if (vendor == cpuinfo_arm_chipset_vendor_unknown) {
@@ -3669,7 +3669,7 @@ void cpuinfo_arm_chipset_to_string(
 		}
 
 		/* Fix common bugs in reported chipsets */
-		for (size_t i = 0; i < cpuinfo_android_chipset_property_max; i++) {
+		for (size_t i = 0; i < cpuinfo_android_chipset_property_max; ++i) {
 			cpuinfo_arm_fixup_chipset(&chipsets[i], cores, max_cpu_freq_max);
 		}
 
@@ -3677,9 +3677,9 @@ void cpuinfo_arm_chipset_to_string(
 		 * Propagate suffixes: consider all pairs of chipsets, if both chipsets in the pair are from the same series,
 		 * and one's suffix is a prefix of another's chipset suffix, use the longest suffix.
 		 */
-		for (size_t i = 0; i < cpuinfo_android_chipset_property_max; i++) {
+		for (size_t i = 0; i < cpuinfo_android_chipset_property_max; ++i) {
 			const size_t chipset_i_suffix_length = strnlen(chipsets[i].suffix, CPUINFO_ARM_CHIPSET_SUFFIX_MAX);
-			for (size_t j = 0; j < i; j++) {
+			for (size_t j = 0; j < i; ++j) {
 				if (chipsets[i].series == chipsets[j].series) {
 					const size_t chipset_j_suffix_length = strnlen(chipsets[j].suffix, CPUINFO_ARM_CHIPSET_SUFFIX_MAX);
 					if (chipset_i_suffix_length != chipset_j_suffix_length) {
@@ -3699,7 +3699,7 @@ void cpuinfo_arm_chipset_to_string(
 			}
 		}
 
-		for (size_t i = 0; i < cpuinfo_android_chipset_property_max; i++) {
+		for (size_t i = 0; i < cpuinfo_android_chipset_property_max; ++i) {
 			if (chipsets[i].series != cpuinfo_arm_chipset_series_unknown) {
 				if (chipset.series == cpuinfo_arm_chipset_series_unknown) {
 					chipset = chipsets[i];

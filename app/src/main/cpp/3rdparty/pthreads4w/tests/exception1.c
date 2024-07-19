@@ -198,7 +198,7 @@ main()
 
   assert((mt = pthread_self()).p != NULL);
 
-  for (i = 0; i < NUMTHREADS; i++)
+  for (i = 0; i < NUMTHREADS; ++i)
     {
       assert(pthread_create(&et[i], NULL, exceptionedThread, (void *) 0) == 0);
       assert(pthread_create(&ct[i], NULL, canceledThread, NULL) == 0);
@@ -209,7 +209,7 @@ main()
    */
   Sleep(1000);
 
-  for (i = 0; i < NUMTHREADS; i++)
+  for (i = 0; i < NUMTHREADS; ++i)
     {
       assert(pthread_cancel(ct[i]) == 0);
     }
@@ -223,7 +223,7 @@ main()
    * Check any results here. Set "failed" and only print output on failure.
    */
   failed = 0;
-  for (i = 0; i < NUMTHREADS; i++)
+  for (i = 0; i < NUMTHREADS; ++i)
     {
       int fail = 0;
       void* result = (void*)0;

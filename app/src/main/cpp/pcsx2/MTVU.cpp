@@ -125,7 +125,7 @@ void VU_Thread::Reset()
 
 void VU_Thread::ExecuteTaskInThread()
 {
-	PCSX2_PAGEFAULT_PROTECT
+    PCSX2_PAGEFAULT_PROTECT
 	{
 		ExecuteRingBuffer();
 	}
@@ -138,6 +138,7 @@ void VU_Thread::ExecuteRingBuffer()
 	{
 		semaEvent.WaitWithoutYield();
 		ScopedLockBool lock(mtxBusy, isBusy);
+
 		while (m_ato_read_pos.load(std::memory_order_relaxed) != GetWritePos())
 		{
 			u32 tag = Read();
@@ -452,7 +453,7 @@ void VU_Thread::ExecuteVU(u32 vu_addr, u32 vif_top, u32 vif_itop)
 {
 	MTVU_LOG("MTVU - ExecuteVU!");
 	Get_MTVUChanges(); // Clear any pending interrupts
-	ReserveSpace(4);
+	ReserveSpace(5);
 	Write(MTVU_VU_EXECUTE);
 	Write(vu_addr);
 	Write(vif_top);
@@ -460,9 +461,10 @@ void VU_Thread::ExecuteVU(u32 vu_addr, u32 vif_top, u32 vif_itop)
 	CommitWritePos();
 	gifUnit.TransferGSPacketData(GIF_TRANS_MTVU, NULL, 0);
 	KickStart();
-	u32 cycles = std::min(Get_vuCycles(), 3000u);
-	cpuRegs.cycle += cycles * EmuConfig.Speedhacks.EECycleSkip;
-	VU0.cycle += cycles * EmuConfig.Speedhacks.EECycleSkip;
+    u32 cycles = std::max(Get_vuCycles(), 4u);
+    u32 skip_cycles = std::min(cycles, 3000u);
+    cpuRegs.cycle += skip_cycles * EmuConfig.Speedhacks.EECycleSkip;
+    VU0.cycle += skip_cycles * EmuConfig.Speedhacks.EECycleSkip;
 	Get_MTVUChanges();
 }
 

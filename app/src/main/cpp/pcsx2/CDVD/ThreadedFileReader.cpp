@@ -134,7 +134,7 @@ void ThreadedFileReader::Loop()
 
 ThreadedFileReader::Buffer* ThreadedFileReader::GetBlockPtr(const Chunk& block)
 {
-	for (int i = 0; i < static_cast<int>(ArraySize(m_buffer)); i++)
+	for (int i = 0; i < static_cast<int>(ArraySize(m_buffer)); ++i)
 	{
 		u32 size = m_buffer[i].size.load(std::memory_order_relaxed);
 		u64 offset = m_buffer[i].offset;
@@ -214,7 +214,7 @@ bool ThreadedFileReader::TryCachedRead(void*& buffer, u64& offset, u32& size, co
 	m_amtRead = 0;
 	u64 end = 0;
 	bool allDone = false;
-	for (int i = 0; i < static_cast<int>(ArraySize(m_buffer) * 2); i++)
+	for (int i = 0; i < static_cast<int>(ArraySize(m_buffer) * 2); ++i)
 	{
 		Buffer& buf = m_buffer[i % ArraySize(m_buffer)];
 		u32 bufsize = buf.size.load(std::memory_order_acquire);

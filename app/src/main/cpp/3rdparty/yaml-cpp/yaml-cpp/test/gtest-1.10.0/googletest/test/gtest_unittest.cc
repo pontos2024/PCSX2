@@ -296,7 +296,7 @@ class TestingVector : public std::vector<int> {
 ::std::ostream& operator<<(::std::ostream& os,
                            const TestingVector& vector) {
   os << "{ ";
-  for (size_t i = 0; i < vector.size(); i++) {
+  for (size_t i = 0; i < vector.size(); ++i) {
     os << vector[i] << " ";
   }
   os << "}";
@@ -790,12 +790,12 @@ TEST(RandomDeathTest, GeneratesCrashesOnInvalidRange) {
 TEST(RandomTest, GeneratesNumbersWithinRange) {
   const UInt32 kRange = 10000;
   testing::internal::Random random(12345);
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 10; ++i) {
     EXPECT_LT(random.Generate(kRange), kRange) << " for iteration " << i;
   }
 
   testing::internal::Random random2(testing::internal::Random::kMaxRange);
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 10; ++i) {
     EXPECT_LT(random2.Generate(kRange), kRange) << " for iteration " << i;
   }
 }
@@ -807,12 +807,12 @@ TEST(RandomTest, RepeatsWhenReseeded) {
   UInt32 values[kArraySize];
 
   testing::internal::Random random(kSeed);
-  for (int i = 0; i < kArraySize; i++) {
+  for (int i = 0; i < kArraySize; ++i) {
     values[i] = random.Generate(kRange);
   }
 
   random.Reseed(kSeed);
-  for (int i = 0; i < kArraySize; i++) {
+  for (int i = 0; i < kArraySize; ++i) {
     EXPECT_EQ(values[i], random.Generate(kRange)) << " for iteration " << i;
   }
 }
@@ -899,7 +899,7 @@ class VectorShuffleTest : public Test {
   static const size_t kVectorSize = 20;
 
   VectorShuffleTest() : random_(1) {
-    for (int i = 0; i < static_cast<int>(kVectorSize); i++) {
+    for (int i = 0; i < static_cast<int>(kVectorSize); ++i) {
       vector_.push_back(i);
     }
   }
@@ -910,7 +910,7 @@ class VectorShuffleTest : public Test {
     }
 
     bool found_in_vector[kVectorSize] = { false };
-    for (size_t i = 0; i < vector.size(); i++) {
+    for (size_t i = 0; i < vector.size(); ++i) {
       const int e = vector[i];
       if (e < 0 || e >= static_cast<int>(kVectorSize) || found_in_vector[e]) {
         return true;
@@ -928,7 +928,7 @@ class VectorShuffleTest : public Test {
   }
 
   static bool RangeIsShuffled(const TestingVector& vector, int begin, int end) {
-    for (int i = begin; i < end; i++) {
+    for (int i = begin; i < end; ++i) {
       if (i != vector[static_cast<size_t>(i)]) {
         return true;
       }
@@ -1042,7 +1042,7 @@ TEST_F(VectorShuffleTest, ShufflesMiddleOfVector) {
 
 TEST_F(VectorShuffleTest, ShufflesRepeatably) {
   TestingVector vector2;
-  for (size_t i = 0; i < kVectorSize; i++) {
+  for (size_t i = 0; i < kVectorSize; ++i) {
     vector2.push_back(static_cast<int>(i));
   }
 
@@ -1054,7 +1054,7 @@ TEST_F(VectorShuffleTest, ShufflesRepeatably) {
   ASSERT_PRED1(VectorIsNotCorrupt, vector_);
   ASSERT_PRED1(VectorIsNotCorrupt, vector2);
 
-  for (size_t i = 0; i < kVectorSize; i++) {
+  for (size_t i = 0; i < kVectorSize; ++i) {
     EXPECT_EQ(vector_[i], vector2[i]) << " where i is " << i;
   }
 }
@@ -5674,7 +5674,7 @@ class ParseFlagsTest : public Test {
                                   CharType** array2) {
     ASSERT_EQ(size1, size2) << " Array sizes different.";
 
-    for (int i = 0; i != size1; i++) {
+    for (int i = 0; i != size1; ++i) {
       ASSERT_STREQ(array1[i], array2[i]) << " where i == " << i;
     }
   }

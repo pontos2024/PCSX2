@@ -154,7 +154,7 @@ wxStatusBar::~wxStatusBar()
 
 #if wxUSE_TOOLTIPS
     // delete existing tooltips
-    for (size_t i=0; i<m_tooltips.size(); i++)
+    for (size_t i=0; i<m_tooltips.size(); ++i)
     {
         wxDELETE(m_tooltips[i]);
     }
@@ -181,7 +181,7 @@ void wxStatusBar::SetFieldsCount(int nFields, const int *widths)
 
 #if wxUSE_TOOLTIPS
     // reset all current tooltips
-    for (size_t i=0; i<m_tooltips.size(); i++)
+    for (size_t i=0; i<m_tooltips.size(); ++i)
     {
         wxDELETE(m_tooltips[i]);
     }
@@ -542,7 +542,7 @@ void wxStatusBar::SetStatusStyles(int n, const int styles[])
     if (n != (int)m_panes.GetCount())
         return;
 
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < n; ++i)
     {
         int style;
         switch(styles[i])
@@ -623,7 +623,7 @@ wxStatusBar::MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam)
                 HasFlag(wxSTB_ELLIPSIZE_MIDDLE) ||
                     HasFlag(wxSTB_ELLIPSIZE_END) )
         {
-            for (int i=0; i<GetFieldsCount(); i++)
+            for (int i=0; i<GetFieldsCount(); ++i)
             {
                 // re-set the field text, in case we need to ellipsize
                 // (or de-ellipsize) some parts of it

@@ -89,7 +89,7 @@ void TryInitDS3(usb_device* dev)
 		}
 		if (dev->num_children)
 		{
-			for (int i = 0; i < dev->num_children; i++)
+			for (int i = 0; i < dev->num_children; ++i)
 			{
 				TryInitDS3(dev->children[i]);
 			}
@@ -294,7 +294,7 @@ public:
 		vibration[0] = vibration[1] = 0;
 		this->index = index;
 		int i;
-		for (i = 0; i < 16; i++)
+		for (i = 0; i < 16; ++i)
 		{
 			if (i != 14 && i != 15 && i != 8 && i != 9)
 			{
@@ -305,7 +305,7 @@ public:
 				AddPhysicalControl(PSHBTN, i, 0);
 			}
 		}
-		for (; i < 23; i++)
+		for (; i < 23; ++i)
 		{
 			AddPhysicalControl(ABSAXIS, i, 0);
 		}
@@ -458,7 +458,7 @@ public:
 			for (int s = 0; s < 4; s++)
 			{
 				int padtype = config.padConfigs[p][s].type;
-				for (int i = 0; i < pads[p][s][padtype].numFFBindings; i++)
+				for (int i = 0; i < pads[p][s][padtype].numFFBindings; ++i)
 				{
 					// Technically should also be a *65535/BASE_SENSITIVITY, but that's close enough to 1 for me.
 					ForceFeedbackBinding* ffb = &pads[p][s][padtype].ffBindings[i];
@@ -522,7 +522,7 @@ void EnumDualShock3s()
 	if (!numDevs)
 		return;
 	int index = 0;
-	for (int i = 0; i < numDevs; i++)
+	for (int i = 0; i < numDevs; ++i)
 	{
 		if (foundDevs[i].caps.FeatureReportByteLength == 49 &&
 			foundDevs[i].caps.InputReportByteLength == 49 &&

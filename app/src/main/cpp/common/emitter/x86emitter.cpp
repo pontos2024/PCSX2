@@ -595,7 +595,7 @@ const xRegister32
 		if (IsDevBuild)
 		{
 			// common debugger courtesy: advance with INT3 as filler.
-			for (uint i = 0; i < bytes; i++)
+			for (uint i = 0; i < bytes; ++i)
 				xWrite8(0xcc);
 		}
 		else

@@ -699,7 +699,7 @@ CBaseFilter::FindPin(
     //  We're going to search the pin list so maintain integrity
     CAutoLock lck(m_pLock);
     int iCount = GetPinCount();
-    for (int i = 0; i < iCount; i++) {
+    for (int i = 0; i < iCount; ++i) {
         CBasePin *pPin = GetPin(i);
         if (NULL == pPin) {
             break;
@@ -1944,7 +1944,7 @@ HRESULT CBasePin::AgreeMediaType(
 
     HRESULT hrFailure = VFW_E_NO_ACCEPTABLE_TYPES;
 
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 2; ++i) {
         HRESULT hr;
         if (i == (int)m_bTryMyTypesFirst) {
             hr = pReceivePin->EnumMediaTypes(&pEnumMediaTypes);

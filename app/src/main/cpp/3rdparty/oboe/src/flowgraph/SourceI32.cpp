@@ -44,7 +44,7 @@ int32_t SourceI32::onProcess(int32_t numFrames) {
 #if FLOWGRAPH_ANDROID_INTERNAL
     memcpy_to_float_from_i32(floatData, intData, numSamples);
 #else
-    for (int i = 0; i < numSamples; i++) {
+    for (int i = 0; i < numSamples; ++i) {
         *floatData++ = *intData++ * kScale;
     }
 #endif

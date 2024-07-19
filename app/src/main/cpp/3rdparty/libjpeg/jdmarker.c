@@ -206,7 +206,7 @@ get_soi (j_decompress_ptr cinfo)
 
   /* Reset all parameters that are defined to be reset by SOI */
 
-  for (i = 0; i < NUM_ARITH_TBLS; i++) {
+  for (i = 0; i < NUM_ARITH_TBLS; ++i) {
     cinfo->arith_dc_L[i] = 0;
     cinfo->arith_dc_U[i] = 1;
     cinfo->arith_ac_K[i] = 5;
@@ -322,7 +322,7 @@ get_sos (j_decompress_ptr cinfo)
 
   /* Collect the component-spec parameters */
 
-  for (i = 0; i < n; i++) {
+  for (i = 0; i < n; ++i) {
     INPUT_BYTE(cinfo, cc, return FALSE);
     INPUT_BYTE(cinfo, c, return FALSE);
 
@@ -436,7 +436,7 @@ get_dht (j_decompress_ptr cinfo)
 
     bits[0] = 0;
     count = 0;
-    for (i = 1; i <= 16; i++) {
+    for (i = 1; i <= 16; ++i) {
       INPUT_BYTE(cinfo, bits[i], return FALSE);
       count += bits[i];
     }
@@ -456,7 +456,7 @@ get_dht (j_decompress_ptr cinfo)
     if (count > 256 || ((INT32) count) > length)
       ERREXIT(cinfo, JERR_BAD_HUFF_TABLE);
 
-    for (i = 0; i < count; i++)
+    for (i = 0; i < count; ++i)
       INPUT_BYTE(cinfo, huffval[i], return FALSE);
 
     length -= count;
@@ -513,7 +513,7 @@ get_dqt (j_decompress_ptr cinfo)
       cinfo->quant_tbl_ptrs[n] = jpeg_alloc_quant_table((j_common_ptr) cinfo);
     quant_ptr = cinfo->quant_tbl_ptrs[n];
 
-    for (i = 0; i < DCTSIZE2; i++) {
+    for (i = 0; i < DCTSIZE2; ++i) {
       if (prec)
 	INPUT_2BYTES(cinfo, tmp, return FALSE);
       else
@@ -706,7 +706,7 @@ get_interesting_appn (j_decompress_ptr cinfo)
     numtoread = (unsigned int) length;
   else
     numtoread = 0;
-  for (i = 0; i < numtoread; i++)
+  for (i = 0; i < numtoread; ++i)
     INPUT_BYTE(cinfo, b[i], return FALSE);
   length -= numtoread;
 
@@ -1279,7 +1279,7 @@ jinit_marker_reader (j_decompress_ptr cinfo)
    */
   marker->process_COM = skip_variable;
   marker->length_limit_COM = 0;
-  for (i = 0; i < 16; i++) {
+  for (i = 0; i < 16; ++i) {
     marker->process_APPn[i] = skip_variable;
     marker->length_limit_APPn[i] = 0;
   }

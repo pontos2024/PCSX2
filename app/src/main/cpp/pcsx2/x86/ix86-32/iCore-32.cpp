@@ -118,7 +118,7 @@ int _getFreeX86reg(int mode)
 
 	int maxreg = (mode & MODE_8BITREG) ? 4 : iREGCNT_GPR;
 
-	for (uint i = 0; i < iREGCNT_GPR; i++)
+	for (uint i = 0; i < iREGCNT_GPR; ++i)
 	{
 		int reg = (g_x86checknext + i) % iREGCNT_GPR;
 		if (reg == 0 || reg == esp.GetId() || reg == ebp.GetId())
@@ -134,7 +134,7 @@ int _getFreeX86reg(int mode)
 		}
 	}
 
-	for (int i = 1; i < maxreg; i++)
+	for (int i = 1; i < maxreg; ++i)
 	{
 		if (i == esp.GetId() || i == ebp.GetId())
 			continue;
@@ -306,7 +306,7 @@ int _allocX86reg(xRegister32 x86reg, int type, int reg, int mode)
 			}
 		}
 
-		for (i = 1; i < maxreg; i++)
+		for (i = 1; i < maxreg; ++i)
 		{
 			if ((int)i == esp.GetId() || (int)i == ebp.GetId())
 				continue;
@@ -413,7 +413,7 @@ int _checkX86reg(int type, int reg, int mode)
 {
 	uint i;
 
-	for (i = 0; i < iREGCNT_GPR; i++)
+	for (i = 0; i < iREGCNT_GPR; ++i)
 	{
 		if (x86regs[i].inuse && x86regs[i].reg == reg && x86regs[i].type == type)
 		{
@@ -440,7 +440,7 @@ void _addNeededX86reg(int type, int reg)
 {
 	uint i;
 
-	for (i = 0; i < iREGCNT_GPR; i++)
+	for (i = 0; i < iREGCNT_GPR; ++i)
 	{
 		if (!x86regs[i].inuse || x86regs[i].reg != reg || x86regs[i].type != type)
 			continue;
@@ -454,7 +454,7 @@ void _clearNeededX86regs()
 {
 	uint i;
 
-	for (i = 0; i < iREGCNT_GPR; i++)
+	for (i = 0; i < iREGCNT_GPR; ++i)
 	{
 		if (x86regs[i].needed)
 		{
@@ -469,7 +469,7 @@ void _deleteX86reg(int type, int reg, int flush)
 {
 	uint i;
 
-	for (i = 0; i < iREGCNT_GPR; i++)
+	for (i = 0; i < iREGCNT_GPR; ++i)
 	{
 		if (x86regs[i].inuse && x86regs[i].reg == reg && x86regs[i].type == type)
 		{
@@ -529,7 +529,7 @@ void _freeX86reg(int x86reg)
 
 void _freeX86regs()
 {
-	for (uint i = 0; i < iREGCNT_GPR; i++)
+	for (uint i = 0; i < iREGCNT_GPR; ++i)
 		_freeX86reg(i);
 }
 

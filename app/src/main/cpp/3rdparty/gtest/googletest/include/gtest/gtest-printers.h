@@ -538,7 +538,7 @@ inline void PrintTo(wchar_t* s, ::std::ostream* os) {
 template <typename T>
 void PrintRawArrayTo(const T a[], size_t count, ::std::ostream* os) {
   UniversalPrint(a[0], os);
-  for (size_t i = 1; i != count; i++) {
+  for (size_t i = 1; i != count; ++i) {
     *os << ", ";
     UniversalPrint(a[i], os);
   }

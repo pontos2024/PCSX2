@@ -31,7 +31,7 @@ int32_t MultiToMonoConverter::onProcess(int32_t numFrames) {
     const float *inputBuffer = input.getBuffer();
     float *outputBuffer = output.getBuffer();
     int32_t channelCount = input.getSamplesPerFrame();
-    for (int i = 0; i < numFrames; i++) {
+    for (int i = 0; i < numFrames; ++i) {
         // read first channel of multi stream, write many
         *outputBuffer++ = *inputBuffer;
         inputBuffer += channelCount;

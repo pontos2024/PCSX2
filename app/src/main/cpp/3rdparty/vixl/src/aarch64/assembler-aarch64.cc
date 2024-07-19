@@ -5949,7 +5949,7 @@ bool AreAliased(const CPURegister& reg1,
 
   const CPURegister regs[] = {reg1, reg2, reg3, reg4, reg5, reg6, reg7, reg8};
 
-  for (size_t i = 0; i < ArrayLength(regs); i++) {
+  for (size_t i = 0; i < ArrayLength(regs); ++i) {
     if (regs[i].IsRegister()) {
       number_of_valid_regs++;
       unique_regs |= regs[i].GetBit();

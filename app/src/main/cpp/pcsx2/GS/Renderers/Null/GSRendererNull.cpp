@@ -16,12 +16,13 @@
 #include "PrecompiledHeader.h"
 #include "GSRendererNull.h"
 
-GSRendererNull::GSRendererNull(std::unique_ptr<GSDevice> dev)
-	: GSRenderer(std::move(dev))
+GSRendererNull::GSRendererNull() = default;
+
+void GSRendererNull::Draw()
 {
 }
 
-const char* GSRendererNull::GetName() const
+GSTexture* GSRendererNull::GetOutput(int i, int& y_offset)
 {
-	return "Null";
+	return nullptr;
 }

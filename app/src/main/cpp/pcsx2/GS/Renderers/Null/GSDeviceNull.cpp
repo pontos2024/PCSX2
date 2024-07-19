@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "GSDeviceNull.h"
 
-GSTexture* GSDeviceNull::CreateSurface(int type, int w, int h, int format)
+GSTexture* GSDeviceNull::CreateSurface(GSTexture::Type type, int w, int h, GSTexture::Format format)
 {
 	return new GSTextureNull(type, w, h, format);
 }

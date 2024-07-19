@@ -248,10 +248,10 @@ namespace usb_pad
 					 HidP_Input, pButtonCaps->UsagePage, 0, usage, &usageLength, pPreparsedData,
 					 (PCHAR)pRawInput->data.hid.bRawData, pRawInput->data.hid.dwSizeHid)) == HIDP_STATUS_SUCCESS)
 			{
-				for (uint32_t i = 0; i < usageLength; i++)
+				for (uint32_t i = 0; i < usageLength; ++i)
 				{
 					uint16_t btn = mapping->btnMap[usage[i] - pButtonCaps->Range.UsageMin];
-					for (int j = 0; j < 2; j++)
+					for (int j = 0; j < 2; ++j)
 					{
 						PS2WheelTypes wt = (PS2WheelTypes)subtype;
 						if (PLY_IS_MAPPED(j, btn))
@@ -268,7 +268,7 @@ namespace usb_pad
 			capsLength = Caps.NumberInputValueCaps;
 			if (HidP_GetValueCaps(HidP_Input, pValueCaps, &capsLength, pPreparsedData) == HIDP_STATUS_SUCCESS)
 			{
-				for (USHORT i = 0; i < capsLength; i++)
+				for (USHORT i = 0; i < capsLength; ++i)
 				{
 					if (HidP_GetUsageValue(
 							HidP_Input, pValueCaps[i].UsagePage, 0,
@@ -298,7 +298,7 @@ namespace usb_pad
 							break;
 					}
 
-					for (int j = 0; j < 2; j++)
+					for (int j = 0; j < 2; ++j)
 					{
 						if (!PLY_IS_MAPPED(j, v))
 							continue;
@@ -368,10 +368,10 @@ namespace usb_pad
 			if (mapping == NULL)
 				return;
 
-			for (uint32_t i = 0; i < PAD_BUTTON_COUNT; i++)
+			for (uint32_t i = 0; i < PAD_BUTTON_COUNT; ++i)
 			{
 				uint16_t btn = mapping->btnMap[i];
-				for (int j = 0; j < 2; j++)
+				for (int j = 0; j < 2; ++j)
 				{
 					if (PLY_IS_MAPPED(j, btn))
 					{
@@ -388,10 +388,10 @@ namespace usb_pad
 				}
 			}
 
-			for (uint32_t i = 0; i < 4 /*PAD_HAT_COUNT*/; i++)
+			for (uint32_t i = 0; i < 4 /*PAD_HAT_COUNT*/; ++i)
 			{
 				uint16_t btn = mapping->hatMap[i];
-				for (int j = 0; j < 2; j++)
+				for (int j = 0; j < 2; ++j)
 				{
 					if (PLY_IS_MAPPED(j, btn))
 					{

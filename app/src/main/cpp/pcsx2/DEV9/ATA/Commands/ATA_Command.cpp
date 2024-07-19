@@ -99,7 +99,9 @@ void ATA::IDE_ExecCmd(u16 value)
 
 void ATA::HDD_Unk()
 {
+#ifdef PCSX2_DEBUG
 	Console.Error("DEV9: ATA: Unknown cmd %x", regCommand);
+#endif
 
 	PreCmd();
 

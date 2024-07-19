@@ -3835,7 +3835,7 @@ spv::Id TGlslangToSpvTraverser::convertGlslangStructToSpvType(const glslang::TTy
     int memberDelta = 0;  // how much the member's index changes from glslang to SPIR-V, normally 0,
                           // except sometimes for blocks
     std::vector<std::pair<glslang::TType*, glslang::TQualifier> > deferredForwardPointers;
-    for (int i = 0; i < (int)glslangMembers->size(); i++) {
+    for (int i = 0; i < (int)glslangMembers->size(); ++i) {
         glslang::TType& glslangMember = *(*glslangMembers)[i].type;
         if (glslangMember.hiddenMember()) {
             ++memberDelta;
@@ -3904,7 +3904,7 @@ void TGlslangToSpvTraverser::decorateStructType(const glslang::TType& type,
     // Name and decorate the non-hidden members
     int offset = -1;
     int locationOffset = 0;  // for use within the members of this struct
-    for (int i = 0; i < (int)glslangMembers->size(); i++) {
+    for (int i = 0; i < (int)glslangMembers->size(); ++i) {
         glslang::TType& glslangMember = *(*glslangMembers)[i].type;
         int member = i;
         if (type.getBasicType() == glslang::EbtBlock) {
@@ -5192,7 +5192,7 @@ spv::Id TGlslangToSpvTraverser::createImageTextureFunctionCall(glslang::TIntermO
         //Member 5 must be a scalar of integer type, whose Signedness operand is 0(granularity).
         std::vector<spv::Id> members;
         members.push_back(resultType());
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 5; ++i) {
             members.push_back(builder.getContainedTypeId(resultStructType, i));
         }
         spv::Id resType = builder.makeStructType(members, "ResType");
@@ -5202,7 +5202,7 @@ spv::Id TGlslangToSpvTraverser::createImageTextureFunctionCall(glslang::TIntermO
                                                 cracked.gather, noImplicitLod, params, signExtensionMask());
         
         //copy resType (SPIR-V type) to resultStructType(OpenGL type)
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 5; ++i) {
             builder.clearAccessChain();
             builder.setAccessChainLValue(resultStruct);
 

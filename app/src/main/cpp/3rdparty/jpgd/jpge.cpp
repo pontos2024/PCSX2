@@ -175,15 +175,15 @@ namespace jpge {
 	{
 		const uint cMaxPasses = 4;
 		uint32 hist[256 * cMaxPasses]; clear_obj(hist);
-		for (uint i = 0; i < num_syms; i++) { uint freq = pSyms0[i].m_key; hist[freq & 0xFF]++; hist[256 + ((freq >> 8) & 0xFF)]++; hist[256 * 2 + ((freq >> 16) & 0xFF)]++; hist[256 * 3 + ((freq >> 24) & 0xFF)]++; }
+		for (uint i = 0; i < num_syms; ++i) { uint freq = pSyms0[i].m_key; hist[freq & 0xFF]++; hist[256 + ((freq >> 8) & 0xFF)]++; hist[256 * 2 + ((freq >> 16) & 0xFF)]++; hist[256 * 3 + ((freq >> 24) & 0xFF)]++; }
 		sym_freq* pCur_syms = pSyms0, * pNew_syms = pSyms1;
 		uint total_passes = cMaxPasses; while ((total_passes > 1) && (num_syms == hist[(total_passes - 1) * 256])) total_passes--;
 		for (uint pass_shift = 0, pass = 0; pass < total_passes; pass++, pass_shift += 8)
 		{
 			const uint32* pHist = &hist[pass << 8];
 			uint offsets[256], cur_ofs = 0;
-			for (uint i = 0; i < 256; i++) { offsets[i] = cur_ofs; cur_ofs += pHist[i]; }
-			for (uint i = 0; i < num_syms; i++)
+			for (uint i = 0; i < 256; ++i) { offsets[i] = cur_ofs; cur_ofs += pHist[i]; }
+			for (uint i = 0; i < num_syms; ++i)
 				pNew_syms[offsets[(pCur_syms[i].m_key >> pass_shift) & 0xFF]++] = pCur_syms[i];
 			sym_freq* t = pCur_syms; pCur_syms = pNew_syms; pNew_syms = t;
 		}
@@ -219,7 +219,7 @@ namespace jpge {
 	{
 		if (code_list_len <= 1) return;
 
-		for (int i = max_code_size + 1; i <= MAX_HUFF_CODESIZE; i++) pNum_codes[max_code_size] += pNum_codes[i];
+		for (int i = max_code_size + 1; i <= MAX_HUFF_CODESIZE; ++i) pNum_codes[max_code_size] += pNum_codes[i];
 
 		uint32 total = 0;
 		for (int i = max_code_size; i > 0; i--)
@@ -243,14 +243,14 @@ namespace jpge {
 		syms0[0].m_key = 1; syms0[0].m_sym_index = 0;  // dummy symbol, assures that no valid code contains all 1's
 		int num_used_syms = 1;
 		const uint32* pSym_count = &m_huff_count[table_num][0];
-		for (int i = 0; i < table_len; i++)
+		for (int i = 0; i < table_len; ++i)
 			if (pSym_count[i]) { syms0[num_used_syms].m_key = pSym_count[i]; syms0[num_used_syms++].m_sym_index = i + 1; }
 		sym_freq* pSyms = radix_sort_syms(num_used_syms, syms0, syms1);
 		calculate_minimum_redundancy(pSyms, num_used_syms);
 
 		// Count the # of symbols of each code size.
 		int num_codes[1 + MAX_HUFF_CODESIZE]; clear_obj(num_codes);
-		for (int i = 0; i < num_used_syms; i++)
+		for (int i = 0; i < num_used_syms; ++i)
 			num_codes[pSyms[i].m_key]++;
 
 		const uint JPGE_CODE_SIZE_LIMIT = 16; // the maximum possible size of a JPEG Huffman code (valid range is [9,16] - 9 vs. 8 because of the dummy symbol)
@@ -258,7 +258,7 @@ namespace jpge {
 
 		// Compute m_huff_bits array, which contains the # of symbols per code size.
 		clear_obj(m_huff_bits[table_num]);
-		for (int i = 1; i <= (int)JPGE_CODE_SIZE_LIMIT; i++)
+		for (int i = 1; i <= (int)JPGE_CODE_SIZE_LIMIT; ++i)
 			m_huff_bits[table_num][i] = static_cast<uint8>(num_codes[i]);
 
 		// Remove the dummy symbol added above, which must be in largest bucket.
@@ -307,12 +307,12 @@ namespace jpge {
 	// Emit quantization tables
 	void jpeg_encoder::emit_dqt()
 	{
-		for (int i = 0; i < ((m_num_components == 3) ? 2 : 1); i++)
+		for (int i = 0; i < ((m_num_components == 3) ? 2 : 1); ++i)
 		{
 			emit_marker(M_DQT);
 			emit_word(64 + 1 + 2);
 			emit_byte(static_cast<uint8>(i));
-			for (int j = 0; j < 64; j++)
+			for (int j = 0; j < 64; ++j)
 				emit_byte(static_cast<uint8>(m_quantization_tables[i][j]));
 		}
 	}
@@ -326,7 +326,7 @@ namespace jpge {
 		emit_word(m_image_y);
 		emit_word(m_image_x);
 		emit_byte(m_num_components);
-		for (int i = 0; i < m_num_components; i++)
+		for (int i = 0; i < m_num_components; ++i)
 		{
 			emit_byte(static_cast<uint8>(i + 1));                                   /* component ID     */
 			emit_byte((m_comp_h_samp[i] << 4) + m_comp_v_samp[i]);  /* h and v sampling */
@@ -340,16 +340,16 @@ namespace jpge {
 		emit_marker(M_DHT);
 
 		int length = 0;
-		for (int i = 1; i <= 16; i++)
+		for (int i = 1; i <= 16; ++i)
 			length += bits[i];
 
 		emit_word(length + 2 + 1 + 16);
 		emit_byte(static_cast<uint8>(index + (ac_flag << 4)));
 
-		for (int i = 1; i <= 16; i++)
+		for (int i = 1; i <= 16; ++i)
 			emit_byte(bits[i]);
 
-		for (int i = 0; i < length; i++)
+		for (int i = 0; i < length; ++i)
 			emit_byte(val[i]);
 	}
 
@@ -371,7 +371,7 @@ namespace jpge {
 		emit_marker(M_SOS);
 		emit_word(2 * m_num_components + 2 + 1 + 3);
 		emit_byte(m_num_components);
-		for (int i = 0; i < m_num_components; i++)
+		for (int i = 0; i < m_num_components; ++i)
 		{
 			emit_byte(static_cast<uint8>(i + 1));
 			if (i == 0)
@@ -405,7 +405,7 @@ namespace jpge {
 
 		int p = 0;
 		for (l = 1; l <= 16; l++)
-			for (i = 1; i <= bits[l]; i++)
+			for (i = 1; i <= bits[l]; ++i)
 				huff_size[p++] = (char)l;
 
 		huff_size[p] = 0; last_p = p; // write sentinel
@@ -437,7 +437,7 @@ namespace jpge {
 			q = 5000 / m_params.m_quality;
 		else
 			q = 200 - m_params.m_quality * 2;
-		for (int i = 0; i < 64; i++)
+		for (int i = 0; i < 64; ++i)
 		{
 			int32 j = *pSrc++; j = (j * q + 50L) / 100L;
 			*pDst++ = JPGE_MIN(JPGE_MAX(j, 1), 255);
@@ -515,7 +515,7 @@ namespace jpge {
 		m_mcus_per_row = m_image_x_mcu / m_mcu_x;
 
 		if ((m_mcu_lines[0] = static_cast<uint8*>(jpge_malloc(m_image_bpl_mcu * m_mcu_y))) == NULL) return false;
-		for (int i = 1; i < m_mcu_y; i++)
+		for (int i = 1; i < m_mcu_y; ++i)
 			m_mcu_lines[i] = m_mcu_lines[i - 1] + m_image_bpl_mcu;
 
 		if (m_params.m_use_std_tables)
@@ -610,7 +610,7 @@ namespace jpge {
 	{
 		int32* q = m_quantization_tables[component_num > 0];
 		int16* pDst = m_coefficient_array;
-		for (int i = 0; i < 64; i++)
+		for (int i = 0; i < 64; ++i)
 		{
 			sample_array_t j = m_sample_array[s_zag[i]];
 			if (j < 0)
@@ -671,7 +671,7 @@ namespace jpge {
 		}
 
 		dc_count[nbits]++;
-		for (run_len = 0, i = 1; i < 64; i++)
+		for (run_len = 0, i = 1; i < 64; ++i)
 		{
 			if ((temp1 = m_coefficient_array[i]) == 0)
 				run_len++;
@@ -727,7 +727,7 @@ namespace jpge {
 		put_bits(codes[0][nbits], code_sizes[0][nbits]);
 		if (nbits) put_bits(temp2 & ((1 << nbits) - 1), nbits);
 
-		for (run_len = 0, i = 1; i < 64; i++)
+		for (run_len = 0, i = 1; i < 64; ++i)
 		{
 			if ((temp1 = m_coefficient_array[i]) == 0)
 				run_len++;
@@ -770,21 +770,21 @@ namespace jpge {
 	{
 		if (m_num_components == 1)
 		{
-			for (int i = 0; i < m_mcus_per_row; i++)
+			for (int i = 0; i < m_mcus_per_row; ++i)
 			{
 				load_block_8_8_grey(i); code_block(0);
 			}
 		}
 		else if ((m_comp_h_samp[0] == 1) && (m_comp_v_samp[0] == 1))
 		{
-			for (int i = 0; i < m_mcus_per_row; i++)
+			for (int i = 0; i < m_mcus_per_row; ++i)
 			{
 				load_block_8_8(i, 0, 0); code_block(0); load_block_8_8(i, 0, 1); code_block(1); load_block_8_8(i, 0, 2); code_block(2);
 			}
 		}
 		else if ((m_comp_h_samp[0] == 2) && (m_comp_v_samp[0] == 1))
 		{
-			for (int i = 0; i < m_mcus_per_row; i++)
+			for (int i = 0; i < m_mcus_per_row; ++i)
 			{
 				load_block_8_8(i * 2 + 0, 0, 0); code_block(0); load_block_8_8(i * 2 + 1, 0, 0); code_block(0);
 				load_block_16_8_8(i, 1); code_block(1); load_block_16_8_8(i, 2); code_block(2);
@@ -792,7 +792,7 @@ namespace jpge {
 		}
 		else if ((m_comp_h_samp[0] == 2) && (m_comp_v_samp[0] == 2))
 		{
-			for (int i = 0; i < m_mcus_per_row; i++)
+			for (int i = 0; i < m_mcus_per_row; ++i)
 			{
 				load_block_8_8(i * 2 + 0, 0, 0); code_block(0); load_block_8_8(i * 2 + 1, 0, 0); code_block(0);
 				load_block_8_8(i * 2 + 0, 1, 0); code_block(0); load_block_8_8(i * 2 + 1, 1, 0); code_block(0);
@@ -826,7 +826,7 @@ namespace jpge {
 		{
 			if (m_mcu_y_ofs < 16) // check here just to shut up static analysis
 			{
-				for (int i = m_mcu_y_ofs; i < m_mcu_y; i++)
+				for (int i = m_mcu_y_ofs; i < m_mcu_y; ++i)
 					memcpy(m_mcu_lines[i], m_mcu_lines[m_mcu_y_ofs - 1], m_image_bpl_mcu);
 			}
 
@@ -871,7 +871,7 @@ namespace jpge {
 		{
 			const uint8 y = pDst[m_image_bpl_xlt - 3 + 0], cb = pDst[m_image_bpl_xlt - 3 + 1], cr = pDst[m_image_bpl_xlt - 3 + 2];
 			uint8* q = m_mcu_lines[m_mcu_y_ofs] + m_image_bpl_xlt;
-			for (int i = m_image_x; i < m_image_x_mcu; i++)
+			for (int i = m_image_x; i < m_image_x_mcu; ++i)
 			{
 				*q++ = y; *q++ = cb; *q++ = cr;
 			}
@@ -998,7 +998,7 @@ namespace jpge {
 
 		for (uint pass_index = 0; pass_index < dst_image.get_total_passes(); pass_index++)
 		{
-			for (int i = 0; i < height; i++)
+			for (int i = 0; i < height; ++i)
 			{
 				const uint8* pBuf = pImage_data + i * width * num_channels;
 				if (!dst_image.process_scanline(pBuf))
@@ -1057,7 +1057,7 @@ namespace jpge {
 
 		for (uint pass_index = 0; pass_index < dst_image.get_total_passes(); pass_index++)
 		{
-			for (int i = 0; i < height; i++)
+			for (int i = 0; i < height; ++i)
 			{
 				const uint8* pScanline = pImage_data + i * width * num_channels;
 				if (!dst_image.process_scanline(pScanline))

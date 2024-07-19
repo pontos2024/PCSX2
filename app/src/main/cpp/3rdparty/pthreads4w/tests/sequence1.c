@@ -112,12 +112,12 @@ main()
   assert(pthread_attr_init(&attr) == 0);
   assert(pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED) == 0);
 
-  for (i = 0; i < NUMTHREADS+2; i++)
+  for (i = 0; i < NUMTHREADS+2; ++i)
     {
       seqmap[i] = 0;
     }
 
-  for (i = 0; i < NUMTHREADS; i++)
+  for (i = 0; i < NUMTHREADS; ++i)
     {
       if (NUMTHREADS/2 == i)
         {
@@ -133,7 +133,7 @@ main()
   Sleep(100);
 
   assert(seqmap[0] == 0);
-  for (i = 1; i < NUMTHREADS+2; i++)
+  for (i = 1; i < NUMTHREADS+2; ++i)
     {
       assert(seqmap[i] == 1);
     }

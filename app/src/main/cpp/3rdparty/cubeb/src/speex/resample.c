@@ -262,7 +262,7 @@ static double compute_func(float x, const struct FuncDef *func)
 int main(int argc, char **argv)
 {
    int i;
-   for (i=0;i<256;i++)
+   for (i=0;i<256;++i)
    {
       printf ("%f\n", compute_func(i/256., KAISER12));
    }
@@ -349,7 +349,7 @@ static int resampler_basic_direct_single(SpeexResamplerState *st, spx_uint32_t c
 #ifndef OVERRIDE_INNER_PRODUCT_SINGLE
       int j;
       sum = 0;
-      for(j=0;j<N;j++) sum += MULT16_16(sinct[j], iptr[j]);
+      for(j=0;j<N;++j) sum += MULT16_16(sinct[j], iptr[j]);
 
 /*    This code is slower on most DSPs which have only 2 accumulators.
       Plus this this forces truncation to 32 bits and you lose the HW guard bits.
@@ -464,7 +464,7 @@ static int resampler_basic_interpolate_single(SpeexResamplerState *st, spx_uint3
       int j;
       spx_word32_t accum[4] = {0,0,0,0};
 
-      for(j=0;j<N;j++) {
+      for(j=0;j<N;++j) {
         const spx_word16_t curr_in=iptr[j];
         accum[0] += MULT16_16(curr_in,st->sinc_table[4+(j+1)*st->oversample-offset-2]);
         accum[1] += MULT16_16(curr_in,st->sinc_table[4+(j+1)*st->oversample-offset-1]);
@@ -527,7 +527,7 @@ static int resampler_basic_interpolate_double(SpeexResamplerState *st, spx_uint3
       int j;
       double accum[4] = {0,0,0,0};
 
-      for(j=0;j<N;j++) {
+      for(j=0;j<N;++j) {
         const double curr_in=iptr[j];
         accum[0] += MULT16_16(curr_in,st->sinc_table[4+(j+1)*st->oversample-offset-2]);
         accum[1] += MULT16_16(curr_in,st->sinc_table[4+(j+1)*st->oversample-offset-1]);
@@ -668,10 +668,10 @@ static int update_filter(SpeexResamplerState *st)
    if (use_direct)
    {
       spx_uint32_t i;
-      for (i=0;i<st->den_rate;i++)
+      for (i=0;i<st->den_rate;++i)
       {
          spx_int32_t j;
-         for (j=0;j<st->filt_len;j++)
+         for (j=0;j<st->filt_len;++j)
          {
             st->sinc_table[i*st->filt_len+j] = sinc(st->cutoff,((j-(spx_int32_t)st->filt_len/2+1)-((float)i)/st->den_rate), st->filt_len, quality_map[st->quality].window_func);
          }
@@ -687,7 +687,7 @@ static int update_filter(SpeexResamplerState *st)
       /*fprintf (stderr, "resampler uses direct sinc table and normalised cutoff %f\n", cutoff);*/
    } else {
       spx_int32_t i;
-      for (i=-4;i<(spx_int32_t)(st->oversample*st->filt_len+4);i++)
+      for (i=-4;i<(spx_int32_t)(st->oversample*st->filt_len+4);++i)
          st->sinc_table[i+4] = sinc(st->cutoff,(i/(float)st->oversample - st->filt_len/2), st->filt_len, quality_map[st->quality].window_func);
 #ifdef FIXED_POINT
       st->resampler_ptr = resampler_basic_interpolate_single;
@@ -721,7 +721,7 @@ static int update_filter(SpeexResamplerState *st)
    if (!st->started)
    {
       spx_uint32_t i;
-      for (i=0;i<st->nb_channels*st->mem_alloc_size;i++)
+      for (i=0;i<st->nb_channels*st->mem_alloc_size;++i)
          st->mem[i] = 0;
       /*speex_warning("reinit filter");*/
    } else if (st->filt_len > old_length)
@@ -741,7 +741,7 @@ static int update_filter(SpeexResamplerState *st)
             olen = old_length + 2*st->magic_samples[i];
             for (j=old_length-1+st->magic_samples[i];j--;)
                st->mem[i*st->mem_alloc_size+j+st->magic_samples[i]] = st->mem[i*old_alloc_size+j];
-            for (j=0;j<st->magic_samples[i];j++)
+            for (j=0;j<st->magic_samples[i];++j)
                st->mem[i*st->mem_alloc_size+j] = 0;
             st->magic_samples[i] = 0;
          }
@@ -749,17 +749,17 @@ static int update_filter(SpeexResamplerState *st)
          {
             /* If the new filter length is still bigger than the "augmented" length */
             /* Copy data going backward */
-            for (j=0;j<olen-1;j++)
+            for (j=0;j<olen-1;++j)
                st->mem[i*st->mem_alloc_size+(st->filt_len-2-j)] = st->mem[i*st->mem_alloc_size+(olen-2-j)];
             /* Then put zeros for lack of anything better */
-            for (;j<st->filt_len-1;j++)
+            for (;j<st->filt_len-1;++j)
                st->mem[i*st->mem_alloc_size+(st->filt_len-2-j)] = 0;
             /* Adjust last_sample */
             st->last_sample[i] += (st->filt_len - olen)/2;
          } else {
             /* Put back some of the magic! */
             st->magic_samples[i] = (olen - st->filt_len)/2;
-            for (j=0;j<st->filt_len-1+st->magic_samples[i];j++)
+            for (j=0;j<st->filt_len-1+st->magic_samples[i];++j)
                st->mem[i*st->mem_alloc_size+j] = st->mem[i*st->mem_alloc_size+j+st->magic_samples[i]];
          }
       }
@@ -768,14 +768,14 @@ static int update_filter(SpeexResamplerState *st)
       spx_uint32_t i;
       /* Reduce filter length, this a bit tricky. We need to store some of the memory as "magic"
          samples so they can be used directly as input the next time(s) */
-      for (i=0;i<st->nb_channels;i++)
+      for (i=0;i<st->nb_channels;++i)
       {
          spx_uint32_t j;
          spx_uint32_t old_magic = st->magic_samples[i];
          st->magic_samples[i] = (old_length - st->filt_len)/2;
          /* We must copy some of the memory that's no longer used */
          /* Copy data going backward */
-         for (j=0;j<st->filt_len-1+st->magic_samples[i]+old_magic;j++)
+         for (j=0;j<st->filt_len-1+st->magic_samples[i]+old_magic;++j)
             st->mem[i*st->mem_alloc_size+j] = st->mem[i*st->mem_alloc_size+j+st->magic_samples[i]];
          st->magic_samples[i] += old_magic;
       }
@@ -914,7 +914,7 @@ static int speex_resampler_magic(SpeexResamplerState *st, spx_uint32_t channel_i
    if (st->magic_samples[channel_index])
    {
       spx_uint32_t i;
-      for (i=0;i<st->magic_samples[channel_index];i++)
+      for (i=0;i<st->magic_samples[channel_index];++i)
          mem[N-1+i]=mem[N-1+i+tmp_in_len];
    }
    *out += out_len*st->out_stride;
@@ -1045,7 +1045,7 @@ EXPORT int speex_resampler_process_interleaved_float(SpeexResamplerState *st, co
    istride_save = st->in_stride;
    ostride_save = st->out_stride;
    st->in_stride = st->out_stride = st->nb_channels;
-   for (i=0;i<st->nb_channels;i++)
+   for (i=0;i<st->nb_channels;++i)
    {
       *out_len = bak_out_len;
       *in_len = bak_in_len;
@@ -1068,7 +1068,7 @@ EXPORT int speex_resampler_process_interleaved_int(SpeexResamplerState *st, cons
    istride_save = st->in_stride;
    ostride_save = st->out_stride;
    st->in_stride = st->out_stride = st->nb_channels;
-   for (i=0;i<st->nb_channels;i++)
+   for (i=0;i<st->nb_channels;++i)
    {
       *out_len = bak_out_len;
       *in_len = bak_in_len;
@@ -1130,7 +1130,7 @@ EXPORT int speex_resampler_set_rate_frac(SpeexResamplerState *st, spx_uint32_t r
 
    if (old_den > 0)
    {
-      for (i=0;i<st->nb_channels;i++)
+      for (i=0;i<st->nb_channels;++i)
       {
          if (_muldiv(&st->samp_frac_num[i],st->samp_frac_num[i],st->den_rate,old_den) != RESAMPLER_ERR_SUCCESS)
             return RESAMPLER_ERR_OVERFLOW;
@@ -1201,7 +1201,7 @@ EXPORT int speex_resampler_get_output_latency(SpeexResamplerState *st)
 EXPORT int speex_resampler_skip_zeros(SpeexResamplerState *st)
 {
    spx_uint32_t i;
-   for (i=0;i<st->nb_channels;i++)
+   for (i=0;i<st->nb_channels;++i)
       st->last_sample[i] = st->filt_len/2;
    return RESAMPLER_ERR_SUCCESS;
 }
@@ -1209,13 +1209,13 @@ EXPORT int speex_resampler_skip_zeros(SpeexResamplerState *st)
 EXPORT int speex_resampler_reset_mem(SpeexResamplerState *st)
 {
    spx_uint32_t i;
-   for (i=0;i<st->nb_channels;i++)
+   for (i=0;i<st->nb_channels;++i)
    {
       st->last_sample[i] = 0;
       st->magic_samples[i] = 0;
       st->samp_frac_num[i] = 0;
    }
-   for (i=0;i<st->nb_channels*(st->filt_len-1);i++)
+   for (i=0;i<st->nb_channels*(st->filt_len-1);++i)
       st->mem[i] = 0;
    return RESAMPLER_ERR_SUCCESS;
 }

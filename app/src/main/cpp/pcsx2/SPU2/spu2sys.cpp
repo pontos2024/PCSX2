@@ -422,7 +422,7 @@ __forceinline void TimeUpdate(u32 cClocks)
 	//Update Mixing Progress
 	while (dClocks >= TickInterval)
 	{
-		for (int i = 0; i < 2; i++)
+		for (int i = 0; i < 2; ++i)
 		{
 			if (has_to_call_irq[i])
 			{
@@ -441,8 +441,8 @@ __forceinline void TimeUpdate(u32 cClocks)
 		Cycles++;
 
 		// Start Queued Voices, they start after 2T (Tested on real HW)
-		for(int c = 0; c < 2; c++)
-			for (int v = 0; v < 24; v++)
+		for(int c = 0; c < 2; ++c)
+			for (int v = 0; v < 24; ++v)
 				if(Cores[c].KeyOn & (1 << v))
 					if(StartQueuedVoice(c, v))
 						Cores[c].KeyOn &= ~(1 << v);
@@ -463,7 +463,7 @@ __forceinline void TimeUpdate(u32 cClocks)
 
 		if (Cores[0].DMAICounter <= 0)
 		{
-			for (int i = 0; i < 2; i++)
+			for (int i = 0; i < 2; ++i)
 			{
 				if (has_to_call_irq_dma[i])
 				{
@@ -516,7 +516,7 @@ __forceinline void TimeUpdate(u32 cClocks)
 			HW_DMA7_MADR += amt / 2;
 		if (Cores[1].DMAICounter <= 0)
 		{
-			for (int i = 0; i < 2; i++)
+			for (int i = 0; i < 2; ++i)
 			{
 				if (has_to_call_irq_dma[i])
 				{
@@ -1290,7 +1290,7 @@ static void __fastcall RegWrite_Core(u16 value)
 			// Performance Note: The PS2 Bios uses this extensively right before booting games,
 			// causing massive slowdown if we don't shortcut it here.
 			thiscore.ActiveTSA = thiscore.TSA;
-			for (int i = 0; i < 2; i++)
+			for (int i = 0; i < 2; ++i)
 			{
 				if (Cores[i].IRQEnable && (Cores[i].IRQA == thiscore.ActiveTSA))
 				{
@@ -1352,9 +1352,13 @@ static void __fastcall RegWrite_Core(u16 value)
 
 				if (!thiscore.IRQEnable)
 					Spdif.Info &= ~(4 << thiscore.Index);
+#ifdef PCSX2_DEBUG
 				else
-					if ((thiscore.IRQA & 0xFFF00000) != 0)
-						DevCon.Warning("SPU2: Core %d IRQA Outside of SPU2 memory, Addr %x", thiscore.Index, thiscore.IRQA);
+					if ((thiscore.IRQA & 0xFFF00000) != 0) {
+						DevCon.Warning("SPU2: Core %d IRQA Outside of SPU2 memory, Addr %x",
+									   thiscore.Index, thiscore.IRQA);
+					}
+#endif
 			}
 		}
 		break;
@@ -1974,7 +1978,7 @@ void StartVoices(int core, u32 value)
 	Cores[core].KeyOn |= value;
 	Cores[core].Regs.ENDX &= ~value;
 
-	for (u8 vc = 0; vc < V_Core::NumVoices; vc++)
+	for (u8 vc = 0; vc < V_Core::NumVoices; ++vc)
 	{
 		if (!((value >> vc) & 1))
 			continue;
@@ -2011,7 +2015,7 @@ void StopVoices(int core, u32 value)
 
 	ConLog("KeyOff Write %x\n", value);
 
-	for (u8 vc = 0; vc < V_Core::NumVoices; vc++)
+	for (u8 vc = 0; vc < V_Core::NumVoices; ++vc)
 	{
 		if (!((value >> vc) & 1))
 			continue;

@@ -62,7 +62,7 @@ struct cpuinfo_mach_topology cpuinfo_mach_detect_topology(void) {
 			if (cache_configs > CPUINFO_MACH_MAX_CACHE_LEVELS) {
 				cache_configs = CPUINFO_MACH_MAX_CACHE_LEVELS;
 			}
-			for (size_t i = 0; i < cache_configs; i++) {
+			for (size_t i = 0; i < cache_configs; ++i) {
 				cpuinfo_log_debug("mach hw.cacheconfig[%zu]: %"PRIu64, i, cacheconfig[i]);
 				topology.threads_per_cache[i] = cacheconfig[i];
 			}

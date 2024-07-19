@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include <Shlwapi.h>
 #include <CommCtrl.h>
+#include <commdlg.h>
 #include "GS.h"
 #include "GSDialog.h"
 #include "GS/GSVector.h"
@@ -46,7 +47,7 @@ INT_PTR CALLBACK GSDialog::DialogProc(HWND hWnd, UINT message, WPARAM wParam, LP
 		GetMonitorInfo(MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST), &mi);
 
 		GSVector4i r;
-		GetWindowRect(hWnd, r);
+		GetWindowRect(hWnd, reinterpret_cast<LPRECT>(&r));
 
 		int x = (mi.rcWork.left + mi.rcWork.right - r.width()) / 2;
 		int y = (mi.rcWork.top + mi.rcWork.bottom - r.height()) / 2;
@@ -173,7 +174,7 @@ void GSDialog::ComboBoxInit(UINT id, const std::vector<GSSetting>& settings, int
 	if (std::none_of(settings.begin(), settings.end(), is_present))
 		selectionValue = settings.front().value;
 
-	for (size_t i = 0; i < settings.size(); i++)
+	for (size_t i = 0; i < settings.size(); ++i)
 	{
 		const GSSetting& s = settings[i];
 
@@ -249,7 +250,7 @@ void GSDialog::ComboBoxFixDroppedWidth(UINT id)
 
 		int width = (int)SendMessage(hWnd, CB_GETDROPPEDWIDTH, 0, 0);
 
-		for (int i = 0; i < count; i++)
+		for (int i = 0; i < count; ++i)
 		{
 			int len = (int)SendMessage(hWnd, CB_GETLBTEXTLEN, i, 0);
 

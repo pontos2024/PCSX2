@@ -324,7 +324,7 @@ bool wxVListBoxComboPopup::HandleKey( int keycode, bool saturate, wxChar keychar
         int found = -1;
         unsigned int length=m_partialCompletionString.length();
         int i;
-        for (i=0; i<itemCount; i++)
+        for (i=0; i<itemCount; ++i)
         {
             wxString item=GetString(i);
             if (( item.length() >= length) && (!  m_partialCompletionString.CmpNoCase(item.Left(length))))

@@ -151,7 +151,7 @@ namespace usb_hid
 				{
 					InputEvent ev{};
 					len /= sizeof(events[0]);
-					for (int i = 0; i < len; i++)
+					for (int i = 0; i < len; ++i)
 					{
 						input_event& event = events[i];
 						switch (event.type)

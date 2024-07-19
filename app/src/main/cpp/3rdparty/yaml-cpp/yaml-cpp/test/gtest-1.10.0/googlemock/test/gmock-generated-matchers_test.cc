@@ -323,7 +323,7 @@ TEST(ElementsAreTest, WorksForNestedContainer) {
   };
 
   vector<list<char> > nested;
-  for (size_t i = 0; i < GTEST_ARRAY_SIZE_(strings); i++) {
+  for (size_t i = 0; i < GTEST_ARRAY_SIZE_(strings); ++i) {
     nested.push_back(list<char>(strings[i], strings[i] + strlen(strings[i])));
   }
 

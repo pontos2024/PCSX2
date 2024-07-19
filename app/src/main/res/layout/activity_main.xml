@@ -13,8 +13,52 @@
         android:layout_height="match_parent" />
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:id="@+id/ll_renderer"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:gravity="start"
+        android:orientation="horizontal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_ogl"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="60dip"
+            android:layout_height="wrap_content"
+            android:text="OGL"
+            android:textSize="12dp"
+            android:textColor="@color/white"
+            app:rippleColor="#80cdcdcd"
+            app:strokeColor="#80000000" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_vulkan"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="60dip"
+            android:layout_height="wrap_content"
+            android:text="VK"
+            android:textSize="12dp"
+            android:textColor="@color/white"
+            app:rippleColor="#80cdcdcd"
+            app:strokeColor="#80000000" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_sw"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="60dip"
+            android:layout_height="wrap_content"
+            android:text="SW"
+            android:textSize="12dp"
+            android:textColor="@color/white"
+            app:rippleColor="#80cdcdcd"
+            app:strokeColor="#80000000" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dip"
         android:gravity="center"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"

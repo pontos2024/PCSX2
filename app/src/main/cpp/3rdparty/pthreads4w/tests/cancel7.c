@@ -112,7 +112,7 @@ Win32thread(void * arg)
   assert((bag->self = pthread_self()).p != NULL);
   assert(pthread_kill(bag->self, 0) == 0);
 
-  for (i = 0; i < 100; i++)
+  for (i = 0; i < 100; ++i)
     {
       Sleep(100);
       pthread_testcancel();
@@ -131,7 +131,7 @@ main()
   HANDLE h[NUMTHREADS + 1];
   unsigned thrAddr; /* Dummy variable to pass a valid location to _beginthreadex (Win98). */
 
-  for (i = 1; i <= NUMTHREADS; i++)
+  for (i = 1; i <= NUMTHREADS; ++i)
     {
       threadbag[i].started = 0;
       threadbag[i].threadnum = i;
@@ -150,7 +150,7 @@ main()
   /*
    * Cancel all threads.
    */
-  for (i = 1; i <= NUMTHREADS; i++)
+  for (i = 1; i <= NUMTHREADS; ++i)
     {
       assert(pthread_kill(threadbag[i].self, 0) == 0);
       assert(pthread_cancel(threadbag[i].self) == 0);
@@ -164,7 +164,7 @@ main()
   /*
    * Standard check that all threads started.
    */
-  for (i = 1; i <= NUMTHREADS; i++)
+  for (i = 1; i <= NUMTHREADS; ++i)
     { 
       if (!threadbag[i].started)
 	{
@@ -179,7 +179,7 @@ main()
    * Check any results here. Set "failed" and only print output on failure.
    */
   failed = 0;
-  for (i = 1; i <= NUMTHREADS; i++)
+  for (i = 1; i <= NUMTHREADS; ++i)
     {
       int fail = 0;
       int result = 0;

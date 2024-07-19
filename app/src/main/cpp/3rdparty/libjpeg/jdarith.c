@@ -743,7 +743,7 @@ jinit_arith_decoder (j_decompress_ptr cinfo)
   entropy->pub.start_pass = start_pass;
 
   /* Mark tables unallocated */
-  for (i = 0; i < NUM_ARITH_TBLS; i++) {
+  for (i = 0; i < NUM_ARITH_TBLS; ++i) {
     entropy->dc_stats[i] = NULL;
     entropy->ac_stats[i] = NULL;
   }
@@ -756,7 +756,7 @@ jinit_arith_decoder (j_decompress_ptr cinfo)
 				  cinfo->num_components*DCTSIZE2*SIZEOF(int));
     coef_bit_ptr = & cinfo->coef_bits[0][0];
     for (ci = 0; ci < cinfo->num_components; ci++)
-      for (i = 0; i < DCTSIZE2; i++)
+      for (i = 0; i < DCTSIZE2; ++i)
 	*coef_bit_ptr++ = -1;
   }
 }

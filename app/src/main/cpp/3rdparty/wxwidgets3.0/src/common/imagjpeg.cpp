@@ -313,7 +313,7 @@ bool wxJPEGHandler::LoadFile( wxImage *image, wxInputStream& stream, bool verbos
         else // CMYK
         {
             const unsigned char* inptr = (const unsigned char*) tempbuf[0];
-            for (size_t i = 0; i < cinfo.output_width; i++)
+            for (size_t i = 0; i < cinfo.output_width; ++i)
             {
                 wx_cmyk_to_rgb(ptr, inptr);
                 ptr += 3;

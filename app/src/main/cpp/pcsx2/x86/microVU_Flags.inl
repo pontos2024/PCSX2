@@ -75,7 +75,7 @@ __fi void mVUstatusFlagOp(mV)
 int findFlagInst(int* fFlag, int cycles)
 {
 	int j = 0, jValue = -1;
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 4; ++i)
 	{
 		if ((fFlag[i] <= cycles) && (fFlag[i] > jValue))
 		{
@@ -91,7 +91,7 @@ int sortFlag(int* fFlag, int* bFlag, int cycles)
 {
 	int lFlag = -5;
 	int x = 0;
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 4; ++i)
 	{
 		bFlag[i] = findFlagInst(fFlag, cycles);
 		if (lFlag != bFlag[i])
@@ -105,7 +105,7 @@ int sortFlag(int* fFlag, int* bFlag, int cycles)
 void sortFullFlag(int* fFlag, int* bFlag)
 {
 	int m = std::max(std::max(fFlag[0], fFlag[1]), std::max(fFlag[2], fFlag[3]));
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 4; ++i)
 	{
 		int t = 3 - (m - fFlag[i]);
 		bFlag[i] = (t < 0) ? 0 : t + 1;
@@ -151,7 +151,7 @@ __fi void mVUsetFlags(mV, microFlagCycles& mFC)
 	// Status/Mac Flags Setup Code
 	int xS = 0, xM = 0, xC = 0;
 
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 4; ++i)
 	{
 		mFC.xStatus[i] = i;
 		mFC.xMac   [i] = i;
@@ -369,7 +369,7 @@ __fi void mVUsetupFlags(mV, microFlagCycles& mFC)
 void _mVUflagPass(mV, u32 startPC, u32 sCount, u32 found, std::vector<u32>& v)
 {
 
-	for (u32 i = 0; i < v.size(); i++)
+	for (u32 i = 0; i < v.size(); ++i)
 	{
 		if (v[i] == startPC)
 			return; // Prevent infinite recursion

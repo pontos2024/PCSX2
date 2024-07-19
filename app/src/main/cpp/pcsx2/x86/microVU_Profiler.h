@@ -123,7 +123,7 @@ struct microProfiler
 		{
 			u64 total = 0;
 			std::vector<std::pair<u32, u32>> v;
-			for (int i = 0; i < opLastOpcode; i++)
+			for (int i = 0; i < opLastOpcode; ++i)
 			{
 				total += opStats[i];
 				v.push_back(std::make_pair(opStats[i], i));
@@ -132,7 +132,7 @@ struct microProfiler
 			std::reverse(v.begin(), v.end());
 			double dTotal = (double)total;
 			DevCon.WriteLn("microVU%d Profiler:", index);
-			for (u32 i = 0; i < v.size(); i++)
+			for (u32 i = 0; i < v.size(); ++i)
 			{
 				u64 count = v[i].first;
 				double stat = (double)count / dTotal * 100.0;

@@ -1,10 +1,24 @@
+/*  PCSX2 - PS2 Emulator for PCs
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "PrecompiledHeader.h"
 
 #include "HostDisplay.h"
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/StringUtil.h"
-#include "common/Timer.h"
 #include <cerrno>
 #include <cmath>
 #include <cstring>
@@ -18,33 +32,26 @@ HostDisplay::~HostDisplay() = default;
 
 const char* HostDisplay::RenderAPIToString(RenderAPI api)
 {
-	static const char* names[] = {"None", "D3D11", "D3D12", "Vulkan", "OpenGL", "OpenGLES"};
-	return (static_cast<u32>(api) >= ArraySize(names)) ? names[0] : names[static_cast<u32>(api)];
+	switch (api)
+	{
+#define CASE(x) case RenderAPI::x: return #x
+		CASE(None);
+		CASE(D3D11);
+		CASE(D3D12);
+		CASE(Metal);
+		CASE(Vulkan);
+		CASE(OpenGL);
+		CASE(OpenGLES);
+#undef CASE
+		default:
+			return "Unknown";
+	}
 }
 
 bool HostDisplay::UsesLowerLeftOrigin() const
 {
 	const RenderAPI api = GetRenderAPI();
 	return (api == RenderAPI::OpenGL || api == RenderAPI::OpenGLES);
-}
-
-void HostDisplay::SetDisplayMaxFPS(float max_fps)
-{
-	m_display_frame_interval = (max_fps > 0.0f) ? (1.0f / max_fps) : 0.0f;
-}
-
-bool HostDisplay::ShouldSkipDisplayingFrame()
-{
-	if (m_display_frame_interval == 0.0f)
-		return false;
-
-	const u64 now = Common::Timer::GetCurrentValue();
-	const double diff = Common::Timer::ConvertValueToSeconds(now - m_last_frame_displayed_time);
-	if (diff < m_display_frame_interval)
-		return true;
-
-	m_last_frame_displayed_time = now;
-	return false;
 }
 
 bool HostDisplay::GetHostRefreshRate(float* refresh_rate)
@@ -56,6 +63,16 @@ bool HostDisplay::GetHostRefreshRate(float* refresh_rate)
 	}
 
 	return WindowInfo::QueryRefreshRateForWindow(m_window_info, refresh_rate);
+}
+
+bool HostDisplay::SetGPUTimingEnabled(bool enabled)
+{
+	return false;
+}
+
+float HostDisplay::GetAndResetAccumulatedGPUTime()
+{
+	return 0.0f;
 }
 
 bool HostDisplay::ParseFullscreenMode(const std::string_view& mode, u32* width, u32* height, float* refresh_rate)
@@ -109,82 +126,17 @@ std::string HostDisplay::GetFullscreenModeString(u32 width, u32 height, float re
 	return StringUtil::StdStringFromFormat("%u x %u @ %f hz", width, height, refresh_rate);
 }
 
-std::tuple<float, float, float, float> HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height,
-	s32 texture_width, s32 texture_height, float display_aspect_ratio, bool integer_scaling, Alignment alignment)
-{
-	const float window_ratio = static_cast<float>(window_width) / static_cast<float>(window_height);
-	const float x_scale = (display_aspect_ratio / (static_cast<float>(texture_width) / static_cast<float>(texture_height)));
-	const float display_width = static_cast<float>(texture_width) * x_scale;
-	const float display_height = static_cast<float>(texture_height);
-	float left = 0.0f;
-	float top = 0.0f;
-	float width = display_width;
-	float height = display_height;
-
-	// now fit it within the window
-	float scale;
-	if ((display_width / display_height) >= window_ratio)
-	{
-		// align in middle vertically
-		scale = static_cast<float>(window_width) / display_width;
-		if (integer_scaling)
-		{
-			scale = std::max(std::floor(scale), 1.0f);
-			left += std::max<float>((static_cast<float>(window_width) - display_width * scale) / 2.0f, 0.0f);
-		}
-
-		switch (alignment)
-		{
-			case Alignment::RightOrBottom:
-				top += std::max<float>(static_cast<float>(window_height) - (display_height * scale), 0.0f);
-				break;
-
-			case Alignment::Center:
-				top += std::max<float>((static_cast<float>(window_height) - (display_height * scale)) / 2.0f, 0.0f);
-				break;
-
-			case Alignment::LeftOrTop:
-			default:
-				break;
-		}
-	}
-	else
-	{
-		// align in middle horizontally
-		scale = static_cast<float>(window_height) / display_height;
-		if (integer_scaling)
-		{
-			scale = std::max(std::floor(scale), 1.0f);
-			top += std::max<float>((static_cast<float>(window_height) - (display_height * scale)) / 2.0f, 0.0f);
-		}
-
-		switch (alignment)
-		{
-			case Alignment::RightOrBottom:
-				left += std::max<float>(static_cast<float>(window_width) - (display_width * scale), 0.0f);
-				break;
-
-			case Alignment::Center:
-				left += std::max<float>((static_cast<float>(window_width) - (display_width * scale)) / 2.0f, 0.0f);
-				break;
-
-			case Alignment::LeftOrTop:
-			default:
-				break;
-		}
-	}
-
-	width *= scale;
-	height *= scale;
-
-	return std::make_tuple(left, top, left + width, top + height);
-}
-
+#ifdef ENABLE_OPENGL
 #include "Frontend/OpenGLHostDisplay.h"
-//#include "Frontend/VulkanHostDisplay.h"
+#endif
+
+#ifdef ENABLE_VULKAN
+#include "Frontend/VulkanHostDisplay.h"
+#endif
 
 #ifdef _WIN32
 #include "Frontend/D3D11HostDisplay.h"
+#include "Frontend/D3D12HostDisplay.h"
 #endif
 
 std::unique_ptr<HostDisplay> HostDisplay::CreateDisplayForAPI(RenderAPI api)
@@ -194,17 +146,28 @@ std::unique_ptr<HostDisplay> HostDisplay::CreateDisplayForAPI(RenderAPI api)
 #ifdef _WIN32
 		case RenderAPI::D3D11:
 			return std::make_unique<D3D11HostDisplay>();
+		case RenderAPI::D3D12:
+			return std::make_unique<D3D12HostDisplay>();
+#endif
+#ifdef __APPLE__
+		case HostDisplay::RenderAPI::Metal:
+			return std::unique_ptr<HostDisplay>(MakeMetalHostDisplay());
 #endif
 
+#ifdef ENABLE_OPENGL
 		case RenderAPI::OpenGL:
 		case RenderAPI::OpenGLES:
 			return std::make_unique<OpenGLHostDisplay>();
+#endif
 
-//		case RenderAPI::Vulkan:
-//			return std::make_unique<VulkanHostDisplay>();
+#ifdef ENABLE_VULKAN
+		case RenderAPI::Vulkan:
+			return std::make_unique<VulkanHostDisplay>();
+#endif
 
 		default:
 			Console.Error("Unknown render API %u", static_cast<unsigned>(api));
 			return {};
 	}
 }
+

@@ -28,7 +28,7 @@ int FindHids(HidDeviceInfo** foundDevs, int vid, int pid)
 	{
 		SP_DEVICE_INTERFACE_DATA devInterfaceData;
 		devInterfaceData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
-		for (int i = 0; SetupDiEnumDeviceInterfaces(hdev, 0, &GUID_DEVINTERFACE_HID, i, &devInterfaceData); i++)
+		for (int i = 0; SetupDiEnumDeviceInterfaces(hdev, 0, &GUID_DEVINTERFACE_HID, i, &devInterfaceData); ++i)
 		{
 
 			DWORD size = 0;

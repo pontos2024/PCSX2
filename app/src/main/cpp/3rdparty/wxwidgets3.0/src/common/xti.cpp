@@ -81,7 +81,7 @@ int wxEnumData::GetEnumMemberValue(const wxChar *name) const
 const wxChar *wxEnumData::GetEnumMemberName(int value) const
 {
     int i;
-    for (i = 0; m_members[i].m_name; i++)
+    for (i = 0; m_members[i].m_name; ++i)
         if (value == m_members[i].m_value)
             return m_members[i].m_name;
 

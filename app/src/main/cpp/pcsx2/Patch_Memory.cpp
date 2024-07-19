@@ -67,7 +67,7 @@ void handle_extended_t(IniPatch *p)
 	}
 
 	case 0x4000: // vvvvvvvv iiiiiiii
-		for (u32 i = 0; i < IterationCount; i++)
+		for (u32 i = 0; i < IterationCount; ++i)
 		{
 			memWrite32((u32)(PrevCheatAddr + (i * IterationIncrement)), (u32)(p->addr + ((u32)p->data * i)));
 		}
@@ -75,7 +75,7 @@ void handle_extended_t(IniPatch *p)
 		break;
 
 	case 0x5000: // bbbbbbbb 00000000
-		for (u32 i = 0; i < IterationCount; i++)
+		for (u32 i = 0; i < IterationCount; ++i)
 		{
 			u8 mem = memRead8(PrevCheatAddr + i);
 			memWrite8((p->addr + i) & 0x0FFFFFFF, mem);

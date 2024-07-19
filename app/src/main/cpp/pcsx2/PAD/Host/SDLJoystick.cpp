@@ -54,6 +54,11 @@ void JoystickInfo::EnumerateJoysticks(std::vector<std::unique_ptr<Device>>& vjoy
 		}
 	}
 
+    ////== Clear
+    if(g_haptic_android != nullptr) {
+        delete g_haptic_android;
+        g_haptic_android = nullptr;
+    }
     ////
 	vjoysticks.clear();
     ////== Clear
@@ -66,6 +71,11 @@ void JoystickInfo::EnumerateJoysticks(std::vector<std::unique_ptr<Device>>& vjoy
             // Something goes wrong in the init, let's drop it
             if (!vjoysticks.back()->IsProperlyInitialized())
                 vjoysticks.pop_back();
+        }
+    }
+    else {
+        if(g_haptic_android == nullptr) {
+            g_haptic_android = new JoystickInfo();
         }
     }
 }

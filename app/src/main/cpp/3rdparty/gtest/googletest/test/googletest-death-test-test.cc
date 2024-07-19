@@ -557,7 +557,7 @@ TEST_F(TestForDeathTest, OutsideFixture) {
 
 // Tests that death tests can be done inside a loop.
 TEST_F(TestForDeathTest, InsideLoop) {
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 5; ++i) {
     EXPECT_DEATH(DieIfLessThan(-1, i), "DieIfLessThan") << "where i == " << i;
   }
 }

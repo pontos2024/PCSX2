@@ -181,7 +181,7 @@ main()
     {
       assert(pthread_mutex_lock(&start_flag) == 0);
 
-      for (i = first; i <= last; i++)
+      for (i = first; i <= last; ++i)
 	{
 	  threadbag[i].started = 0;
 	  threadbag[i].threadnum = i;
@@ -209,7 +209,7 @@ main()
       /*
        * Give threads time to complete.
        */
-      for (i = first; i <= last; i++)
+      for (i = first; i <= last; ++i)
 	{
 	  assert(pthread_join(t[i], NULL) == 0);
 	}
@@ -221,7 +221,7 @@ main()
   /*
    * Standard check that all threads started.
    */
-  for (i = 1; i <= NUMTHREADS; i++)
+  for (i = 1; i <= NUMTHREADS; ++i)
     { 
       failed = !threadbag[i].started;
 

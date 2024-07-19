@@ -43,7 +43,7 @@ int CPUINFO_ABI cpuinfo_mock_open(const char* path, int oflag) {
 		return open(path, oflag);
 	}
 
-	for (uint32_t i = 0; i < cpuinfo_mock_file_count; i++) {
+	for (uint32_t i = 0; i < cpuinfo_mock_file_count; ++i) {
 		if (strcmp(cpuinfo_mock_files[i].path, path) == 0) {
 			if (oflag != O_RDONLY) {
 				errno = EACCES;

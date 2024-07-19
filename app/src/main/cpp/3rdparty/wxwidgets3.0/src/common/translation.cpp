@@ -1235,7 +1235,7 @@ bool wxMsgCatalogFile::FillHash(wxStringToStringHashMap& hash,
                             : new wxCSConv(msgIdCharset);
 #endif // !wxUSE_UNICODE
 
-    for (size_t32 i = 0; i < m_numStrings; i++)
+    for (size_t32 i = 0; i < m_numStrings; ++i)
     {
         const char *data = StringAtOfs(m_pOrigTable, i);
         if (!data)

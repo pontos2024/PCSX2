@@ -22,6 +22,7 @@
 #	pragma warning(disable:4996) //ignore the stricmp deprecated warning
 #endif
 
+#include "common/sse2neon.h"
 #include "common/Dependencies.h"
 
 #define NOMINMAX		// Disables other libs inclusion of their own min/max macros (we use std instead)
@@ -79,6 +80,9 @@
 #if defined(_M_X86_32) || defined(_M_X86_64)
 #include "common/emitter/tools.h"
 #endif
+
+// We use fmt a fair bit now.
+#include <fmt/core.h>
 
 #include "Config.h"
 

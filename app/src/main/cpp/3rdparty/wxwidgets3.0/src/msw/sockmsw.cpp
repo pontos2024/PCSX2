@@ -200,7 +200,7 @@ bool wxSocketMSWManager::OnInit()
       return false;
 
   /* Initialize socket list */
-  for (i = 0; i < MAXSOCKETS; i++)
+  for (i = 0; i < MAXSOCKETS; ++i)
   {
     socketList[i] = NULL;
   }
@@ -252,7 +252,7 @@ void wxSocketMSWManager::OnExit()
 {
 #ifdef __WXWINCE__
 /* Delete the threads here */
-    for(unsigned int i=0; i < currSocket; i++)
+    for(unsigned int i=0; i < currSocket; ++i)
         CloseHandle(hThread[i]);
 #endif
   /* Destroy internal window */

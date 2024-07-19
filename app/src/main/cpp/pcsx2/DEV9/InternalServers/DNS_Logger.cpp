@@ -48,7 +48,7 @@ namespace InternalServers
 		if (data.size() != 0)
 		{
 			str.reserve(data.size() * 4);
-			for (size_t i = 0; i < data.size(); i++)
+			for (size_t i = 0; i < data.size(); ++i)
 				str += std::to_string(data[i]) + ":";
 
 			str.pop_back();
@@ -128,14 +128,14 @@ namespace InternalServers
 		Console.WriteLn("DEV9: DNS: Authority Count %i", dns->authorities.size());
 		Console.WriteLn("DEV9: DNS: Additional Count %i", dns->additional.size());
 
-		for (size_t i = 0; i < dns->questions.size(); i++)
+		for (size_t i = 0; i < dns->questions.size(); ++i)
 		{
 			DNS_QuestionEntry entry = dns->questions[i];
 			Console.WriteLn("DEV9: DNS: Q%i Name %s", i, entry.name.c_str());
 			Console.WriteLn("DEV9: DNS: Q%i Type %i", i, entry.entryType);
 			Console.WriteLn("DEV9: DNS: Q%i Class %i", i, entry.entryClass);
 		}
-		for (size_t i = 0; i < dns->answers.size(); i++)
+		for (size_t i = 0; i < dns->answers.size(); ++i)
 		{
 			DNS_ResponseEntry entry = dns->answers[i];
 			Console.WriteLn("DEV9: DNS: Ans%i Name %s", i, entry.name.c_str());
@@ -144,7 +144,7 @@ namespace InternalServers
 			Console.WriteLn("DEV9: DNS: Ans%i TTL %i", i, entry.timeToLive);
 			Console.WriteLn("DEV9: DNS: Ans%i Data %s", i, VectorToString(entry.data).c_str());
 		}
-		for (size_t i = 0; i < dns->authorities.size(); i++)
+		for (size_t i = 0; i < dns->authorities.size(); ++i)
 		{
 			DNS_ResponseEntry entry = dns->authorities[i];
 			Console.WriteLn("DEV9: DNS: Auth%i Name %s", i, entry.name.c_str());
@@ -153,7 +153,7 @@ namespace InternalServers
 			Console.WriteLn("DEV9: DNS: Auth%i TTL %i", i, entry.timeToLive);
 			Console.WriteLn("DEV9: DNS: Auth%i Data %s", i, VectorToString(entry.data).c_str());
 		}
-		for (size_t i = 0; i < dns->additional.size(); i++)
+		for (size_t i = 0; i < dns->additional.size(); ++i)
 		{
 			DNS_ResponseEntry entry = dns->additional[i];
 			Console.WriteLn("DEV9: DNS: Add%i Name %s", i, entry.name.c_str());

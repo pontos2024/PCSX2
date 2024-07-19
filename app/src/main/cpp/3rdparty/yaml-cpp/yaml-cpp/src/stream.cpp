@@ -276,7 +276,7 @@ std::string Stream::get(int n) {
   std::string ret;
   if (n > 0) {
     ret.reserve(static_cast<std::string::size_type>(n));
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < n; ++i)
       ret += get();
   }
   return ret;
@@ -285,7 +285,7 @@ std::string Stream::get(int n) {
 // eat
 // . Eats 'n' characters and updates our position.
 void Stream::eat(int n) {
-  for (int i = 0; i < n; i++)
+  for (int i = 0; i < n; ++i)
     get();
 }
 

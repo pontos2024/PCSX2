@@ -2389,7 +2389,7 @@ void wxGenericTreeCtrl::CalculateLineHeight()
         // May be toggle off. Then wxGenericTreeCtrl will spread when
         // necessary (which might look ugly).
         int n = m_imageListNormal->GetImageCount();
-        for (int i = 0; i < n ; i++)
+        for (int i = 0; i < n ; ++i)
         {
             int width = 0, height = 0;
             m_imageListNormal->GetSize(i, width, height);
@@ -2403,7 +2403,7 @@ void wxGenericTreeCtrl::CalculateLineHeight()
         // May be toggle off. Then wxGenericTreeCtrl will spread when
         // necessary (which might look ugly).
         int n = m_imageListState->GetImageCount();
-        for (int i = 0; i < n ; i++)
+        for (int i = 0; i < n ; ++i)
         {
             int width = 0, height = 0;
             m_imageListState->GetSize(i, width, height);
@@ -2417,7 +2417,7 @@ void wxGenericTreeCtrl::CalculateLineHeight()
         // May be toggle off. Then wxGenericTreeCtrl will spread when
         // necessary (which might look ugly).
         int n = m_imageListButtons->GetImageCount();
-        for (int i = 0; i < n ; i++)
+        for (int i = 0; i < n ; ++i)
         {
             int width = 0, height = 0;
             m_imageListButtons->GetSize(i, width, height);

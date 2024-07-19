@@ -484,9 +484,9 @@ bool wxTIFFHandler::LoadFile( wxImage *image, wxInputStream& stream, bool verbos
 
     uint32 pos = 0;
 
-    for (uint32 i = 0; i < h; i++)
+    for (uint32 i = 0; i < h; ++i)
     {
-        for (uint32 j = 0; j < w; j++)
+        for (uint32 j = 0; j < w; ++j)
         {
             *(ptr++) = (unsigned char)TIFFGetR(raster[pos]);
             *(ptr++) = (unsigned char)TIFFGetG(raster[pos]);

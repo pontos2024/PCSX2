@@ -924,7 +924,7 @@ audiounit_property_listener_callback(AudioObjectID id, UInt32 address_count,
   stm->switching_device = true;
 
   LOG("(%p) Audio device changed, %u events.", stm, (unsigned int) address_count);
-  for (UInt32 i = 0; i < address_count; i++) {
+  for (UInt32 i = 0; i < address_count; ++i) {
     switch(addresses[i].mSelector) {
       case kAudioHardwarePropertyDefaultOutputDevice: {
           LOG("Event[%u] - mSelector == kAudioHardwarePropertyDefaultOutputDevice for id=%d", (unsigned int) i, id);
@@ -965,7 +965,7 @@ audiounit_property_listener_callback(AudioObjectID id, UInt32 address_count,
     switch_side |= DEV_OUTPUT;
   }
 
-  for (UInt32 i = 0; i < address_count; i++) {
+  for (UInt32 i = 0; i < address_count; ++i) {
     switch(addresses[i].mSelector) {
     case kAudioHardwarePropertyDefaultOutputDevice:
     case kAudioHardwarePropertyDefaultInputDevice:
@@ -1716,7 +1716,7 @@ audiounit_set_aggregate_sub_device_list(AudioDeviceID aggregate_device_id,
   CFMutableArrayRef aggregate_sub_devices_array = CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
   /* The order of the items in the array is significant and is used to determine the order of the streams
      of the AudioAggregateDevice. */
-  for (UInt32 i = 0; i < output_sub_devices.size(); i++) {
+  for (UInt32 i = 0; i < output_sub_devices.size(); ++i) {
     CFStringRef ref = get_device_name(output_sub_devices[i]);
     if (ref == NULL) {
       CFRelease(aggregate_sub_devices_array);
@@ -1725,7 +1725,7 @@ audiounit_set_aggregate_sub_device_list(AudioDeviceID aggregate_device_id,
     CFArrayAppendValue(aggregate_sub_devices_array, ref);
     CFRelease(ref);
   }
-  for (UInt32 i = 0; i < input_sub_devices.size(); i++) {
+  for (UInt32 i = 0; i < input_sub_devices.size(); ++i) {
     CFStringRef ref = get_device_name(input_sub_devices[i]);
     if (ref == NULL) {
       CFRelease(aggregate_sub_devices_array);
@@ -3167,7 +3167,7 @@ audiounit_get_channel_count(AudioObjectID devid, AudioObjectPropertyScope scope)
   if (AudioObjectGetPropertyDataSize(devid, &adr, 0, NULL, &size) == noErr && size > 0) {
     AudioBufferList * list = static_cast<AudioBufferList *>(alloca(size));
     if (AudioObjectGetPropertyData(devid, &adr, 0, NULL, &size, list) == noErr) {
-      for (i = 0; i < list->mNumberBuffers; i++)
+      for (i = 0; i < list->mNumberBuffers; ++i)
         ret += list->mBuffers[i].mNumberChannels;
     }
   }
@@ -3200,7 +3200,7 @@ audiounit_get_available_samplerate(AudioObjectID devid, AudioObjectPropertyScope
     range.mMinimum = 9999999999.0;
     range.mMaximum = 0.0;
     if (AudioObjectGetPropertyData(devid, &adr, 0, NULL, &size, ranges.data()) == noErr) {
-      for (uint32_t i = 0; i < count; i++) {
+      for (uint32_t i = 0; i < count; ++i) {
         if (ranges[i].mMaximum > range.mMaximum)
           range.mMaximum = ranges[i].mMaximum;
         if (ranges[i].mMinimum < range.mMinimum)
@@ -3417,7 +3417,7 @@ static int
 audiounit_device_collection_destroy(cubeb * /* context */,
                                     cubeb_device_collection * collection)
 {
-  for (size_t i = 0; i < collection->count; i++) {
+  for (size_t i = 0; i < collection->count; ++i) {
     audiounit_device_destroy(&collection->device[i]);
   }
   delete [] collection->device;

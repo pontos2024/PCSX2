@@ -113,7 +113,7 @@ __inline int CheckCache(u32 addr)
 		return false;//
 	}
 
-	for(int i = 1; i < 48; i++)
+	for(int i = 1; i < 48; ++i)
 	{
 		if (((tlb[i].EntryLo1 & 0x38) >> 3) == 0x3) {
 			mask  = tlb[i].PageMask;
@@ -355,22 +355,24 @@ template void vtlb_memWrite<mem32_t>(u32 mem, mem32_t data);
 static void GoemonTlbMissDebug()
 {
 	// 0x3d5580 is the address of the TLB cache
-	GoemonTlb* tlb = (GoemonTlb*)&eeMem->Main[0x3d5580];
+	auto* tlb = (GoemonTlb*)&eeMem->Main[0x3d5580];
 
-	for (u32 i = 0; i < 150; i++) {
+#ifdef PCSX2_DEBUG
+	for (u32 i = 0; i < 150; ++i) {
 		if (tlb[i].valid == 0x1 && tlb[i].low_add != tlb[i].high_add)
 			DevCon.WriteLn("GoemonTlbMissDebug: Entry %d is valid. Key %x. From V:0x%8.8x to V:0x%8.8x (P:0x%8.8x)", i, tlb[i].key, tlb[i].low_add, tlb[i].high_add, tlb[i].physical_add);
 		else if (tlb[i].low_add != tlb[i].high_add)
 			DevCon.WriteLn("GoemonTlbMissDebug: Entry %d is invalid. Key %x. From V:0x%8.8x to V:0x%8.8x (P:0x%8.8x)", i, tlb[i].key, tlb[i].low_add, tlb[i].high_add, tlb[i].physical_add);
 	}
+#endif
 }
 
 void __fastcall GoemonPreloadTlb()
 {
 	// 0x3d5580 is the address of the TLB cache table
-	GoemonTlb* tlb = (GoemonTlb*)&eeMem->Main[0x3d5580];
+    auto* tlb = (GoemonTlb*)&eeMem->Main[0x3d5580];
 
-	for (u32 i = 0; i < 150; i++) {
+	for (u32 i = 0; i < 150; ++i) {
 		if (tlb[i].valid == 0x1 && tlb[i].low_add != tlb[i].high_add) {
 
 			u32 size  = tlb[i].high_add - tlb[i].low_add;
@@ -381,7 +383,9 @@ void __fastcall GoemonPreloadTlb()
 			//if ((uptr)vtlbdata.vmap[vaddr>>VTLB_PAGE_BITS] == POINTER_SIGN_BIT) {
 			auto vmv = vtlbdata.vmap[vaddr>>VTLB_PAGE_BITS];
 			if (vmv.isHandler(vaddr) && vmv.assumeHandlerGetID() == 0) {
+#ifdef PCSX2_DEBUG
 				DevCon.WriteLn("GoemonPreloadTlb: Entry %d. Key %x. From V:0x%8.8x to P:0x%8.8x (%d pages)", i, tlb[i].key, vaddr, paddr, size >> VTLB_PAGE_BITS);
+#endif
 				vtlb_VMap(           vaddr , paddr, size);
 				vtlb_VMap(0x20000000|vaddr , paddr, size);
 			}
@@ -392,14 +396,15 @@ void __fastcall GoemonPreloadTlb()
 void __fastcall GoemonUnloadTlb(u32 key)
 {
 	// 0x3d5580 is the address of the TLB cache table
-	GoemonTlb* tlb = (GoemonTlb*)&eeMem->Main[0x3d5580];
-	for (u32 i = 0; i < 150; i++) {
+    auto* tlb = (GoemonTlb*)&eeMem->Main[0x3d5580];
+	for (u32 i = 0; i < 150; ++i) {
 		if (tlb[i].key == key) {
 			if (tlb[i].valid == 0x1) {
 				u32 size  = tlb[i].high_add - tlb[i].low_add;
 				u32 vaddr = tlb[i].low_add;
+#ifdef PCSX2_DEBUG
 				DevCon.WriteLn("GoemonUnloadTlb: Entry %d. Key %x. From V:0x%8.8x to V:0x%8.8x (%d pages)", i, tlb[i].key, vaddr, vaddr+size, size >> VTLB_PAGE_BITS);
-
+#endif
 				vtlb_VMapUnmap(           vaddr , size);
 				vtlb_VMapUnmap(0x20000000|vaddr , size);
 
@@ -409,9 +414,12 @@ void __fastcall GoemonUnloadTlb(u32 key)
 				tlb[i].key      = 0xFEFEFEFE;
 				tlb[i].low_add  = 0xFEFEFEFE;
 				tlb[i].high_add = 0xFEFEFEFE;
-			} else {
+			}
+#ifdef PCSX2_DEBUG
+			else {
 				DevCon.Error("GoemonUnloadTlb: Entry %d is not valid. Key %x", i, tlb[i].key);
 			}
+#endif
 		}
 	}
 }
@@ -419,8 +427,9 @@ void __fastcall GoemonUnloadTlb(u32 key)
 // Generates a tlbMiss Exception
 static __ri void vtlb_Miss(u32 addr,u32 mode)
 {
-	if (EmuConfig.Gamefixes.GoemonTlbHack)
-		GoemonTlbMissDebug();
+	if (EmuConfig.Gamefixes.GoemonTlbHack) {
+        GoemonTlbMissDebug();
+    }
 
 	// Hack to handle expected tlb miss by some games.
 	if (Cpu == &intCpu) {
@@ -433,14 +442,12 @@ static __ri void vtlb_Miss(u32 addr,u32 mode)
 		throw Exception::CancelInstruction();
 	}
 
-	if( IsDevBuild )
-		Cpu->ThrowCpuException( R5900Exception::TLBMiss( addr, !!mode ) );
-	else
-	{
-		static int spamStop = 0;
-		if ( spamStop++ < 50 )
-			Console.Error( R5900Exception::TLBMiss( addr, !!mode ).FormatMessage() );
-	}
+#ifdef PCSX2_DEBUG
+    static int spamStop = 0;
+    if (spamStop++ < 50 || IsDevBuild) {
+        Console.Error(R5900Exception::TLBMiss(addr, !!mode).FormatMessage());
+    }
+#endif
 }
 
 // BusError exception: more serious than a TLB miss.  If properly emulated the PS2 kernel
@@ -450,11 +457,7 @@ static __ri void vtlb_BusError(u32 addr,u32 mode)
 {
 	// The exception terminate the program on linux which is very annoying
 	// Just disable it for the moment
-#ifdef __linux__
-	if (0)
-#else
 	if( IsDevBuild )
-#endif
 		Cpu->ThrowCpuException( R5900Exception::BusError( addr, !!mode ) );
 	else
 		Console.Error( R5900Exception::TLBMiss( addr, !!mode ).FormatMessage() );
@@ -726,7 +729,7 @@ static bool vtlb_CreateFastmemMapping(u32 vaddr, u32 size, u32 mainmem_offset)
 {
 	uptr base = vtlbdata.fastmem_base + vaddr;
 
-	FastmemVirtualMapping m;
+	FastmemVirtualMapping m{};
 	m.offset = mainmem_offset;
 	m.size = size;
 
@@ -764,8 +767,9 @@ static void vtlb_RemoveFastmemMappings(u32 vaddr, u32 size)
 		const u32 m_vaddrend = m_vaddr + (iter->second.size - 1);
 		if (!vtlb_Overlaps(vaddr, vaddr + (size - 1), m_vaddr, m_vaddrend))
 			break;
-
+#ifdef PCSX2_DEBUG
 		FASTMEM_LOG("Unmapping fastmem at %08X-%08X\n", vaddr, vaddr + (size - 1));
+#endif
 		HostSys::UnmapSharedMemory(GetVmMemory().MainMemory()->GetFileHandle(), (void*)iter->first, iter->second.size);
 		s_fastmem_virtual_mapping.erase(iter);
 	}
@@ -778,17 +782,19 @@ bool vtlb_ResolveFastmemMapping(uptr* addr)
 	uptr fastmem_end = fastmem_start + 0xFFFFFFFFu;
 	if (uaddr < fastmem_start || uaddr > fastmem_end)
 		return false;
-
+#ifdef PCSX2_DEBUG
 	FASTMEM_LOG("Trying to resolve %p (vaddr %08X)\n", (void*)uaddr, static_cast<u32>(uaddr - fastmem_start));
-
-	for (auto iter = s_fastmem_virtual_mapping.begin(); iter != s_fastmem_virtual_mapping.end(); ++iter)
+#endif
+	for (auto & iter : s_fastmem_virtual_mapping)
 	{
-		const uptr mbase = (uptr)iter->first;
-		const uptr mend = mbase + (iter->second.size - 1);
+		const uptr mbase = (uptr)iter.first;
+		const uptr mend = mbase + (iter.second.size - 1);
 		if (uaddr >= mbase && uaddr <= mend)
 		{
+#ifdef PCSX2_DEBUG
 			FASTMEM_LOG("Resolved %p (vaddr %08X) to mapping at %08X-%08X offset %u\n", uaddr, static_cast<u32>(uaddr - vtlbdata.fastmem_base), iter->second.offset, iter->second.offset + iter->second.size, static_cast<u32>(uaddr - mbase));
-			*addr = ((uptr)GetVmMemory().MainMemory()->GetBase()) + iter->second.offset + (uaddr - mbase);
+#endif
+			*addr = ((uptr)GetVmMemory().MainMemory()->GetBase()) + iter.second.offset + (uaddr - mbase);
 			return true;
 		}
 	}
@@ -814,11 +820,12 @@ void vtlb_UpdateFastmemProtection(uptr base, u32 size, const PageProtectionMode&
 
 	const u32 mainmem_start = static_cast<u32>(base - (uptr)GetVmMemory().MainMemory()->GetBase());
 	const u32 mainmem_end = mainmem_start + (size - 1);
+#ifdef PCSX2_DEBUG
 	FASTMEM_LOG("mprotect mainmem offset %08X-%08X...\n", mainmem_start, mainmem_end);
-
-	for (auto iter = s_fastmem_virtual_mapping.begin(); iter != s_fastmem_virtual_mapping.end(); ++iter)
+#endif
+	for (auto & iter : s_fastmem_virtual_mapping)
 	{
-		const FastmemVirtualMapping& vm = iter->second;
+		const FastmemVirtualMapping& vm = iter.second;
 		if (!vtlb_Overlaps(mainmem_start, mainmem_end, vm.offset, vm.offset + (vm.size - 1)))
 			continue;
 
@@ -833,9 +840,10 @@ void vtlb_UpdateFastmemProtection(uptr base, u32 size, const PageProtectionMode&
 			rstart = 0;
 			rsize = std::min<u32>(vm.size, size - static_cast<u32>(vm.offset - mainmem_start));
 		}
-
+#ifdef PCSX2_DEBUG
 		FASTMEM_LOG("  valias %08X (size %u)\n", static_cast<u32>(iter->first - vtlbdata.fastmem_base) + rstart, rsize);
-		HostSys::MemProtect((void*)(iter->first + rstart), rsize, prot);
+#endif
+		HostSys::MemProtect((void*)(iter.first + rstart), rsize, prot);
 	}
 }
 
@@ -904,7 +912,6 @@ void vtlb_VMap(u32 vaddr,u32 paddr,u32 size)
 			u32 rpaddr = paddr;
 			while (rsize > 0)
 			{
-				u32 hoffset, hsize;
 				if (!vtlb_GetMainMemoryOffset(rpaddr, rsize, &hoffset, &hsize))
 				{
 					rvaddr += VTLB_PAGE_SIZE;
@@ -1050,7 +1057,7 @@ void vtlb_Init()
 void vtlb_Reset()
 {
 	vtlb_RemoveFastmemMappings();
-	for(int i=0; i<48; i++) UnmapTLB(i);
+	for(int i=0; i<48; ++i) UnmapTLB(i);
 }
 
 void vtlb_Term()
@@ -1093,7 +1100,7 @@ void vtlb_Alloc_Ppmap()
 			.SetDiagMsg(pxsFmt("(%u megs)", VTLB_VMAP_ITEMS * sizeof(*vtlbdata.ppmap) / _1mb));
 
 	// By default a 1:1 virtual to physical mapping
-	for (u32 i = 0; i < VTLB_VMAP_ITEMS; i++)
+	for (u32 i = 0; i < VTLB_VMAP_ITEMS; ++i)
 		vtlbdata.ppmap[i] = i<<VTLB_PAGE_BITS;
 }
 

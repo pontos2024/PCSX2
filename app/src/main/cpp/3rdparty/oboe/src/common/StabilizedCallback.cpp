@@ -96,7 +96,7 @@ void StabilizedCallback::generateLoad(int64_t durationNanos) {
 
     while (currentTimeNanos <= deadlineTimeNanos){
 
-        for (int i = 0; i < opsPerStep; i++) cpu_relax();
+        for (int i = 0; i < opsPerStep; ++i) cpu_relax();
 
         previousTimeNanos = currentTimeNanos;
         currentTimeNanos = AudioClock::getNanoseconds();

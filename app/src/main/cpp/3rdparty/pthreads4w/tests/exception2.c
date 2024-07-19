@@ -131,7 +131,7 @@ main(int argc, char* argv[])
 
   assert((mt = pthread_self()).p != NULL);
 
-  for (i = 0; i < NUMTHREADS; i++)
+  for (i = 0; i < NUMTHREADS; ++i)
     {
       assert(pthread_create(&et[i], NULL, exceptionedThread, NULL) == 0);
     }

@@ -94,7 +94,7 @@ main()
 
   for (k = 0; k < NUM_LOOPS; k++)
     {
-      for (i = 0; i < NUM_CV; i++)
+      for (i = 0; i < NUM_CV; ++i)
         {
           assert(pthread_cond_init(&cv[i], NULL) == 0);
         }

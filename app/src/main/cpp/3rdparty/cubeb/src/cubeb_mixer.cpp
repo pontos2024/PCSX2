@@ -194,7 +194,7 @@ int MixerContext::auto_matrix()
     return -1;
   }
 
-  for (uint32_t i = 0; i < FF_ARRAY_ELEMS(matrix); i++) {
+  for (uint32_t i = 0; i < FF_ARRAY_ELEMS(matrix); ++i) {
     if (in_ch_layout & out_ch_layout & (1U << i)) {
       matrix[i][i] = 1.0;
     }
@@ -307,13 +307,13 @@ int MixerContext::auto_matrix()
   }
 
   // Normalize the conversion matrix.
-  for (uint32_t out_i = 0, i = 0; i < CHANNELS_MAX; i++) {
+  for (uint32_t out_i = 0, i = 0; i < CHANNELS_MAX; ++i) {
     double sum = 0;
     int in_i = 0;
     if ((out_ch_layout & (1U << i)) == 0) {
       continue;
     }
-    for (uint32_t j = 0; j < CHANNELS_MAX; j++) {
+    for (uint32_t j = 0; j < CHANNELS_MAX; ++j) {
       if ((in_ch_layout & (1U << j)) == 0) {
         continue;
       }
@@ -339,15 +339,15 @@ int MixerContext::auto_matrix()
   // Normalize matrix if needed.
   if (maxcoef > maxval) {
     maxcoef /= maxval;
-    for (uint32_t i = 0; i < CHANNELS_MAX; i++)
-      for (uint32_t j = 0; j < CHANNELS_MAX; j++) {
+    for (uint32_t i = 0; i < CHANNELS_MAX; ++i)
+      for (uint32_t j = 0; j < CHANNELS_MAX; ++j) {
         _matrix[i][j] /= maxcoef;
       }
   }
 
   if (_format == CUBEB_SAMPLE_FLOAT32NE) {
-    for (uint32_t i = 0; i < FF_ARRAY_ELEMS(_matrix); i++) {
-      for (uint32_t j = 0; j < FF_ARRAY_ELEMS(_matrix[0]); j++) {
+    for (uint32_t i = 0; i < FF_ARRAY_ELEMS(_matrix); ++i) {
+      for (uint32_t j = 0; j < FF_ARRAY_ELEMS(_matrix[0]); ++j) {
         _matrix_flt[i][j] = _matrix[i][j];
       }
     }
@@ -366,11 +366,11 @@ int MixerContext::init()
   // Determine if matrix operation would overflow
   if (_format == CUBEB_SAMPLE_S16NE) {
     int maxsum = 0;
-    for (uint32_t i = 0; i < _out_ch_count; i++) {
+    for (uint32_t i = 0; i < _out_ch_count; ++i) {
       double rem = 0;
       int sum = 0;
 
-      for (uint32_t j = 0; j < _in_ch_count; j++) {
+      for (uint32_t j = 0; j < _in_ch_count; ++j) {
         double target = _matrix[i][j] * 32768 + rem;
         int value = lrintf(target);
         rem += target - value;
@@ -384,9 +384,9 @@ int MixerContext::init()
   }
 
   // FIXME quantize for integers
-  for (uint32_t i = 0; i < CHANNELS_MAX; i++) {
+  for (uint32_t i = 0; i < CHANNELS_MAX; ++i) {
     int ch_in = 0;
-    for (uint32_t j = 0; j < CHANNELS_MAX; j++) {
+    for (uint32_t j = 0; j < CHANNELS_MAX; ++j) {
       _matrix32[i][j] = lrintf(_matrix[i][j] * 32768);
       if (_matrix[i][j]) {
         _matrix_ch[i][++ch_in] = j;
@@ -414,7 +414,7 @@ sum2(TYPE_SAMPLE * out,
     std::is_same<TYPE_COEFF,
                  typename std::result_of<F(TYPE_COEFF)>::type>::value,
     "function must return the same type as used by matrix_coeff");
-  for (uint32_t i = 0; i < frames; i++) {
+  for (uint32_t i = 0; i < frames; ++i) {
     *out = operand(coeff1 * *in1 + coeff2 * *in2);
     out += stride_out;
     in1 += stride_in;
@@ -436,7 +436,7 @@ copy(TYPE_SAMPLE * out,
     std::is_same<TYPE_COEFF,
                  typename std::result_of<F(TYPE_COEFF)>::type>::value,
     "function must return the same type as used by matrix_coeff");
-  for (uint32_t i = 0; i < frames; i++) {
+  for (uint32_t i = 0; i < frames; ++i) {
     *out = operand(coeff * *in);
     out += stride_out;
     in += stride_in;
@@ -457,7 +457,7 @@ static int rematrix(const MixerContext * s, TYPE * aOut, const TYPE * aIn,
     TYPE* out = aOut + out_i;
     switch (s->_matrix_ch[out_i][0]) {
       case 0:
-        for (uint32_t i = 0; i < frames; i++) {
+        for (uint32_t i = 0; i < frames; ++i) {
           out[i * s->_out_ch_count] = 0;
         }
         break;
@@ -483,9 +483,9 @@ static int rematrix(const MixerContext * s, TYPE * aOut, const TYPE * aIn,
              frames);
         break;
       default:
-        for (uint32_t i = 0; i < frames; i++) {
+        for (uint32_t i = 0; i < frames; ++i) {
           TYPE_COEFF v = 0;
-          for (uint32_t j = 0; j < s->_matrix_ch[out_i][0]; j++) {
+          for (uint32_t j = 0; j < s->_matrix_ch[out_i][0]; ++j) {
             uint32_t in_i = s->_matrix_ch[out_i][1 + j];
             v +=
               *(aIn + in_i + i * s->_in_ch_count) * matrix_coeff[out_i][in_i];
@@ -521,7 +521,7 @@ struct cubeb_mixer
         // duplicate the mono channel to the first two channels. On most system,
         // the first two channels are for left and right. It is commonly
         // expected that mono will on both left+right channels
-        for (uint32_t i = 0; i < frames; i++) {
+        for (uint32_t i = 0; i < frames; ++i) {
           output_buffer[0] = output_buffer[1] = *input_buffer;
           PodZero(output_buffer + 2, _context._out_ch_count - 2);
           output_buffer += _context._out_ch_count;
@@ -529,7 +529,7 @@ struct cubeb_mixer
         }
         return;
       }
-      for (uint32_t i = 0; i < frames; i++) {
+      for (uint32_t i = 0; i < frames; ++i) {
         PodCopy(output_buffer, input_buffer, _context._in_ch_count);
         output_buffer += _context._in_ch_count;
         input_buffer += _context._in_ch_count;
@@ -537,7 +537,7 @@ struct cubeb_mixer
         output_buffer += _context._out_ch_count - _context._in_ch_count;
       }
     } else {
-      for (uint32_t i = 0; i < frames; i++) {
+      for (uint32_t i = 0; i < frames; ++i) {
         PodCopy(output_buffer, input_buffer, _context._out_ch_count);
         output_buffer += _context._out_ch_count;
         input_buffer += _context._in_ch_count;

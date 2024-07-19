@@ -1253,7 +1253,7 @@ jpeg_gen_optimal_table (j_compress_ptr cinfo, JHUFF_TBL * htbl, long freq[])
 
   MEMZERO(bits, SIZEOF(bits));
   MEMZERO(codesize, SIZEOF(codesize));
-  for (i = 0; i < 257; i++)
+  for (i = 0; i < 257; ++i)
     others[i] = -1;		/* init links to empty */
 
   freq[256] = 1;		/* make sure 256 has a nonzero count */
@@ -1269,7 +1269,7 @@ jpeg_gen_optimal_table (j_compress_ptr cinfo, JHUFF_TBL * htbl, long freq[])
     /* In case of ties, take the larger symbol number */
     c1 = -1;
     v = 1000000000L;
-    for (i = 0; i <= 256; i++) {
+    for (i = 0; i <= 256; ++i) {
       if (freq[i] && freq[i] <= v) {
 	v = freq[i];
 	c1 = i;
@@ -1280,7 +1280,7 @@ jpeg_gen_optimal_table (j_compress_ptr cinfo, JHUFF_TBL * htbl, long freq[])
     /* In case of ties, take the larger symbol number */
     c2 = -1;
     v = 1000000000L;
-    for (i = 0; i <= 256; i++) {
+    for (i = 0; i <= 256; ++i) {
       if (freq[i] && freq[i] <= v && i != c1) {
 	v = freq[i];
 	c2 = i;
@@ -1313,7 +1313,7 @@ jpeg_gen_optimal_table (j_compress_ptr cinfo, JHUFF_TBL * htbl, long freq[])
   }
 
   /* Now count the number of symbols of each code length */
-  for (i = 0; i <= 256; i++) {
+  for (i = 0; i <= 256; ++i) {
     if (codesize[i]) {
       /* The JPEG standard seems to think that this can't happen, */
       /* but I'm paranoid... */
@@ -1361,8 +1361,8 @@ jpeg_gen_optimal_table (j_compress_ptr cinfo, JHUFF_TBL * htbl, long freq[])
    * changes made above, but the JPEG spec seems to think this works.
    */
   p = 0;
-  for (i = 1; i <= MAX_CLEN; i++) {
-    for (j = 0; j <= 255; j++) {
+  for (i = 1; i <= MAX_CLEN; ++i) {
+    for (j = 0; j <= 255; ++j) {
       if (codesize[j] == i) {
 	htbl->huffval[p] = (UINT8) j;
 	p++;
@@ -1597,14 +1597,14 @@ jinit_huff_encoder (j_compress_ptr cinfo)
 
   if (cinfo->progressive_mode) {
     /* Mark tables unallocated */
-    for (i = 0; i < NUM_HUFF_TBLS; i++) {
+    for (i = 0; i < NUM_HUFF_TBLS; ++i) {
       entropy->derived_tbls[i] = NULL;
       entropy->count_ptrs[i] = NULL;
     }
     entropy->bit_buffer = NULL;	/* needed only in AC refinement scan */
   } else {
     /* Mark tables unallocated */
-    for (i = 0; i < NUM_HUFF_TBLS; i++) {
+    for (i = 0; i < NUM_HUFF_TBLS; ++i) {
       entropy->dc_derived_tbls[i] = entropy->ac_derived_tbls[i] = NULL;
       entropy->dc_count_ptrs[i] = entropy->ac_count_ptrs[i] = NULL;
     }

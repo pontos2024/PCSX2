@@ -88,7 +88,7 @@ main()
 {
   int i, j;
 
-  for (i = 0; i < NUM_CV; i++)
+  for (i = 0; i < NUM_CV; ++i)
     {
       /* Traverse the list before every init of a CV. */
       assert(pthread_timechange_handler_np(NULL) == (void *) 0);

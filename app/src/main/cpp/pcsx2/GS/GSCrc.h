@@ -15,107 +15,58 @@
 
 #pragma once
 
+#include <map>
+
 class CRC
 {
 public:
 	enum Title
 	{
 		NoTitle,
-		AceCombatZero,
 		AceCombat4,
-		AceCombat5,
-		ApeEscape2,
 		ArTonelico2,
-		Barnyard,
 		BigMuthaTruckers,
-		BrianLaraInternationalCricket,
-		BurnoutDominator,
-		BurnoutRevenge,
-		BurnoutTakedown,
-		Clannad,
+		BurnoutGames,
 		CrashBandicootWoC,
-		DarkCloud,
 		DBZBT2,
 		DBZBT3,
 		DeathByDegreesTekkenNinaWilliams,
-		DestroyAllHumans,
-		DestroyAllHumans2,
-		DuelSaviorDestiny,
-		EvangelionJo,
 		FFX,
 		FFX2,
 		FFXII,
-		FIFA03,
-		FIFA04,
-		FIFA05,
 		FightingBeautyWulong,
-		GetaWay,
-		GetaWayBlackMonday,
+		GetawayGames,
 		GiTS,
 		GodHand,
-		GodOfWar,
-		GodOfWar2,
-		GT3,
-		GT4,
-		GTConcept,
-		HarleyDavidson,
-		HarryPotterATCOS,
-		HarryPotterATGOF,
-		HarryPotterATHBP,
-		HarryPotterATPOA,
-		HarryPotterOOTP,
 		HauntingGround,
 		ICO,
 		IkkiTousen,
-		JackieChanAdv,
-		Jak1,
 		Jak2,
 		Jak3,
 		JakX,
-		KazokuKeikakuKokoroNoKizuna,
 		KnightsOfTheTemple2,
+		KOF2002,
 		Kunoichi,
-		KyuuketsuKitanMoonties,
 		Lamune,
-		LegacyOfKainDefiance,
-		LordOfTheRingsThirdAge,
-		MajokkoALaMode2,
 		Manhunt2,
 		MetalSlug6,
 		MidnightClub3,
-		NicktoonsUnite,
 		Okami,
 		Oneechanbara2Special,
-		Persona3,
-		PiaCarroteYoukosoGPGakuenPrincess,
-		ProjectSnowblind,
-		Quake3Revolution,
-		RadiataStories,
-		RatchetAndClank,
-		RatchetAndClank2,
-		RatchetAndClank3,
-		RatchetAndClank4,
-		RatchetAndClank5,
+		PolyphonyDigitalGames,
 		RedDeadRevolver,
-		RickyPontingInternationalCricket,
 		RozenMaidenGebetGarden,
 		SacredBlaze,
 		SakuraTaisen,
 		SakuraWarsSoLongMyLove,
 		SFEX3,
-		ShadowHearts,
 		ShadowofRome,
 		ShinOnimusha,
-		Shox,
 		Simple2000Vol114,
 		SkyGunner,
-		SlamTennis,
 		SMTNocturne,
 		SonicUnleashed,
-		SoTC,
-		SoulReaver2,
 		Spartan,
-		StarOcean3,
 		SteambotChronicles,
 		SuperManReturns,
 		SVCChaos,
@@ -123,24 +74,14 @@ public:
 		TalesOfLegendia,
 		TalesofSymphonia,
 		Tekken5,
-		TenchuFS,
-		TenchuWoH,
-		TheIncredibleHulkUD,
 		TombRaiderAnniversary,
 		TombRaiderLegend,
 		TombRaiderUnderworld,
-		TribesAerialAssault,
-		TomoyoAfter,
-		TouristTrophy,
+		TriAceGames,
 		UltramanFightingEvolution,
 		UrbanReign,
-		ValkyrieProfile2,
-		Whiplash,
-		WildArms4,
-		WildArms5,
 		XenosagaE3,
-		Yakuza,
-		Yakuza2,
+		YakuzaGames,
 		ZettaiZetsumeiToshi2,
 		TitleCount,
 	};
@@ -162,24 +103,18 @@ public:
 		RegionCount,
 	};
 
-	enum Flags
-	{
-		PointListPalette = 1,
-		TextureInsideRt = 2,
-	};
-
 	struct Game
 	{
-		uint32 crc;
+		u32 crc;
 		Title title;
 		Region region;
-		uint32 flags;
+		u32 flags;
 	};
 
 private:
-	static Game m_games[];
-	static std::map<uint32, Game*> m_map;
+	static const Game m_games[];
+	static std::map<u32, const Game*> m_map;
 
 public:
-	static Game Lookup(uint32 crc);
+	static const Game& Lookup(u32 crc);
 };

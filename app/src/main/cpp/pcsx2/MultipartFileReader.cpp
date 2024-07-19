@@ -92,7 +92,9 @@ void MultipartFileReader::FindParts()
 	if (!pxFileExists_WithExt(nameparts, extbuf))
 		return;
 
+#ifdef PCSX2_DEBUG
 	DevCon.WriteLn( Color_Blue, "isoFile: multi-part %s detected...", WX_STR(curext.Upper()) );
+#endif
 	ConsoleIndentScope indent;
 
 	int bsize = m_parts[0].reader->GetBlockSize();
@@ -122,12 +124,12 @@ void MultipartFileReader::FindParts()
 		blocks += bcount;
 
 		thispart->end = blocks;
-
+#ifdef PCSX2_DEBUG
 		DevCon.WriteLn( Color_Blue, L"\tblocks %u - %u in: %s",
 			thispart->start, thispart->end,
 			WX_STR(nameparts.GetFullPath())
 		);
-
+#endif
 		++m_numparts;
 	}
 
@@ -166,7 +168,7 @@ void MultipartFileReader::BeginRead(void* pBuffer, uint sector, uint count)
 {
 	u8* lBuffer = (u8*)pBuffer;
 
-	for(uint i = GetFirstPart(sector); i < m_numparts; i++)
+	for(uint i = GetFirstPart(sector); i < m_numparts; ++i)
 	{
 		uint num = std::min(count, m_parts[i].end - sector);
 
@@ -185,7 +187,7 @@ void MultipartFileReader::BeginRead(void* pBuffer, uint sector, uint count)
 int MultipartFileReader::FinishRead(void)
 {
 	int ret = 0;
-	for(uint i=0;i<m_numparts;i++)
+	for(uint i=0;i<m_numparts;++i)
 	{
 		if(m_parts[i].isReading)
 		{
@@ -202,7 +204,7 @@ int MultipartFileReader::FinishRead(void)
 
 void MultipartFileReader::CancelRead(void)
 {
-	for(uint i=0;i<m_numparts;i++)
+	for(uint i=0;i<m_numparts;++i)
 	{
 		if(m_parts[i].isReading)
 		{
@@ -214,7 +216,7 @@ void MultipartFileReader::CancelRead(void)
 
 void MultipartFileReader::Close(void)
 {
-	for(uint i=0;i<m_numparts;i++)
+	for(uint i=0;i<m_numparts;++i)
 	{
 		if(m_parts[i].reader)
 		{
@@ -232,7 +234,7 @@ uint MultipartFileReader::GetBlockCount(void) const
 void MultipartFileReader::SetBlockSize(uint bytes)
 {
 	uint last_end = 0;
-	for(uint i=0;i<m_numparts;i++)
+	for(uint i=0;i<m_numparts;++i)
 	{
 		m_parts[i].reader->SetBlockSize(bytes);
 		uint count = m_parts[i].reader->GetBlockCount();

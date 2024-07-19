@@ -624,7 +624,7 @@ static const char *ParseColor(const char *data)
     const char *q;
     int i;
 
-    for (i = 0; targets[i] != NULL; i++)
+    for (i = 0; targets[i] != NULL; ++i)
     {
         r = data;
         for (q = targets[i]; *r != '\0'; r++)
@@ -695,7 +695,7 @@ wxImage wxXPMDecoder::ReadData(const char* const* xpm_data)
      *  Create colour map:
      */
     wxXPMColourMapData clr_data;
-    for (i = 0; i < colors_cnt; i++)
+    for (i = 0; i < colors_cnt; ++i)
     {
         const char *xmpColLine = xpm_data[1 + i];
 
@@ -772,7 +772,7 @@ wxImage wxXPMDecoder::ReadData(const char* const* xpm_data)
     wxXPMColourMap::iterator entry;
     wxXPMColourMap::iterator end = clr_tbl.end();
 
-    for (j = 0; j < height; j++)
+    for (j = 0; j < height; ++j)
     {
         for (i = 0; i < width; i++, img_data += 3)
         {
@@ -812,7 +812,7 @@ wxImage wxXPMDecoder::ReadData(const char* const* xpm_data)
     unsigned char* g = new unsigned char[colors_cnt];
     unsigned char* b = new unsigned char[colors_cnt];
 
-    for (it = clr_tbl.begin(), i = 0; it != clr_tbl.end(); it++, i++)
+    for (it = clr_tbl.begin(), i = 0; it != clr_tbl.end(); it++, ++i)
     {
         r[i] = it->second.R;
         g[i] = it->second.G;

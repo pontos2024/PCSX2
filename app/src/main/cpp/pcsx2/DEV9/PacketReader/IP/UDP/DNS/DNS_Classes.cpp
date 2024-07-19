@@ -75,7 +75,7 @@ namespace PacketReader::IP::UDP::DNS
 	{
 		int segmentLength = 0;
 		int segmentStart = 0;
-		for (size_t i = 0; i < value.size(); i++)
+		for (size_t i = 0; i < value.size(); ++i)
 		{
 			if (value[i] == '.')
 			{

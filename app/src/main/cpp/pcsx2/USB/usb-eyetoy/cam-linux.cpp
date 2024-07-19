@@ -91,7 +91,7 @@ namespace usb_eyetoy
 				else if (frame_format == format_jpeg)
 				{
 					unsigned char* data2 = (unsigned char*)calloc(1, comprBufSize);
-					for (int y = 0; y < frame_height; y++)
+					for (int y = 0; y < frame_height; ++y)
 					{
 						for (int x = 0; x < frame_width; x += 2)
 						{
@@ -498,9 +498,9 @@ namespace usb_eyetoy
 			const int bytesPerPixel = 3;
 			int comprBufSize = frame_width * frame_height * bytesPerPixel;
 			unsigned char* rgbData = (unsigned char*)calloc(1, comprBufSize);
-			for (int y = 0; y < frame_height; y++)
+			for (int y = 0; y < frame_height; ++y)
 			{
-				for (int x = 0; x < frame_width; x++)
+				for (int x = 0; x < frame_width; ++x)
 				{
 					unsigned char* ptr = rgbData + (y * frame_width + x) * bytesPerPixel;
 					ptr[0] = 255 * y / frame_height;

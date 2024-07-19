@@ -29,7 +29,7 @@ wxUString &wxUString::assignFromAscii( const char *str )
    wxChar32 *ptr = buffer.data();
 
    size_type i;
-   for (i = 0; i < len; i++)
+   for (i = 0; i < len; ++i)
    {
        *ptr = *str;
        ptr++;
@@ -53,7 +53,7 @@ wxUString &wxUString::assignFromAscii( const char *str, size_type n )
    wxChar32 *ptr = buffer.data();
 
    size_type i;
-   for (i = 0; i < len; i++)
+   for (i = 0; i < len; ++i)
    {
        *ptr = *str;
        ptr++;

@@ -15,6 +15,10 @@
 
 #include "PrecompiledHeader.h"
 #include "GSDrawScanlineCodeGenerator.h"
+#include "GSDrawScanline.h"
+#include <fstream>
+#include <map>
+#include <mutex>
 
 #if defined(_M_X86_32) || defined(_M_X86_64)
 #include "GSDrawScanlineCodeGenerator.all.h"
@@ -24,7 +28,72 @@
 #error Unknown target.
 #endif
 
-GSDrawScanlineCodeGenerator::GSDrawScanlineCodeGenerator(void* param, uint64 key, void* code, size_t maxsize)
+static std::map<u64, bool> s_use_c_draw_scanline;
+static std::mutex s_use_c_draw_scanline_mutex;
+
+static bool shouldUseCDrawScanline(u64 key)
+{
+	static const char* const fname = getenv("USE_C_DRAW_SCANLINE");
+	if (!fname)
+		return false;
+
+	std::lock_guard<std::mutex> l(s_use_c_draw_scanline_mutex);
+
+	if (s_use_c_draw_scanline.empty())
+	{
+		std::ifstream file(fname);
+		if (file)
+		{
+			for (std::string str; std::getline(file, str);)
+			{
+				u64 key;
+				char yn;
+				if (sscanf(str.c_str(), "%llx %c", &key, &yn) == 2)
+				{
+					if (yn != 'Y' && yn != 'N' && yn != 'y' && yn != 'n') {
+#ifdef PCSX2_DEBUG
+                        Console.Warning("Failed to parse %s: Not y/n", str.c_str());
+#endif
+                    }
+					s_use_c_draw_scanline[key] = (yn == 'Y' || yn == 'y') ? true : false;
+				}
+#ifdef PCSX2_DEBUG
+				else
+				{
+					Console.Warning("Failed to process line %s", str.c_str());
+				}
+#endif
+			}
+		}
+	}
+
+	auto idx = s_use_c_draw_scanline.find(key);
+	if (idx == s_use_c_draw_scanline.end())
+	{
+		s_use_c_draw_scanline[key] = false;
+		// Rewrite file
+		FILE* file = fopen(fname, "w");
+		if (file)
+		{
+			for (const auto& pair : s_use_c_draw_scanline)
+			{
+				fprintf(file, "%016llX %c %s\n", pair.first, pair.second ? 'Y' : 'N', GSScanlineSelector(pair.first).to_string().c_str());
+			}
+			fclose(file);
+		}
+#ifdef PCSX2_DEBUG
+		else
+		{
+			Console.Warning("Failed to write C draw scanline usage config: %s", strerror(errno));
+		}
+#endif
+		return false;
+	}
+
+	return idx->second;
+}
+
+GSDrawScanlineCodeGenerator::GSDrawScanlineCodeGenerator(void* param, u64 key, void* code, size_t maxsize)
 	: GSCodeGenerator(code, maxsize)
 	, m_local(*(GSScanlineLocalData*)param)
 	, m_rip(false)
@@ -35,8 +104,25 @@ GSDrawScanlineCodeGenerator::GSDrawScanlineCodeGenerator(void* param, uint64 key
 	if (m_sel.breakpoint)
 		db(0xCC);
 
+	if (shouldUseCDrawScanline(key))
+	{
+#if defined(_WIN32)
+		mov(r8, reinterpret_cast<size_t>(&m_local));
+		push(ptr[r8 + offsetof(GSScanlineLocalData, gd)]);
+		push(r8);
+		sub(rsp, 32); // CC required shadow space
+		call(reinterpret_cast<void*>(GSDrawScanline::CDrawScanline));
+		ret(48);
+#else
+		mov(r8, reinterpret_cast<size_t>(&m_local));
+		mov(r9, ptr[r8 + offsetof(GSScanlineLocalData, gd)]);
+		jmp(reinterpret_cast<void*>(GSDrawScanline::CDrawScanline));
+#endif
+		return;
+	}
+
 	GSDrawScanlineCodeGenerator2(this, CPUInfo(m_cpu), (void*)&m_local, m_sel.key).Generate();
 #elif defined(_M_ARM64)
-	GSDrawScanlineCodeGenerator2(armAsm, param, key).Generate();
+    GSDrawScanlineCodeGenerator2(armAsm, param, key).Generate();
 #endif
 }

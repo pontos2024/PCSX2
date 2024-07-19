@@ -28,7 +28,9 @@ void ATA::HDD_SCE()
 			SCE_IDENTIFY_DRIVE();
 			break;
 		default:
+#ifdef PCSX2_DEBUG
 			Console.Error("DEV9: ATA: Unknown SCE command %x", regFeature);
+#endif
 			CmdNoDataAbort();
 			return;
 	}

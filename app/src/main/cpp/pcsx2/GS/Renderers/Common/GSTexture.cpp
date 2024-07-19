@@ -15,6 +15,8 @@
 
 #include "PrecompiledHeader.h"
 #include "GSTexture.h"
+#include "GSDevice.h"
+#include "GS/GSPng.h"
 #include <bitset>
 
 GSTexture::GSTexture()
@@ -22,14 +24,118 @@ GSTexture::GSTexture()
 	, m_size(0, 0)
 	, m_committed_size(0, 0)
 	, m_gpu_page_size(0, 0)
-	, m_type(0)
-	, m_format(0)
+	, m_mipmap_levels(0)
+	, m_type(Type::Invalid)
+	, m_format(Format::Invalid)
+	, m_state(State::Dirty)
 	, m_sparse(false)
+	, m_needs_mipmaps_generated(true)
 	, last_frame_used(0)
-	, LikelyOffset(false)
-	, OffsetHack_modx(0.0f)
-	, OffsetHack_mody(0.0f)
+	, OffsetHack_modxy(0.0f)
 {
+}
+
+bool GSTexture::Save(const std::string& fn)
+{
+#ifdef PCSX2_DEVBUILD
+	GSPng::Format format = GSPng::RGB_A_PNG;
+#else
+	GSPng::Format format = GSPng::RGB_PNG;
+#endif
+	switch (m_format)
+	{
+		case Format::UNorm8:
+			format = GSPng::R8I_PNG;
+			break;
+		case Format::Color:
+			break;
+		default:
+#ifdef PCSX2_DEBUG
+			Console.Error("Format %d not saved to image", static_cast<int>(m_format));
+#endif
+			return false;
+	}
+
+	GSMap map;
+	if (!g_gs_device->DownloadTexture(this, GSVector4i(0, 0, m_size.x, m_size.y), map))
+	{
+#ifdef PCSX2_DEBUG
+		Console.Error("(GSTexture) DownloadTexture() failed.");
+#endif
+		return false;
+	}
+
+	const int compression = theApp.GetConfigI("png_compression_level");
+	bool success = GSPng::Save(format, fn, map.bits, m_size.x, m_size.y, map.pitch, compression);
+
+	g_gs_device->DownloadTextureComplete();
+
+	return success;
+}
+
+void GSTexture::Swap(GSTexture* tex)
+{
+	std::swap(m_scale, tex->m_scale);
+	std::swap(m_size, tex->m_size);
+	std::swap(m_committed_size, tex->m_committed_size);
+	std::swap(m_mipmap_levels, tex->m_mipmap_levels);
+	std::swap(m_type, tex->m_type);
+	std::swap(m_format, tex->m_format);
+	std::swap(m_state, tex->m_state);
+	std::swap(m_sparse, tex->m_sparse);
+	std::swap(m_needs_mipmaps_generated, tex->m_needs_mipmaps_generated);
+	std::swap(last_frame_used, tex->last_frame_used);
+	std::swap(OffsetHack_modxy, tex->OffsetHack_modxy);
+}
+
+u32 GSTexture::GetCompressedBytesPerBlock() const
+{
+	static constexpr u32 bytes_per_block[] = {
+		1, // Invalid
+		4, // Color/RGBA8
+		16, // FloatColor/RGBA32F
+		32, // DepthStencil
+		1, // UNorm8/R8
+		2, // UInt16/R16UI
+		4, // UInt32/R32UI
+		4, // Int32/R32I
+		8, // BC1 - 16 pixels in 64 bits
+		16, // BC2 - 16 pixels in 128 bits
+		16, // BC3 - 16 pixels in 128 bits
+		16, // BC4 - 16 pixels in 128 bits
+	};
+
+	return bytes_per_block[static_cast<u32>(m_format)];
+}
+
+u32 GSTexture::GetCompressedBlockSize() const
+{
+	if (m_format >= Format::BC1 && m_format <= Format::BC7)
+		return 4;
+	else
+		return 1;
+}
+
+u32 GSTexture::CalcUploadRowLengthFromPitch(u32 pitch) const
+{
+	const u32 block_size = GetCompressedBlockSize();
+	const u32 bytes_per_block = GetCompressedBytesPerBlock();
+	return ((pitch + (bytes_per_block - 1)) / bytes_per_block) * block_size;
+}
+
+u32 GSTexture::CalcUploadSize(u32 height, u32 pitch) const
+{
+	const u32 block_size = GetCompressedBlockSize();
+	return pitch * ((static_cast<u32>(height) + (block_size - 1)) / block_size);
+}
+
+void GSTexture::GenerateMipmapsIfNeeded()
+{
+	if (!m_needs_mipmaps_generated || m_mipmap_levels <= 1 || IsCompressedFormat())
+		return;
+
+	m_needs_mipmaps_generated = false;
+	GenerateMipmap();
 }
 
 void GSTexture::CommitRegion(const GSVector2i& region)

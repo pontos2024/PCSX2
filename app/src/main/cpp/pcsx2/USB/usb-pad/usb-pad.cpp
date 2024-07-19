@@ -109,7 +109,7 @@ namespace usb_pad
 		unsigned char* bits = buf.data();
 		unsigned char* ptrD = (unsigned char*)data;
 		unsigned char* ptrB = bits;
-		for (int i = 0; i < size * 8; i++)
+		for (int i = 0; i < size * 8; ++i)
 		{
 			*(ptrB++) = '0' + (*(ptrD + i / 8) & (1 << (i % 8)) ? 1 : 0);
 			if (i % 8 == 7)

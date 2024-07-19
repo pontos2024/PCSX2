@@ -327,7 +327,7 @@ int wxJoystick::GetNumberJoysticks()
     wxString dev_name;
     int fd, j;
 
-    for (j=0; j<4; j++) {
+    for (j=0; j<4; ++j) {
         dev_name.Printf(wxT("/dev/js%d"), j);
         fd = open(dev_name.fn_str(), O_RDONLY);
         if (fd == -1)
@@ -336,7 +336,7 @@ int wxJoystick::GetNumberJoysticks()
     }
 
     if (j == 0) {
-        for (j=0; j<4; j++) {
+        for (j=0; j<4; ++j) {
             dev_name.Printf(wxT("/dev/input/js%d"), j);
             fd = open(dev_name.fn_str(), O_RDONLY);
             if (fd == -1)

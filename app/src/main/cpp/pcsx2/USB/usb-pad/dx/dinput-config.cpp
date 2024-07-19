@@ -145,7 +145,7 @@ namespace usb_pad
 		//config only
 		void ListenUpdate()
 		{
-			for (size_t i = 0; i < g_pJoysticks.size(); i++)
+			for (size_t i = 0; i < g_pJoysticks.size(); ++i)
 			{
 				jso[i] = g_pJoysticks[i]->GetDeviceState();
 			}
@@ -156,7 +156,7 @@ namespace usb_pad
 		void ListenAxis()
 		{
 			PollDevices();
-			for (size_t i = 0; i < g_pJoysticks.size(); i++)
+			for (size_t i = 0; i < g_pJoysticks.size(); ++i)
 			{
 				if (g_pJoysticks[i]->GetControlType() != CT_JOYSTICK)
 					continue;
@@ -264,7 +264,7 @@ namespace usb_pad
 						listennext = listeninterval + GetTickCount();
 						ListenUpdate();
 
-						for (size_t i = 0; i < g_pJoysticks.size(); i++)
+						for (size_t i = 0; i < g_pJoysticks.size(); ++i)
 						{
 							if (AxisDown(i, im))
 							{
@@ -342,7 +342,7 @@ namespace usb_pad
 		{
 			auto& im_l = g_Controls[port][CID_STEERING];
 			auto& im_r = g_Controls[port][CID_STEERING_R];
-			for (int i = 0; i < 6; i++)
+			for (int i = 0; i < 6; ++i)
 			{
 				auto& c = g_Controls[port][i];
 				c.LINEAR = 0;
@@ -472,12 +472,12 @@ namespace usb_pad
 			//draw grid
 			SelectObject(hDrawingDC, gridpen);
 			float step[2] = {pwidth / 5.f, pheight / 5.f};
-			for (int x = 1; x < 5; x++)
+			for (int x = 1; x < 5; ++x)
 			{
 				MoveToEx(hDrawingDC, (step[0] * x + px) * scale, (py), 0);
 				LineTo(hDrawingDC, (step[0] * x + px) * scale, (pheight + py) * scale);
 			}
-			for (int y = 1; y < 5; y++)
+			for (int y = 1; y < 5; ++y)
 			{
 				MoveToEx(hDrawingDC, (px)*scale, (step[1] * y + py) * scale, 0);
 				LineTo(hDrawingDC, (pwidth + px) * scale, (step[1] * y + py) * scale);
@@ -585,22 +585,22 @@ namespace usb_pad
 			int dstX, dstY = 0, dstOffset;
 			int srcX, srcY, srcOffset;
 			int tmpX, tmpY, tmpOffset;
-			for (int y = 1; y < dstHeight - 2; y++)
+			for (int y = 1; y < dstHeight - 2; ++y)
 			{
 				dstX = 0;
 				srcX = 0;
 				srcY = (y * scale) * srcPitch;
-				for (int x = 1; x < dstWidth - 2; x++)
+				for (int x = 1; x < dstWidth - 2; ++x)
 				{
 					srcX = (x * scale) * 4;
 					srcOffset = srcY + srcX;
 
 					resultRed = resultGreen = resultBlue = 0;
 					tmpY = -srcPitch;
-					for (int i = 0; i < scale; i++)
+					for (int i = 0; i < scale; ++i)
 					{
 						tmpX = -4;
-						for (int j = 0; j < scale; j++)
+						for (int j = 0; j < scale; ++j)
 						{
 							tmpOffset = tmpY + tmpX;
 
@@ -769,12 +769,12 @@ namespace usb_pad
 			//StartTest();
 			const wchar_t* string[] = {L"STEER LEFT", L"STEER RIGHT", L"THROTTLE", L"BRAKE"};
 
-			for (int i = 0; i < 4; i++)
+			for (int i = 0; i < 4; ++i)
 				SendMessageW(GetDlgItem(hWnd, IDC_COMBO1), CB_ADDSTRING, 0, (LPARAM)string[i]);
 
 			const wchar_t* stringp[] = {L"200 deg", L"360 deg", L"540 deg", L"720 deg", L"900 deg"};
 
-			for (int i = 0; i < 5; i++)
+			for (int i = 0; i < 5; ++i)
 				SendMessageW(GetDlgItem(hWnd, IDC_COMBO3), CB_ADDSTRING, 0, (LPARAM)stringp[i]);
 
 			//slider
@@ -829,7 +829,7 @@ namespace usb_pad
 			SendMessage(GetDlgItem(hWnd, IDC_GROUP25), WM_SETFONT, (WPARAM)hFont2, 1);
 			SendMessage(GetDlgItem(hWnd, IDC_GROUP26), WM_SETFONT, (WPARAM)hFont2, 1);
 
-			for (int i = 0; i < CID_COUNT; i++)
+			for (int i = 0; i < CID_COUNT; ++i)
 			{
 				InputMapped im = {};
 				GetInputMap(port, (ControlID)i, im);
@@ -1003,7 +1003,7 @@ namespace usb_pad
 						break;
 						case IDC_DELALL:
 						{
-							for (int i = 0; i < CID_COUNT; i++)
+							for (int i = 0; i < CID_COUNT; ++i)
 							{
 								DeleteControl(s->port, (ControlID)i);
 							}
@@ -1404,7 +1404,7 @@ namespace usb_pad
 					ss << control;
 					std::getline(ss, guid, ',');
 
-					for (size_t i = 0; i < g_pJoysticks.size(); i++)
+					for (size_t i = 0; i < g_pJoysticks.size(); ++i)
 					{
 						std::stringstream ss_guid;
 						ss_guid << g_pJoysticks[i]->GetGUID();

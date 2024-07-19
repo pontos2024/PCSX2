@@ -399,7 +399,7 @@ void wxRegionIterator::Reset(const wxRegion& region)
 
         RECT* rect = (RECT*) ((char*)rgnData + sizeof(RGNDATAHEADER));
         size_t i;
-        for (i = 0; i < header->nCount; i++)
+        for (i = 0; i < header->nCount; ++i)
         {
             m_rects[i] = wxRect(rect->left, rect->top,
                                  rect->right - rect->left, rect->bottom - rect->top);

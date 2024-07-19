@@ -43,7 +43,7 @@ void WndProcEater::ReleaseExtraProc(ExtraWndProc proc)
 	if (hMutex)
 		WaitForSingleObject(hMutex, 100);
 
-	for (int i = 0; i < numExtraProcs; i++)
+	for (int i = 0; i < numExtraProcs; ++i)
 	{
 		if (extraProcs[i].proc == proc)
 		{
@@ -86,7 +86,7 @@ LRESULT WndProcEater::_OverrideWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 		return DLGC_WANTALLKEYS | CallWindowProc(eatenWndProc, hWnd, uMsg, wParam, lParam);
 	}
 
-	for (int i = 0; i < numExtraProcs; i++)
+	for (int i = 0; i < numExtraProcs; ++i)
 	{
 		// Note:  Second bit of deviceUpdateQueued is only set when I receive a device change
 		// notification, which is handled in the GS thread in one of the extraProcs, so this

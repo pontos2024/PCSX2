@@ -2690,7 +2690,7 @@ TIntermTyped* TIntermediate::addSwizzle(TSwizzleSelectors<selectorType>& selecto
     node->setLoc(loc);
     TIntermSequence &sequenceVector = node->getSequence();
 
-    for (int i = 0; i < selector.size(); i++)
+    for (int i = 0; i < selector.size(); ++i)
         pushSelector(sequenceVector, selector[i], loc);
 
     return node;
@@ -3849,7 +3849,7 @@ TIntermTyped* TIntermediate::promoteConstantUnion(TBasicType promoteTo, TIntermC
 
     TConstUnionArray leftUnionArray(size);
 
-    for (int i=0; i < size; i++) {
+    for (int i=0; i < size; ++i) {
 
 #define PROMOTE(Set, CType, Get) leftUnionArray[i].Set(static_cast<CType>(rightUnionArray[i].Get()))
 #define PROMOTE_TO_BOOL(Get) leftUnionArray[i].setBConst(rightUnionArray[i].Get() != 0)

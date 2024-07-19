@@ -86,14 +86,14 @@ namespace GL
 		if (ShouldPreferESContext())
 		{
 			// move ES versions to the front
-			Version* new_versions_to_try = static_cast<Version*>(alloca(sizeof(Version) * num_versions_to_try));
+			auto* new_versions_to_try = static_cast<Version*>(alloca(sizeof(Version) * num_versions_to_try));
 			size_t count = 0;
-			for (size_t i = 0; i < num_versions_to_try; i++)
+			for (size_t i = 0; i < num_versions_to_try; ++i)
 			{
 				if (versions_to_try[i].profile == Profile::ES)
 					new_versions_to_try[count++] = versions_to_try[i];
 			}
-			for (size_t i = 0; i < num_versions_to_try; i++)
+			for (size_t i = 0; i < num_versions_to_try; ++i)
 			{
 				if (versions_to_try[i].profile != Profile::ES)
 					new_versions_to_try[count++] = versions_to_try[i];

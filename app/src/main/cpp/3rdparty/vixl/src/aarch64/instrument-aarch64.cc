@@ -129,7 +129,7 @@ Instrument::Instrument(const char* datafile, uint64_t sample_period)
   fprintf(output_stream_, "# sample_period=%" PRIu64 "\n", sample_period_);
 
   // Construct Counter objects from counter description array.
-  for (int i = 0; i < num_counters; i++) {
+  for (int i = 0; i < num_counters; ++i) {
     Counter* counter = new Counter(kCounterList[i].name, kCounterList[i].type);
     counters_.push_back(counter);
   }

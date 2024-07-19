@@ -118,7 +118,7 @@ void DestroyDevice(int port)
 
 void DestroyDevices()
 {
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 2; ++i)
 	{
 		CloseDevice(i);
 		DestroyDevice(i);
@@ -188,7 +188,7 @@ void CreateDevices()
 		return; //No USBinit yet ie. called from config. dialog
 	DestroyDevices();
 
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 2; ++i)
 	{
 		usb_device[i] = CreateDevice(conf.Port[i], i);
 		USBAttach(i, usb_device[i]);
@@ -376,7 +376,7 @@ s32 USBfreeze(FreezeAction mode, freezeData* data)
 		CloseDevice(0);
 		CloseDevice(1);
 
-		for (uint32_t i = 0; i < qemu_ohci->num_ports; i++)
+		for (uint32_t i = 0; i < qemu_ohci->num_ports; ++i)
 		{
 			usbd.t.rhport[i].port.opaque = qemu_ohci;
 			usbd.t.rhport[i].port.ops = qemu_ohci->rhport[i].port.ops;
@@ -390,7 +390,7 @@ s32 USBfreeze(FreezeAction mode, freezeData* data)
 
 		u8* ptr = data->data + sizeof(USBfreezeData);
 		RegisterDevice& regInst = RegisterDevice::instance();
-		for (int i = 0; i < 2; i++)
+		for (int i = 0; i < 2; ++i)
 		{
 			auto index = regInst.Index(conf.Port[i]);
 			auto proxy = regInst.Device(index);
@@ -505,7 +505,7 @@ s32 USBfreeze(FreezeAction mode, freezeData* data)
 		RegisterDevice& regInst = RegisterDevice::instance();
 		usbd.usb_packet.dev_index = -1;
 
-		for (int i = 0; i < 2; i++)
+		for (int i = 0; i < 2; ++i)
 		{
 			//TODO check that current created usb device and conf.Port[n] are the same
 			auto index = regInst.Index(conf.Port[i]);
@@ -528,7 +528,7 @@ s32 USBfreeze(FreezeAction mode, freezeData* data)
 		if (qemu_ohci->usb_packet.ep)
 			usbd.usb_packet.ep = *qemu_ohci->usb_packet.ep;
 
-		for (uint32_t i = 0; i < qemu_ohci->num_ports; i++)
+		for (uint32_t i = 0; i < qemu_ohci->num_ports; ++i)
 		{
 			usbd.t.rhport[i].port.opaque = nullptr;
 			usbd.t.rhport[i].port.ops = nullptr;
@@ -541,7 +541,7 @@ s32 USBfreeze(FreezeAction mode, freezeData* data)
 		u8* ptr = data->data + sizeof(USBfreezeData);
 
 		// Save the state of the attached devices
-		for (int i = 0; i < 2; i++)
+		for (int i = 0; i < 2; ++i)
 		{
 			auto proxy = regInst.Device(conf.Port[i]);
 			if (usb_device[i])

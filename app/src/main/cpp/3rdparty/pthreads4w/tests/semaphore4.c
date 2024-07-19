@@ -96,7 +96,7 @@ main()
 	assert(sem_getvalue(&s, &value) == 0);
 	assert(value == 0);
 
-	for (i = 1; i <= MAX_COUNT; i++)
+	for (i = 1; i <= MAX_COUNT; ++i)
 		{
 			assert(pthread_create(&t[i], NULL, thr, NULL) == 0);
 			do {
@@ -123,7 +123,7 @@ main()
 			assert(-value == i);
 		}
 
-	for (i = 1; i <= MAX_COUNT; i++)
+	for (i = 1; i <= MAX_COUNT; ++i)
 	  if (i != 50)
 	    assert(pthread_join(t[i], NULL) == 0);
 

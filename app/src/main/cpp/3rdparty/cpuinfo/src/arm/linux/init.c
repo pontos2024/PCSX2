@@ -184,7 +184,7 @@ void cpuinfo_arm_linux_init(void) {
 		return;
 	}
 
-	for (uint32_t i = 0; i < arm_linux_processors_count; i++) {
+	for (uint32_t i = 0; i < arm_linux_processors_count; ++i) {
 		if (bitmask_all(arm_linux_processors[i].flags, valid_processor_mask)) {
 			arm_linux_processors[i].flags |= CPUINFO_LINUX_FLAG_VALID;
 			cpuinfo_log_debug("parsed processor %"PRIu32" MIDR 0x%08"PRIx32,
@@ -196,7 +196,7 @@ void cpuinfo_arm_linux_init(void) {
 	#if CPUINFO_ARCH_ARM
 	uint32_t last_architecture_version = 0, last_architecture_flags = 0;
 	#endif
-	for (uint32_t i = 0; i < arm_linux_processors_count; i++) {
+	for (uint32_t i = 0; i < arm_linux_processors_count; ++i) {
 		arm_linux_processors[i].system_processor_id = i;
 		if (bitmask_all(arm_linux_processors[i].flags, CPUINFO_LINUX_FLAG_VALID)) {
 			valid_processors += 1;
@@ -254,7 +254,7 @@ void cpuinfo_arm_linux_init(void) {
 					 * If different processors report different ISA features, take the intersection.
 					 */
 					uint32_t processors_with_features = 0;
-					for (uint32_t i = 0; i < arm_linux_processors_count; i++) {
+					for (uint32_t i = 0; i < arm_linux_processors_count; ++i) {
 						if (bitmask_all(arm_linux_processors[i].flags, CPUINFO_LINUX_FLAG_VALID | CPUINFO_ARM_LINUX_VALID_FEATURES)) {
 							if (processors_with_features == 0) {
 								isa_features = arm_linux_processors[i].features;
@@ -285,7 +285,7 @@ void cpuinfo_arm_linux_init(void) {
 	#endif
 
 	/* Detect min/max frequency and package ID */
-	for (uint32_t i = 0; i < arm_linux_processors_count; i++) {
+	for (uint32_t i = 0; i < arm_linux_processors_count; ++i) {
 		if (bitmask_all(arm_linux_processors[i].flags, CPUINFO_LINUX_FLAG_VALID)) {
 			const uint32_t max_frequency = cpuinfo_linux_get_processor_max_frequency(i);
 			if (max_frequency != 0) {
@@ -306,12 +306,12 @@ void cpuinfo_arm_linux_init(void) {
 	}
 
 	/* Initialize topology group IDs */
-	for (uint32_t i = 0; i < arm_linux_processors_count; i++) {
+	for (uint32_t i = 0; i < arm_linux_processors_count; ++i) {
 		arm_linux_processors[i].package_leader_id = i;
 	}
 
 	/* Propagate topology group IDs among siblings */
-	for (uint32_t i = 0; i < arm_linux_processors_count; i++) {
+	for (uint32_t i = 0; i < arm_linux_processors_count; ++i) {
 		if (!bitmask_all(arm_linux_processors[i].flags, CPUINFO_LINUX_FLAG_VALID)) {
 			continue;
 		}
@@ -326,7 +326,7 @@ void cpuinfo_arm_linux_init(void) {
 
 	/* Propagate all cluster IDs */
 	uint32_t clustered_processors = 0;
-	for (uint32_t i = 0; i < arm_linux_processors_count; i++) {
+	for (uint32_t i = 0; i < arm_linux_processors_count; ++i) {
 		if (bitmask_all(arm_linux_processors[i].flags, CPUINFO_LINUX_FLAG_VALID | CPUINFO_LINUX_FLAG_PACKAGE_CLUSTER)) {
 			clustered_processors += 1;
 
@@ -362,7 +362,7 @@ void cpuinfo_arm_linux_init(void) {
 		arm_linux_processors_count, valid_processors, arm_linux_processors);
 
 	/* Initialize core vendor, uarch, MIDR, and frequency for every logical processor */
-	for (uint32_t i = 0; i < arm_linux_processors_count; i++) {
+	for (uint32_t i = 0; i < arm_linux_processors_count; ++i) {
 		if (bitmask_all(arm_linux_processors[i].flags, CPUINFO_LINUX_FLAG_VALID)) {
 			const uint32_t cluster_leader = arm_linux_processors[i].package_leader_id;
 			if (cluster_leader == i) {
@@ -386,7 +386,7 @@ void cpuinfo_arm_linux_init(void) {
 		}
 	}
 
-	for (uint32_t i = 0; i < arm_linux_processors_count; i++) {
+	for (uint32_t i = 0; i < arm_linux_processors_count; ++i) {
 		if (bitmask_all(arm_linux_processors[i].flags, CPUINFO_LINUX_FLAG_VALID)) {
 			cpuinfo_log_debug("post-analysis processor %"PRIu32": MIDR %08"PRIx32" frequency %"PRIu32,
 				i, arm_linux_processors[i].midr, arm_linux_processors[i].max_frequency);
@@ -396,7 +396,7 @@ void cpuinfo_arm_linux_init(void) {
 	qsort(arm_linux_processors, arm_linux_processors_count,
 		sizeof(struct cpuinfo_arm_linux_processor), cmp_arm_linux_processor);
 
-	for (uint32_t i = 0; i < arm_linux_processors_count; i++) {
+	for (uint32_t i = 0; i < arm_linux_processors_count; ++i) {
 		if (bitmask_all(arm_linux_processors[i].flags, CPUINFO_LINUX_FLAG_VALID)) {
 			cpuinfo_log_debug("post-sort processor %"PRIu32": system id %"PRIu32" MIDR %08"PRIx32" frequency %"PRIu32,
 				i, arm_linux_processors[i].system_processor_id, arm_linux_processors[i].midr, arm_linux_processors[i].max_frequency);
@@ -405,7 +405,7 @@ void cpuinfo_arm_linux_init(void) {
 
 	uint32_t uarchs_count = 0;
 	enum cpuinfo_uarch last_uarch;
-	for (uint32_t i = 0; i < arm_linux_processors_count; i++) {
+	for (uint32_t i = 0; i < arm_linux_processors_count; ++i) {
 		if (bitmask_all(arm_linux_processors[i].flags, CPUINFO_LINUX_FLAG_VALID)) {
 			if (uarchs_count == 0 || arm_linux_processors[i].uarch != last_uarch) {
 				last_uarch = arm_linux_processors[i].uarch;
@@ -492,7 +492,7 @@ void cpuinfo_arm_linux_init(void) {
 	}
 
 	uint32_t uarchs_index = 0;
-	for (uint32_t i = 0; i < arm_linux_processors_count; i++) {
+	for (uint32_t i = 0; i < arm_linux_processors_count; ++i) {
 		if (bitmask_all(arm_linux_processors[i].flags, CPUINFO_LINUX_FLAG_VALID)) {
 			if (uarchs_index == 0 || arm_linux_processors[i].uarch != last_uarch) {
 				last_uarch = arm_linux_processors[i].uarch;
@@ -511,7 +511,7 @@ void cpuinfo_arm_linux_init(void) {
 	/* Indication whether L3 (if it exists) is shared between all cores */
 	bool shared_l3 = true;
 	/* Populate cache infromation structures in l1i, l1d */
-	for (uint32_t i = 0; i < valid_processors; i++) {
+	for (uint32_t i = 0; i < valid_processors; ++i) {
 		if (arm_linux_processors[i].package_leader_id == arm_linux_processors[i].system_processor_id) {
 			cluster_id += 1;
 			clusters[cluster_id] = (struct cpuinfo_cluster) {
@@ -635,7 +635,7 @@ void cpuinfo_arm_linux_init(void) {
 
 	cluster_id = UINT32_MAX;
 	uint32_t l2_index = UINT32_MAX, l3_index = UINT32_MAX;
-	for (uint32_t i = 0; i < valid_processors; i++) {
+	for (uint32_t i = 0; i < valid_processors; ++i) {
 		if (arm_linux_processors[i].package_leader_id == arm_linux_processors[i].system_processor_id) {
 			cluster_id++;
 		}

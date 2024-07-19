@@ -83,7 +83,7 @@ void ManyAsserts(int id) {
 
   SCOPED_TRACE(Message() << "Thread #" << id);
 
-  for (int i = 0; i < kThreadCount; i++) {
+  for (int i = 0; i < kThreadCount; ++i) {
     SCOPED_TRACE(Message() << "Iteration #" << i);
 
     // A bunch of assertions that should succeed.
@@ -120,7 +120,7 @@ TEST(StressTest, CanUseScopedTraceAndAssertionsInManyThreads) {
   {
     std::unique_ptr<ThreadWithParam<int> > threads[kThreadCount];
     Notification threads_can_start;
-    for (int i = 0; i != kThreadCount; i++)
+    for (int i = 0; i != kThreadCount; ++i)
       threads[i].reset(new ThreadWithParam<int>(&ManyAsserts,
                                                 i,
                                                 &threads_can_start));
@@ -128,7 +128,7 @@ TEST(StressTest, CanUseScopedTraceAndAssertionsInManyThreads) {
     threads_can_start.Notify();
 
     // Blocks until all the threads are done.
-    for (int i = 0; i != kThreadCount; i++)
+    for (int i = 0; i != kThreadCount; ++i)
       threads[i]->Join();
   }
 

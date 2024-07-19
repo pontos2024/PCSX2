@@ -54,22 +54,30 @@ void ATA::HDD_Smart()
 			SMART_ReturnStatus();
 			return;
 		case 0xD1: //SMART_READ_THRESH
+#ifdef PCSX2_DEBUG
 			Console.Error("DEV9: ATA: SMART_READ_THRESH Not Implemented");
+#endif
 			CmdNoDataAbort();
 			return;
 		case 0xD0: //SMART_READ_DATA
+#ifdef PCSX2_DEBUG
 			Console.Error("DEV9: ATA: SMART_READ_DATA Not Implemented");
+#endif
 			CmdNoDataAbort();
 			return;
 		case 0xD5: //SMART_READ_LOG
+#ifdef PCSX2_DEBUG
 			Console.Error("DEV9: ATA: SMART_READ_LOG Not Implemented");
+#endif
 			CmdNoDataAbort();
 			return;
 		case 0xD4: //SMART_EXECUTE_OFFLINE
 			SMART_ExecuteOfflineImmediate();
 			return;
 		default:
+#ifdef PCSX2_DEBUG
 			Console.Error("DEV9: ATA: Unknown SMART command %x", regFeature);
+#endif
 			CmdNoDataAbort();
 			return;
 	}
@@ -87,7 +95,9 @@ void ATA::SMART_SetAutoSaveAttribute()
 			smartAutosave = true;
 			break;
 		default:
+#ifdef PCSX2_DEBUG
 			Console.Error("DEV9: ATA: Unknown SMART_ATTR_AUTOSAVE command %s", regSector);
+#endif
 			CmdNoDataAbort();
 			return;
 	}

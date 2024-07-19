@@ -393,7 +393,7 @@ static constexpr std::array<u8, 64> ComputeMpeg2Scan(bool alt)
 		53, 61, 22, 30, 7, 15, 23, 31, 38, 46, 54, 62, 39, 47, 55, 63};
 
 	std::array<u8, 64> ret = {};
-	for (int i = 0; i < 64; i++)
+	for (int i = 0; i < 64; ++i)
 	{
 		const int j = alt ? mpeg2_scan_alt[i] : mpeg2_scan_norm[i];
 		ret[i] = ((j & 0x36) >> 1) | ((j & 0x09) << 2);
@@ -496,6 +496,7 @@ void SaveStateBase::ipuFreeze()
 
 void tIPU_CMD_IDEC::log() const
 {
+#ifdef PCSX2_DEBUG
 	IPU_LOG("IDEC command.");
 
 	if (FB) IPU_LOG(" Skip %d	bits.", FB);
@@ -518,10 +519,12 @@ void tIPU_CMD_IDEC::log() const
 		IPU_LOG(" Output format is RGB16.");
 
 	IPU_LOG("");
+#endif
 }
 
 void tIPU_CMD_BDEC::log(int s_bdec) const
 {
+#ifdef PCSX2_DEBUG
 	IPU_LOG("BDEC(macroblock decode) command %x, num: 0x%x", cpuRegs.pc, s_bdec);
 	if (FB) IPU_LOG(" Skip 0x%X bits.", FB);
 
@@ -541,10 +544,12 @@ void tIPU_CMD_BDEC::log(int s_bdec) const
 		IPU_LOG(" Use frame DCT.");
 
 	IPU_LOG(" Quantizer step=0x%X", QSC);
+#endif
 }
 
 void tIPU_CMD_CSC::log_from_YCbCr() const
 {
+#ifdef PCSX2_DEBUG
 	IPU_LOG("CSC(Colorspace conversion from YCbCr) command (%d).", MBC);
 	if (OFM)
 		IPU_LOG("Output format is RGB16. ");
@@ -552,10 +557,12 @@ void tIPU_CMD_CSC::log_from_YCbCr() const
 		IPU_LOG("Output format is RGB32. ");
 
 	if (DTE) IPU_LOG("Dithering enabled.");
+#endif
 }
 
 void tIPU_CMD_CSC::log_from_RGB32() const
 {
+#ifdef PCSX2_DEBUG
 	IPU_LOG("PACK (Colorspace conversion from RGB32) command.");
 
 	if (OFM)
@@ -566,6 +573,7 @@ void tIPU_CMD_CSC::log_from_RGB32() const
 	if (DTE) IPU_LOG("Dithering enabled.");
 
 	IPU_LOG("Number of macroblocks to be converted: %d", MBC);
+#endif
 }
 
 
@@ -595,10 +603,11 @@ __fi u32 ipuRead32(u32 mem)
 		{
 			ipuRegs.ctrl.IFC = g_BP.IFC;
 			ipuRegs.ctrl.CBP = coded_block_pattern;
-
-			if (!ipuRegs.ctrl.BUSY)
+#ifdef PCSX2_DEBUG
+			if (!ipuRegs.ctrl.BUSY) {
 				IPU_LOG("read32: IPU_CTRL=0x%08X", ipuRegs.ctrl._u32);
-
+			}
+#endif
 			return ipuRegs.ctrl._u32;
 		}
 
@@ -609,13 +618,17 @@ __fi u32 ipuRead32(u32 mem)
 			ipuRegs.ipubp = g_BP.BP & 0x7f;
 			ipuRegs.ipubp |= g_BP.IFC << 8;
 			ipuRegs.ipubp |= g_BP.FP << 16;
-
+#ifdef PCSX2_DEBUG
 			IPU_LOG("read32: IPU_BP=0x%08X", ipuRegs.ipubp);
+#endif
 			return ipuRegs.ipubp;
 		}
 
-		default:
+		default: {
+#ifdef PCSX2_DEBUG
 			IPU_LOG("read32: Addr=0x%08X Value = 0x%08X", mem, psHu32(IPU_CMD + mem));
+#endif
+		}
 	}
 
 	return psHu32(IPU_CMD + mem);
@@ -640,26 +653,37 @@ __fi RETURNS_R64 ipuRead64(u32 mem)
 				if (getBits32((u8*)&ipuRegs.cmd.DATA, 0))
 					ipuRegs.cmd.DATA = BigEndian(ipuRegs.cmd.DATA);
 			}
-			
-			if (ipuRegs.cmd.DATA & 0xffffff)
-				IPU_LOG("read64: IPU_CMD=BUSY=%x, DATA=%08X", ipuRegs.cmd.BUSY ? 1 : 0, ipuRegs.cmd.DATA);
+#ifdef PCSX2_DEBUG
+			if (ipuRegs.cmd.DATA & 0xffffff) {
+				IPU_LOG("read64: IPU_CMD=BUSY=%x, DATA=%08X", ipuRegs.cmd.BUSY ? 1 : 0,
+						ipuRegs.cmd.DATA);
+			}
+#endif
 			return r64_load(&ipuRegs.cmd._u64);
 		}
 
 		ipucase(IPU_CTRL):
+#ifdef PCSX2_DEBUG
 			DevCon.Warning("reading 64bit IPU ctrl");
+#endif
 			break;
 
 		ipucase(IPU_BP):
+#ifdef PCSX2_DEBUG
 			DevCon.Warning("reading 64bit IPU top");
+#endif
 			break;
 
 		ipucase(IPU_TOP): // IPU_TOP
+#ifdef PCSX2_DEBUG
 			IPU_LOG("read64: IPU_TOP=%x,  bp = %d", ipuRegs.top, g_BP.BP);
+#endif
 			break;
 
 		default:
+#ifdef PCSX2_DEBUG
 			IPU_LOG("read64: Unknown=%x", mem);
+#endif
 			break;
 	}
 	return r64_load(&psHu64(IPU_CMD + mem));
@@ -692,7 +716,9 @@ __fi bool ipuWrite32(u32 mem, u32 value)
 	switch (mem)
 	{
 		ipucase(IPU_CMD): // IPU_CMD
+#ifdef PCSX2_DEBUG
 			IPU_LOG("write32: IPU_CMD=0x%08X", value);
+#endif
 			IPUCMD_WRITE(value);
 			IPUProcessInterrupt();
 		return false;
@@ -708,8 +734,9 @@ __fi bool ipuWrite32(u32 mem, u32 value)
 			}
 
 			if (ipuRegs.ctrl.RST) ipuSoftReset(); // RESET
-
+#ifdef PCSX2_DEBUG
 			IPU_LOG("write32: IPU_CTRL=0x%08X", value);
+#endif
 		return false;
 	}
 	return true;
@@ -728,7 +755,9 @@ __fi bool ipuWrite64(u32 mem, u64 value)
 	switch (mem)
 	{
 		ipucase(IPU_CMD):
+#ifdef PCSX2_DEBUG
 			IPU_LOG("write64: IPU_CMD=0x%08X", value);
+#endif
 			IPUCMD_WRITE((u32)value);
 			IPUProcessInterrupt();
 		return false;
@@ -758,7 +787,9 @@ static void ipuBCLR(u32 val)
 
 	ipuRegs.ctrl.BUSY = 0;
 	ipuRegs.cmd.BUSY = 0;
+#ifdef PCSX2_DEBUG
 	IPU_LOG("Clear IPU input FIFO. Set Bit offset=0x%X", g_BP.BP);
+#endif
 }
 
 static __ri void ipuIDEC(tIPU_CMD_IDEC idec)
@@ -812,7 +843,7 @@ static __ri void ipuBDEC(tIPU_CMD_BDEC bdec)
 
 static __fi bool ipuVDEC(u32 val)
 {
-	if (EmuConfig.GS.FMVAspectRatioSwitch != FMVAspectRatioSwitchType::Off) {
+	if (EmuConfig2.GS.FMVAspectRatioSwitch != FMVAspectRatioSwitchType::Off) {
 		static int count = 0;
 		if (count++ > 5) {
 			if (!FMVstarted) {
@@ -874,11 +905,11 @@ static __fi bool ipuVDEC(u32 val)
 			}
 
 			ipuRegs.top = BigEndian(ipuRegs.top);
-
+#ifdef PCSX2_DEBUG
 			IPU_LOG("VDEC command data 0x%x(0x%x). Skip 0x%X bits/Table=%d (%s), pct %d",
 			        ipuRegs.cmd.DATA, ipuRegs.cmd.DATA >> 16, val & 0x3f, (val >> 26) & 3, (val >> 26) & 1 ?
 			        ((val >> 26) & 2 ? "DMV" : "MBT") : (((val >> 26) & 2 ? "MC" : "MBAI")), ipuRegs.ctrl.PCT);
-
+#endif
 			return true;
 
 		jNO_DEFAULT
@@ -893,9 +924,9 @@ static __ri bool ipuFDEC(u32 val)
 
 	ipuRegs.cmd.DATA = BigEndian(ipuRegs.cmd.DATA);
 	ipuRegs.top = ipuRegs.cmd.DATA;
-
+#ifdef PCSX2_DEBUG
 	IPU_LOG("FDEC read: 0x%08x", ipuRegs.top);
-
+#endif
 	return true;
 }
 
@@ -905,35 +936,37 @@ static bool ipuSETIQ(u32 val)
 	{
 		u8 (&niq)[64] = decoder.niq;
 
-		for(;ipu_cmd.pos[0] < 8; ipu_cmd.pos[0]++)
+		for(;ipu_cmd.pos[0] < 8; ++ipu_cmd.pos[0])
 		{
 			if (!getBits64((u8*)niq + 8 * ipu_cmd.pos[0], 1)) return false;
 		}
-
+#ifdef PCSX2_DEBUG
 		IPU_LOG("Read non-intra quantization matrix from FIFO.");
-		for (uint i = 0; i < 8; i++)
+		for (uint i = 0; i < 8; ++i)
 		{
 			IPU_LOG("%02X %02X %02X %02X %02X %02X %02X %02X",
 			        niq[i * 8 + 0], niq[i * 8 + 1], niq[i * 8 + 2], niq[i * 8 + 3],
 			        niq[i * 8 + 4], niq[i * 8 + 5], niq[i * 8 + 6], niq[i * 8 + 7]);
 		}
+#endif
 	}
 	else
 	{
 		u8 (&iq)[64] = decoder.iq;
 
-		for(;ipu_cmd.pos[0] < 8; ipu_cmd.pos[0]++)
+		for(;ipu_cmd.pos[0] < 8; ++ipu_cmd.pos[0])
 		{
 			if (!getBits64((u8*)iq + 8 * ipu_cmd.pos[0], 1)) return false;
 		}
-
+#ifdef PCSX2_DEBUG
 		IPU_LOG("Read intra quantization matrix from FIFO.");
-		for (uint i = 0; i < 8; i++)
+		for (uint i = 0; i < 8; ++i)
 		{
 			IPU_LOG("%02X %02X %02X %02X %02X %02X %02X %02X",
 			        iq[i * 8 + 0], iq[i * 8 + 1], iq[i * 8 + 2], iq[i *8 + 3],
 			        iq[i * 8 + 4], iq[i * 8 + 5], iq[i * 8 + 6], iq[i *8 + 7]);
 		}
+#endif
 	}
 
 	return true;
@@ -941,11 +974,11 @@ static bool ipuSETIQ(u32 val)
 
 static bool ipuSETVQ(u32 val)
 {
-	for(;ipu_cmd.pos[0] < 4; ipu_cmd.pos[0]++)
+	for(;ipu_cmd.pos[0] < 4; ++ipu_cmd.pos[0])
 	{
 		if (!getBits64(((u8*)vqclut) + 8 * ipu_cmd.pos[0], 1)) return false;
 	}
-
+#ifdef PCSX2_DEBUG
 	IPU_LOG("SETVQ command.   Read VQCLUT table from FIFO.\n"
 	    "%02d:%02d:%02d %02d:%02d:%02d %02d:%02d:%02d %02d:%02d:%02d\n"
 	    "%02d:%02d:%02d %02d:%02d:%02d %02d:%02d:%02d %02d:%02d:%02d\n"
@@ -967,7 +1000,7 @@ static bool ipuSETVQ(u32 val)
 	    vqclut[13].r, vqclut[13].g, vqclut[13].b,
 	    vqclut[14].r, vqclut[14].g, vqclut[14].b,
 	    vqclut[15].r, vqclut[15].g, vqclut[15].b);
-
+#endif
 	return true;
 }
 
@@ -976,9 +1009,9 @@ static __ri bool ipuCSC(tIPU_CMD_CSC csc)
 {
 	csc.log_from_YCbCr();
 
-	for (;ipu_cmd.index < (int)csc.MBC; ipu_cmd.index++)
+	for (;ipu_cmd.index < (int)csc.MBC; ++ipu_cmd.index)
 	{
-		for(;ipu_cmd.pos[0] < 48; ipu_cmd.pos[0]++)
+		for(;ipu_cmd.pos[0] < 48; ++ipu_cmd.pos[0])
 		{
 			if (!getBits64((u8*)&decoder.mb8 + 8 * ipu_cmd.pos[0], 1)) return false;
 		}
@@ -1008,9 +1041,9 @@ static __ri bool ipuPACK(tIPU_CMD_CSC csc)
 {
 	csc.log_from_RGB32();
 
-	for (;ipu_cmd.index < (int)csc.MBC; ipu_cmd.index++)
+	for (;ipu_cmd.index < (int)csc.MBC; ++ipu_cmd.index)
 	{
-		for(;ipu_cmd.pos[0] < (int)sizeof(macroblock_rgb32) / 8; ipu_cmd.pos[0]++)
+		for(;ipu_cmd.pos[0] < (int)sizeof(macroblock_rgb32) / 8; ++ipu_cmd.pos[0])
 		{
 			if (!getBits64((u8*)&decoder.rgb32 + 8 * ipu_cmd.pos[0], 1)) return false;
 		}
@@ -1041,7 +1074,9 @@ static void ipuSETTH(u32 val)
 {
 	s_thresh[0] = (val & 0x1ff);
 	s_thresh[1] = ((val >> 16) & 0x1ff);
+#ifdef PCSX2_DEBUG
 	IPU_LOG("SETTH (Set threshold value)command %x.", val&0x1ff01ff);
+#endif
 }
 
 // --------------------------------------------------------------------------------------
@@ -1056,7 +1091,7 @@ __fi void ipu_csc(macroblock_8& mb8, macroblock_rgb32& rgb32, int sgn)
 
 	if (s_thresh[0] > 0)
 	{
-		for (i = 0; i < 16*16; i++, p += 4)
+		for (i = 0; i < 16*16; ++i, p += 4)
 		{
 			if ((p[0] < s_thresh[0]) && (p[1] < s_thresh[0]) && (p[2] < s_thresh[0]))
 				*(u32*)p = 0;
@@ -1066,7 +1101,7 @@ __fi void ipu_csc(macroblock_8& mb8, macroblock_rgb32& rgb32, int sgn)
 	}
 	else if (s_thresh[1] > 0)
 	{
-		for (i = 0; i < 16*16; i++, p += 4)
+		for (i = 0; i < 16*16; ++i, p += 4)
 		{
 			if ((p[0] < s_thresh[1]) && (p[1] < s_thresh[1]) && (p[2] < s_thresh[1]))
 				p[3] = 0x40;
@@ -1074,7 +1109,7 @@ __fi void ipu_csc(macroblock_8& mb8, macroblock_rgb32& rgb32, int sgn)
 	}
 	if (sgn)
 	{
-		for (i = 0; i < 16*16; i++, p += 4)
+		for (i = 0; i < 16*16; ++i, p += 4)
 		{
 			*(u32*)p ^= 0x808080;
 		}
@@ -1162,15 +1197,18 @@ __fi void IPUCMD_WRITE(u32 val)
 			break;
 
 		case SCE_IPU_FDEC:
+#ifdef PCSX2_DEBUG
 			IPU_LOG("FDEC command. Skip 0x%X bits, FIFO 0x%X qwords, BP 0x%X, CHCR 0x%x",
 			        val & 0x3f, g_BP.IFC, g_BP.BP, ipu1ch.chcr._u32);
-
+#endif
 			g_BP.Advance(val & 0x3F);
 			ipuRegs.SetDataBusy();
 			break;
 
 		case SCE_IPU_SETIQ:
+#ifdef PCSX2_DEBUG
 			IPU_LOG("SETIQ command.");
+#endif
 			g_BP.Advance(val & 0x3F);
 			break;
 
@@ -1376,7 +1414,9 @@ static int get_macroblock_modes()
 		macroblock_modes = GETBITS(1);
 		//I suspect (as this is actually a 2 bit command) that this should be getbits(2)
 		//additionally, we arent dumping any bits here when i think we should be, need a game to test. (Refraction)
+#ifdef PCSX2_DEBUG
 		DevCon.Warning(" Rare MPEG command! ");
+#endif
 		if (macroblock_modes == 0) return 0;   // error
 		return (MACROBLOCK_INTRA | (1 << 16));
 
@@ -1565,7 +1605,7 @@ static bool get_intra_block()
 	u16 code;
 
 	/* decode AC coefficients */
-	for (int i = 1 + ipu_cmd.pos[4]; ; i++)
+	for (int i = 1 + ipu_cmd.pos[4]; ; ++i)
 	{
 		switch (ipu_cmd.pos[5])
 		{
@@ -1723,7 +1763,7 @@ static bool get_non_intra_block(int* last)
 	u16 code;
 
 	/* decode AC coefficients */
-	for (i = ipu_cmd.pos[4]; ; i++)
+	for (i = ipu_cmd.pos[4]; ; ++i)
 	{
 		switch (ipu_cmd.pos[5])
 		{
@@ -2463,7 +2503,7 @@ __fi bool mpeg2_slice()
 static constexpr std::array<u8, 1024> ComputeClipLUT()
 {
 	std::array<u8, 1024> ret = {};
-	for (int i = -384; i < 640; i++)
+	for (int i = -384; i < 640; ++i)
 		ret[i + 384] = (i < 0) ? 0 : ((i > 255) ? 255 : i);
 	return ret;
 }
@@ -2484,7 +2524,7 @@ static __fi void BUTTERFLY(int& t0, int& t1, int w0, int w1, int d0, int d1)
 __ri void mpeg2_idct(s16* block)
 {
 	// TODO-some-time: SIMD-ify this
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < 8; ++i)
 	{
 		s16* const rblock = block + 8 * i;
 		if (!(rblock[1] | ((s32*)rblock)[1] | ((s32*)rblock)[2] |
@@ -2542,7 +2582,7 @@ __ri void mpeg2_idct(s16* block)
 		rblock[7] = (a0 - b0) >> 8;
 	}
 
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < 8; ++i)
 	{
 		s16* const cblock = block + i;
 
@@ -2595,7 +2635,7 @@ __ri void mpeg2_idct_copy(s16* block, u8* dest, const int stride)
 {
 	mpeg2_idct(block);
 
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < 8; ++i)
 	{
 		dest[0] = (clip_lut.data() + 384)[block[0]];
 		dest[1] = (clip_lut.data() + 384)[block[1]];
@@ -2628,7 +2668,7 @@ __ri void mpeg2_idct_add(const int last, s16* block, s16* dest, const int stride
 #elif defined(_M_ARM64)
 		int16x8_t zero = vdupq_n_s16(0);
 #endif
-		for (int i = 0; i < 8; i++)
+		for (int i = 0; i < 8; ++i)
 		{
 #if defined(_M_X86_32) || defined(_M_X86_64)
 			_mm_store_ps((float*)dest, _mm_load_ps((float*)block));
@@ -2797,8 +2837,8 @@ void yuv2rgb_reference(void)
 	const macroblock_8& mb8 = decoder.mb8;
 	macroblock_rgb32& rgb32 = decoder.rgb32;
 
-	for (int y = 0; y < 16; y++)
-		for (int x = 0; x < 16; x++)
+	for (int y = 0; y < 16; ++y)
+		for (int x = 0; x < 16; ++x)
 		{
 			s32 lum = (IPU_Y_COEFF * (std::max(0, (s32)mb8.Y[y][x] - IPU_Y_BIAS))) >> 6;
 			s32 rcr = (IPU_RCR_COEFF * ((s32)mb8.Cr[y >> 1][x >> 1] - 128)) >> 6;

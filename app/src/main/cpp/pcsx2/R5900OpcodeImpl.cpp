@@ -178,14 +178,18 @@ static int __Deci2Call(int call, u32 *addr)
 			if( addr != NULL )
 			{
 				deci2addr = addr[1];
+#ifdef PCSX2_DEBUG
 				BIOS_LOG("deci2open: %x,%x,%x,%x",
 						 addr[3], addr[2], addr[1], addr[0]);
+#endif
 				deci2handler = addr[2];
 			}
 			else
 			{
 				deci2handler = 0;
+#ifdef PCSX2_DEBUG
 				DevCon.Warning( "Deci2Call.Open > NULL address ignored." );
+#endif
 			}
 			return 1;
 
@@ -203,12 +207,12 @@ static int __Deci2Call(int call, u32 *addr)
 			if (!deci2addr) return 1;
 			
 			const u32* d2ptr = (u32*)PSM(deci2addr);
-
+#ifdef PCSX2_DEBUG
 			BIOS_LOG("deci2reqsend: %s: deci2addr: %x,%x,%x,buf=%x %x,%x,len=%x,%x",
 				(( addr == NULL ) ? "NULL" : reqaddr),
 				d2ptr[7], d2ptr[6], d2ptr[5], d2ptr[4],
 				d2ptr[3], d2ptr[2], d2ptr[1], d2ptr[0]);
-
+#endif
 //			cpuRegs.pc = deci2handler;
 //			Console.WriteLn("deci2msg: %s",  (char*)PSM(d2ptr[4]+0xc));
 
@@ -231,8 +235,11 @@ static int __Deci2Call(int call, u32 *addr)
 		}
 
 		case 4: // poll
-			if( addr != NULL )
+#ifdef PCSX2_DEBUG
+			if( addr != NULL ) {
 				BIOS_LOG("deci2poll: %x,%x,%x,%x\n", addr[3], addr[2], addr[1], addr[0]);
+			}
+#endif
 			return 1;
 
 		case 5: // exrecv
@@ -266,7 +273,9 @@ void COP2()
 }
 
 void Unknown() {
+#ifdef PCSX2_DEBUG
 	CPU_LOG("%8.8lx: Unknown opcode called", cpuRegs.pc);
+#endif
 }
 
 void MMI_Unknown() { Console.Warning("Unknown MMI opcode called"); }
@@ -883,8 +892,9 @@ void SYSCALL()
 	else
 		call = cpuRegs.GPR.n.v1.UC[0];
 
+#ifdef PCSX2_DEBUG
 	BIOS_LOG("Bios call: %s (%x)", R5900::bios[call], call);
-
+#endif
 
 	switch (static_cast<Syscall>(call))
 	{
@@ -938,10 +948,14 @@ void SYSCALL()
 						case 0x73: mode = "DVD PAL 720x480 @ ??.???"; gsSetVideoMode(GS_VideoMode::DVD_PAL); break;
 
 						default:
+#ifdef PCSX2_DEBUG
 							DevCon.Error("Mode %x is not supported. Report me upstream", cpuRegs.GPR.n.a1.UC[0]);
+#endif
 							gsSetVideoMode(GS_VideoMode::Unknown);
 					}
+#ifdef PCSX2_DEBUG
 					DevCon.Warning("Set GS CRTC configuration. %s %s (%s)",mode.c_str(), inter, field);
+#endif
 				}
 				break;
 		case Syscall::SetOsdConfigParam:
@@ -986,7 +1000,9 @@ void SYSCALL()
 			}
 			break;
 		case Syscall::SetVTLBRefillHandler:
+#ifdef PCSX2_DEBUG
 			DevCon.Warning("A tlb refill handler is set. New handler %x", (u32*)PSM(cpuRegs.GPR.n.a1.UL[0]));
+#endif
 			break;
 		case Syscall::StartThread:
 		case Syscall::ChangeThreadPriority:
@@ -1010,7 +1026,9 @@ void SYSCALL()
 						// We (well, I) know that the thread address is always 0x8001 + the immediate of the 6th instruction from here
 						const u32 op = memRead32(0x80000000 + offset + (sizeof(u32) * 6));
 						CurrentBiosInformation.threadListAddr = 0x80010000 + static_cast<u16>(op) - 8; // Subtract 8 because the address here is offset by 8.
+#ifdef PCSX2_DEBUG
 						DevCon.WriteLn("BIOS: Successfully found the instruction pattern. Assuming the thread list is here: %0x", CurrentBiosInformation.threadListAddr);
+#endif
 						break;
 					}
 					offset += 4;
@@ -1042,11 +1060,12 @@ void SYSCALL()
 				{
 					addr = cpuRegs.GPR.n.a0.UL[0] + n_transfer * sizeof(t_sif_dma_transfer);
 					dmat = (t_sif_dma_transfer*)PSM(addr);
-
+#ifdef PCSX2_DEBUG
 					BIOS_LOG("bios_%s: n_transfer=%d, size=%x, attr=%x, dest=%x, src=%x",
 							R5900::bios[cpuRegs.GPR.n.v1.UC[0]], n_transfer,
 							dmat->size, dmat->attr,
 							dmat->dest, dmat->src);
+#endif
 				}
 			}
 			break;
@@ -1084,7 +1103,7 @@ void SYSCALL()
 				// Instead of the addresse(s) being relative to the PS2 address space, make them relative to program memory.
 				// (This fixes issue #2865) 
 				int curRegArg = 0;
-				for (int i = 0; 1; i++)
+				for (int i = 0; 1; ++i)
 				{
 					if (fmt[i] == '\0')
 						break;

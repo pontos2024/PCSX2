@@ -16,7 +16,8 @@
 #pragma once
 
 #include "GS/Renderers/Common/GSTexture.h"
-#include "GS.h"
+#include "GS/Renderers/OpenGL/GLLoader.h"
+#include "common/AlignedMalloc.h"
 
 namespace PboPool
 {
@@ -24,7 +25,7 @@ namespace PboPool
 	inline void UnbindPbo();
 	inline void Sync();
 
-	inline char* Map(uint32 size);
+	inline char* Map(u32 size);
 	inline void Unmap();
 	inline uptr Offset();
 	inline void EndTransfer();
@@ -39,9 +40,7 @@ private:
 	GLuint m_texture_id; // the texture id
 	GLuint m_fbo_read;
 	bool m_clean;
-	bool m_generate_mipmap;
 
-	uint8* m_local_buffer;
 	// Avoid alignment constrain
 	//GSVector4i m_r;
 	int m_r_x;
@@ -49,18 +48,17 @@ private:
 	int m_r_w;
 	int m_r_h;
 	int m_layer;
-	int m_max_layer;
 
 	// internal opengl format/type/alignment
 	GLenum m_int_format;
 	GLenum m_int_type;
-	uint32 m_int_shift;
+	u32 m_int_shift;
 
 	// Allow to track size of allocated memory
-	uint32 m_mem_usage;
+	u32 m_mem_usage;
 
 public:
-	explicit GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read, bool mipmap);
+	explicit GSTextureOGL(Type type, int width, int height, int levels, Format format, GLuint fbo_read);
 	virtual ~GSTextureOGL();
 
 	void* GetNativeHandle() const override;
@@ -70,11 +68,20 @@ public:
 	void Unmap() final;
 	void GenerateMipmap() final;
 	bool Save(const std::string& fn) final;
+	void Swap(GSTexture* tex) final;
 
-	bool IsDss() { return (m_type == GSTexture::DepthStencil || m_type == GSTexture::SparseDepthStencil) && (m_format == GL_DEPTH32F_STENCIL8); }
-	bool IsDepth() { return (m_type == GSTexture::DepthStencil || m_type == GSTexture::SparseDepthStencil); }
+	GSMap Read(const GSVector4i& r, AlignedBuffer<u8, 32>& buffer);
+	bool IsDepth() { return (m_type == Type::DepthStencil || m_type == Type::SparseDepthStencil); }
+	bool IsIntegerFormat() const
+	{
+		return (m_int_format == GL_RED_INTEGER || m_int_format == GL_RGBA_INTEGER);
+	}
+	bool IsUnsignedFormat() const
+	{
+		return (m_int_type == GL_UNSIGNED_BYTE || m_int_type == GL_UNSIGNED_SHORT || m_int_type == GL_UNSIGNED_INT);
+	}
 
-	uint32 GetID() final { return m_texture_id; }
+	u32 GetID() final { return m_texture_id; }
 	bool HasBeenCleaned() { return m_clean; }
 	void WasAttached() { m_clean = false; }
 	void WasCleaned() { m_clean = true; }
@@ -84,5 +91,5 @@ public:
 
 	void CommitPages(const GSVector2i& region, bool commit) final;
 
-	uint32 GetMemUsage() final;
+	u32 GetMemUsage() final;
 };

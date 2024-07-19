@@ -50,19 +50,21 @@ static __aligned16 VECTOR RDzero;
 static __ri bool _vuFMACflush(VURegs* VU)
 {
 	bool didflush = false;
-
+#ifdef PCSX2_DEBUG
 	VUM_LOG("Flushing FMACs");
-
+#endif
 	for (int i = VU->fmacreadpos; VU->fmaccount > 0; i = (i + 1) & 3)
 	{
 		if ((VU->cycle - VU->fmac[i].sCycle) < VU->fmac[i].Cycle)
 		{
+#ifdef PCSX2_DEBUG
 			VUM_LOG("Not flushing FMAC pipe[%d] (macflag=%x clipflag=%x statusflag=%x) r %d w %d", i, VU->fmac[i].macflag, VU->fmac[i].clipflag, VU->fmac[i].statusflag, VU->fmacreadpos, VU->fmacwritepos);
+#endif
 			return didflush;
 		}
-
+#ifdef PCSX2_DEBUG
 		VUM_LOG("flushing FMAC pipe[%d] (macflag=%x clipflag=%x statusflag=%x) r %d w %d", i, VU->fmac[i].macflag, VU->fmac[i].clipflag, VU->fmac[i].statusflag, VU->fmacreadpos, VU->fmacwritepos);
-
+#endif
 		// Clip flags (Affected by CLIP instruction)
 		if (VU->fmac[i].flagreg & (1 << REG_CLIP_FLAG))
 			VU->VI[REG_CLIP_FLAG].UL = VU->fmac[i].clipflag;
@@ -87,9 +89,9 @@ static __ri bool _vuFMACflush(VURegs* VU)
 static __ri bool _vuIALUflush(VURegs* VU)
 {
 	bool didflush = false;
-
+#ifdef PCSX2_DEBUG
 	VUM_LOG("Flushing ALU stalls");
-
+#endif
 	for (int i = VU->ialureadpos; VU->ialucount > 0; i = (i + 1) & 3)
 	{
 		if ((VU->cycle - VU->ialu[i].sCycle) < VU->ialu[i].Cycle)
@@ -109,8 +111,9 @@ static __ri bool _vuFDIVflush(VURegs* VU)
 
 	if ((VU->cycle - VU->fdiv.sCycle) >= VU->fdiv.Cycle)
 	{
+#ifdef PCSX2_DEBUG
 		VUM_LOG("flushing FDIV pipe");
-
+#endif
 		VU->fdiv.enable = 0;
 		VU->VI[REG_Q].UL = VU->fdiv.reg.UL;
 		// FDIV only affects D/I
@@ -128,8 +131,9 @@ static __ri bool _vuEFUflush(VURegs* VU)
 
 	if ((VU->cycle - VU->efu.sCycle) >= VU->efu.Cycle)
 	{
+#ifdef PCSX2_DEBUG
 		VUM_LOG("flushing EFU pipe");
-
+#endif
 		VU->efu.enable = 0;
 		VU->VI[REG_P].UL = VU->efu.reg.UL;
 
@@ -165,8 +169,9 @@ void _vuFlushAll(VURegs* VU)
 
 	for (i = VU->fmacreadpos; VU->fmaccount > 0; i = (i + 1) & 3)
 	{
+#ifdef PCSX2_DEBUG
 		VUM_LOG("flushing FMAC pipe[%d] (macflag=%x)", i, VU->fmac[i].macflag);
-
+#endif
 		// Clip flags (Affected by CLIP instruction)
 		if (VU->fmac[i].flagreg & (1 << REG_CLIP_FLAG))
 			VU->VI[REG_CLIP_FLAG].UL = VU->fmac[i].clipflag;
@@ -224,7 +229,7 @@ static void __fastcall _vuFMACTestStall(VURegs* VU, u32 reg, u32 xyzw)
 {
 	u32 i = 0;
 
-	for (int currentpipe = VU->fmacreadpos; i < VU->fmaccount; currentpipe = (currentpipe + 1) & 3, i++)
+	for (int currentpipe = VU->fmacreadpos; i < VU->fmaccount; currentpipe = (currentpipe + 1) & 3, ++i)
 	{
 		//Check if enough cycles have passed for this fmac position
 		if ((VU->cycle - VU->fmac[currentpipe].sCycle) >= VU->fmac[currentpipe].Cycle)
@@ -235,8 +240,9 @@ static void __fastcall _vuFMACTestStall(VURegs* VU, u32 reg, u32 xyzw)
 			|| (VU->fmac[currentpipe].reglower == reg && VU->fmac[currentpipe].xyzwlower & xyzw))
 		{
 			u32 newCycle = VU->fmac[currentpipe].Cycle + VU->fmac[currentpipe].sCycle;
-
+#ifdef PCSX2_DEBUG
 			VUM_LOG("FMAC[%d] stall %d", currentpipe, newCycle - VU->cycle);
+#endif
 			if (newCycle > VU->cycle)
 				VU->cycle = newCycle;
 		}
@@ -262,7 +268,9 @@ static __fi void _vuTestFDIVStalls(VURegs* VU, _VURegsNum* VUregsn)
 	if (VU->fdiv.enable != 0)
 	{
 		u32 newCycle = VU->fdiv.Cycle + VU->fdiv.sCycle;
+#ifdef PCSX2_DEBUG
 		VUM_LOG("waiting FDIV pipe %d", newCycle - VU->cycle);
+#endif
 		if (newCycle > VU->cycle)
 			VU->cycle = newCycle;
 	}
@@ -282,8 +290,9 @@ static __fi void _vuTestEFUStalls(VURegs* VU, _VURegsNum* VUregsn)
 	// So the TL;DR of this is that we should be safe to release 1 cycle early and write back P
 	VU->efu.Cycle -= 1;
 	u32 newCycle = VU->efu.sCycle + VU->efu.Cycle;
-
+#ifdef PCSX2_DEBUG
 	VUM_LOG("waiting EFU pipe %d", newCycle - VU->cycle);
+#endif
 	if (newCycle > VU->cycle)
 		VU->cycle = newCycle;
 }
@@ -292,7 +301,7 @@ static __fi void _vuTestALUStalls(VURegs* VU, _VURegsNum* VUregsn)
 {
 	u32 i = 0;
 
-	for (int currentpipe = VU->ialureadpos; i < VU->ialucount; currentpipe = (currentpipe + 1) & 3, i++)
+	for (int currentpipe = VU->ialureadpos; i < VU->ialucount; currentpipe = (currentpipe + 1) & 3, ++i)
 	{
 		if ((VU->cycle - VU->ialu[currentpipe].sCycle) >= VU->ialu[currentpipe].Cycle)
 			continue;
@@ -300,8 +309,9 @@ static __fi void _vuTestALUStalls(VURegs* VU, _VURegsNum* VUregsn)
 		if (VU->ialu[currentpipe].reg & VUregsn->VIread) // Read and written VI regs share the same register
 		{
 			u32 newCycle = VU->ialu[currentpipe].Cycle + VU->ialu[currentpipe].sCycle;
-
+#ifdef PCSX2_DEBUG
 			VUM_LOG("ALU[%d] stall %d", currentpipe, newCycle - VU->cycle);
+#endif
 			if (newCycle > VU->cycle)
 				VU->cycle = newCycle;
 		}
@@ -338,8 +348,9 @@ __fi void _vuClearFMAC(VURegs* VU)
 static __ri void __fastcall _vuAddFMACStalls(VURegs* VU, _VURegsNum* VUregsn, bool isUpper)
 {
 	int i = VU->fmacwritepos;
-
+#ifdef PCSX2_DEBUG
 	VUM_LOG("adding FMAC %s pipe[%d]; reg=%x xyzw=%x flagreg=%x target=%x current %x", isUpper ? "Upper" : "Lower", i, VUregsn->VFwrite, VUregsn->VFwxyzw, VUregsn->VIwrite, VU->cycle + 4, VU->cycle);
+#endif
 	VU->fmac[i].sCycle = VU->cycle;
 	VU->fmac[i].Cycle = 4;
 
@@ -364,8 +375,9 @@ static __ri void __fastcall _vuAddFMACStalls(VURegs* VU, _VURegsNum* VUregsn, bo
 
 static __ri void __fastcall _vuFDIVAdd(VURegs* VU, int cycles)
 {
+#ifdef PCSX2_DEBUG
 	VUM_LOG("adding FDIV pipe");
-
+#endif
 	VU->fdiv.enable = 1;
 	VU->fdiv.sCycle = VU->cycle;
 	VU->fdiv.Cycle = cycles;
@@ -375,8 +387,9 @@ static __ri void __fastcall _vuFDIVAdd(VURegs* VU, int cycles)
 
 static __ri void __fastcall _vuEFUAdd(VURegs* VU, int cycles)
 {
+#ifdef PCSX2_DEBUG
 	VUM_LOG("adding EFU pipe for %d cycles\n", cycles);
-
+#endif
 	VU->efu.enable = 1;
 	VU->efu.sCycle = VU->cycle;
 	VU->efu.Cycle = cycles;
@@ -390,8 +403,9 @@ static __ri void __fastcall _vuAddIALUStalls(VURegs* VU, _VURegsNum* VUregsn)
 		return;
 
 	int i = VU->ialuwritepos;
-
+#ifdef PCSX2_DEBUG
 	VUM_LOG("adding IALU pipe[%d]; reg=%x target=%x current %x", i, VUregsn->VIwrite, VU->cycle + VUregsn->cycles, VU->cycle);
+#endif
 	VU->ialu[i].sCycle = VU->cycle;
 	VU->ialu[i].Cycle = VUregsn->cycles;
 	VU->ialu[i].reg = VUregsn->VIwrite;
@@ -2623,16 +2637,18 @@ void _vuXGKICKTransfer(s32 cycles, bool flush)
 
 	VU1.xgkickcyclecount += cycles;
 	VU1.xgkicklastcycle += cycles;
-
+#ifdef PCSX2_DEBUG
 	VUM_LOG("Adding %d cycles, total XGKick cycles to run now %d flush %d enabled %d", cycles, VU1.xgkickcyclecount, flush, VU1.xgkickenable);
-
+#endif
 	while (VU1.xgkickenable && (flush || VU1.xgkickcyclecount >= 2))
 	{
 		u32 transfersize = 0;
 
 		if (VU1.xgkicksizeremaining == 0)
 		{
+#ifdef PCSX2_DEBUG
 			VUM_LOG("XGKICK reading new tag from %x", VU1.xgkickaddr);
+#endif
 			u32 size = gifUnit.GetGSPacketSize(GIF_PATH_1, vuRegs[1].Mem, VU1.xgkickaddr, ~0u, flush);
 			VU1.xgkicksizeremaining = size & 0xFFFF;
 			VU1.xgkickendpacket = size >> 31;
@@ -2640,12 +2656,18 @@ void _vuXGKICKTransfer(s32 cycles, bool flush)
 
 			if (VU1.xgkicksizeremaining == 0)
 			{
+#ifdef PCSX2_DEBUG
 				VUM_LOG("Invalid GS packet size returned, cancelling XGKick");
+#endif
 				VU1.xgkickenable = false;
 				break;
 			}
-			else
-				VUM_LOG("XGKICK New tag size %d bytes EOP %d", VU1.xgkicksizeremaining, VU1.xgkickendpacket);
+#ifdef PCSX2_DEBUG
+			else {
+				VUM_LOG("XGKICK New tag size %d bytes EOP %d", VU1.xgkicksizeremaining,
+						VU1.xgkickendpacket);
+			}
+#endif
 		}
 
 		if (!flush)
@@ -2658,9 +2680,9 @@ void _vuXGKICKTransfer(s32 cycles, bool flush)
 			transfersize = VU1.xgkicksizeremaining / 0x10;
 			transfersize = std::min(transfersize, VU1.xgkickdiff / 0x10);
 		}
-
+#ifdef PCSX2_DEBUG
 		VUM_LOG("XGKICK Transferring %x bytes from %x size %x", transfersize * 0x10, VU1.xgkickaddr, VU1.xgkicksizeremaining);
-
+#endif
 		// Would be "nicer" to do the copy until it's all up, however this really screws up PATH3 masking stuff
 		// So lets just do it the other way :)
 		/*if (THREAD_VU1)
@@ -2684,11 +2706,16 @@ void _vuXGKICKTransfer(s32 cycles, bool flush)
 		VU1.xgkicksizeremaining -= (transfersize * 0x10);
 		VU1.xgkickdiff = 0x4000 - VU1.xgkickaddr;
 
-		if (VU1.xgkicksizeremaining || !VU1.xgkickendpacket)
+		if (VU1.xgkicksizeremaining || !VU1.xgkickendpacket) {
+#ifdef PCSX2_DEBUG
 			VUM_LOG("XGKICK next addr %x left size %x", VU1.xgkickaddr, VU1.xgkicksizeremaining);
+#endif
+		}
 		else
 		{
+#ifdef PCSX2_DEBUG
 			VUM_LOG("XGKICK transfer finished");
+#endif
 			VU1.xgkickenable = false;
 			// Check if VIF is waiting for the GIF to not be busy
 			if (vif1Regs.stat.VGW)
@@ -2701,10 +2728,14 @@ void _vuXGKICKTransfer(s32 cycles, bool flush)
 	}
 	if (flush)
 	{
+#ifdef PCSX2_DEBUG
 		VUM_LOG("Disabling XGKICK");
+#endif
 		_vuTestPipes(&VU1);
 	}
+#ifdef PCSX2_DEBUG
 	VUM_LOG("XGKick run complete Enabled %d", VU1.xgkickenable);
+#endif
 }
 
 static __ri void _vuXGKICK(VURegs* VU)
@@ -2723,7 +2754,9 @@ static __ri void _vuXGKICK(VURegs* VU)
 	VU->xgkicklastcycle = VU->cycle;
 	VU->xgkickcyclecount = 0;
 	VU0.VI[REG_VPU_STAT].UL |= (1 << 12);
+#ifdef PCSX2_DEBUG
 	VUM_LOG("XGKICK addr %x", addr);
+#endif
 }
 
 static __ri void _vuXTOP(VURegs* VU)
@@ -4020,14 +4053,18 @@ static void __vuRegsCall VU0regsMI_XTOP(_VURegsNum* VUregsn) { _vuRegsXTOP(&VU0,
 
 void VU0unknown()
 {
+#ifdef PCSX2_DEBUG
 	pxFailDev("Unknown VU micromode opcode called");
 	CPU_LOG("Unknown VU micromode opcode called");
+#endif
 }
 
 static void __vuRegsCall VU0regsunknown(_VURegsNum* VUregsn)
 {
+#ifdef PCSX2_DEBUG
 	pxFailDev("Unknown VU micromode opcode called");
 	CPU_LOG("Unknown VU micromode opcode called");
+#endif
 }
 
 // --------------------------------------------------------------------------------------
@@ -4386,14 +4423,18 @@ static void __vuRegsCall VU1regsMI_XTOP(_VURegsNum* VUregsn) { _vuRegsXTOP(&VU1,
 
 static void VU1unknown()
 {
+#ifdef PCSX2_DEBUG
 	pxFailDev("Unknown VU micromode opcode called");
 	CPU_LOG("Unknown VU micromode opcode called");
+#endif
 }
 
 static void __vuRegsCall VU1regsunknown(_VURegsNum* VUregsn)
 {
+#ifdef PCSX2_DEBUG
 	pxFailDev("Unknown VU micromode opcode called");
 	CPU_LOG("Unknown VU micromode opcode called");
+#endif
 }
 
 

@@ -471,7 +471,7 @@ int MacroAssembler::MoveImmediateHelper(MacroAssembler* masm,
     // halfword, and movk for subsequent halfwords.
     VIXL_ASSERT((reg_size % 16) == 0);
     bool first_mov_done = false;
-    for (unsigned i = 0; i < (reg_size / 16); i++) {
+    for (unsigned i = 0; i < (reg_size / 16); ++i) {
       uint64_t imm16 = (imm >> (16 * i)) & 0xffff;
       if (imm16 != ignored_halfword) {
         if (!first_mov_done) {
@@ -990,7 +990,7 @@ void MacroAssembler::Movi32bitHelper(const VRegister& vd, uint64_t imm) {
   }
 
   // Of the 4 bytes, only one byte is non-zero.
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 4; ++i) {
     if ((imm & (0xff << (i * 8))) == imm) {
       movi(vd, bytes[i], LSL, i * 8);
       return;
@@ -998,7 +998,7 @@ void MacroAssembler::Movi32bitHelper(const VRegister& vd, uint64_t imm) {
   }
 
   // Of the 4 bytes, only one byte is not 0xff.
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 4; ++i) {
     uint32_t mask = ~(0xff << (i * 8));
     if ((imm & mask) == mask) {
       mvni(vd, ~bytes[i] & 0xff, LSL, i * 8);
@@ -2487,7 +2487,7 @@ void MacroAssembler::PrintfNoPreserve(const char* format,
   // could use here, but Printf is a debug tool so instead we just try to keep
   // it simple: Move each input that isn't already in the right place to a
   // scratch register, then move everything back.
-  for (unsigned i = 0; i < kPrintfMaxArgCount; i++) {
+  for (unsigned i = 0; i < kPrintfMaxArgCount; ++i) {
     // Work out the proper PCS register for this argument.
     if (args[i].IsRegister()) {
       pcs[i] = pcs_varargs.PopLowestIndex().X();
@@ -2526,7 +2526,7 @@ void MacroAssembler::PrintfNoPreserve(const char* format,
 
   // Do a second pass to move values into their final positions and perform any
   // conversions that may be required.
-  for (int i = 0; i < arg_count; i++) {
+  for (int i = 0; i < arg_count; ++i) {
     VIXL_ASSERT(pcs[i].GetType() == args[i].GetType());
     if (pcs[i].IsRegister()) {
       Mov(Register(pcs[i]), Register(args[i]), kDiscardForSameWReg);
@@ -2585,7 +2585,7 @@ void MacroAssembler::PrintfNoPreserve(const char* format,
 
     // Determine the argument pattern.
     uint32_t arg_pattern_list = 0;
-    for (int i = 0; i < arg_count; i++) {
+    for (int i = 0; i < arg_count; ++i) {
       uint32_t arg_pattern;
       if (pcs[i].IsRegister()) {
         arg_pattern = pcs[i].Is32Bits() ? kPrintfArgW : kPrintfArgX;
@@ -2966,7 +2966,7 @@ void UseScratchRegisterScope::Exclude(const CPURegister& reg1,
 
   const CPURegister regs[] = {reg1, reg2, reg3, reg4};
 
-  for (size_t i = 0; i < ArrayLength(regs); i++) {
+  for (size_t i = 0; i < ArrayLength(regs); ++i) {
     if (regs[i].IsRegister()) {
       exclude |= regs[i].GetBit();
     } else if (regs[i].IsFPRegister()) {

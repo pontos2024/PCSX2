@@ -939,7 +939,7 @@ png_handle_PLTE(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
       pal_ptr->blue = buf[2];
    }
 #else
-   for (i = 0; i < num; i++)
+   for (i = 0; i < num; ++i)
    {
       png_byte buf[3];
 
@@ -1691,7 +1691,7 @@ png_handle_sPLT(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
    }
 
 #ifdef PNG_POINTER_INDEXING_SUPPORTED
-   for (i = 0; i < new_palette.nentries; i++)
+   for (i = 0; i < new_palette.nentries; ++i)
    {
       pp = new_palette.entries + i;
 
@@ -1716,7 +1716,7 @@ png_handle_sPLT(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
 #else
    pp = new_palette.entries;
 
-   for (i = 0; i < new_palette.nentries; i++)
+   for (i = 0; i < new_palette.nentries; ++i)
    {
 
       if (new_palette.depth == 8)
@@ -1987,7 +1987,7 @@ png_handle_hIST(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
       return;
    }
 
-   for (i = 0; i < num; i++)
+   for (i = 0; i < num; ++i)
    {
       png_byte buf[2];
 
@@ -2198,7 +2198,7 @@ png_handle_pCAL(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
    }
 
    /* Get pointers to the start of each parameter string. */
-   for (i = 0; i < nparams; i++)
+   for (i = 0; i < nparams; ++i)
    {
       buf++; /* Skip the null string terminator from previous parameter. */
 
@@ -3532,10 +3532,10 @@ png_do_read_interlace(png_row_infop row_info, png_bytep row, int pass,
                 s_inc = 1;
             }
 
-            for (i = 0; i < row_info->width; i++)
+            for (i = 0; i < row_info->width; ++i)
             {
                v = (png_byte)((*sp >> sshift) & 0x01);
-               for (j = 0; j < jstop; j++)
+               for (j = 0; j < jstop; ++j)
                {
                   unsigned int tmp = *dp & (0x7f7f >> (7 - dshift));
                   tmp |= v << dshift;
@@ -3592,13 +3592,13 @@ png_do_read_interlace(png_row_infop row_info, png_bytep row, int pass,
                s_inc = 2;
             }
 
-            for (i = 0; i < row_info->width; i++)
+            for (i = 0; i < row_info->width; ++i)
             {
                png_byte v;
                int j;
 
                v = (png_byte)((*sp >> sshift) & 0x03);
-               for (j = 0; j < jstop; j++)
+               for (j = 0; j < jstop; ++j)
                {
                   unsigned int tmp = *dp & (0x3f3f >> (6 - dshift));
                   tmp |= v << dshift;
@@ -3655,12 +3655,12 @@ png_do_read_interlace(png_row_infop row_info, png_bytep row, int pass,
                s_inc = 4;
             }
 
-            for (i = 0; i < row_info->width; i++)
+            for (i = 0; i < row_info->width; ++i)
             {
                png_byte v = (png_byte)((*sp >> sshift) & 0x0f);
                int j;
 
-               for (j = 0; j < jstop; j++)
+               for (j = 0; j < jstop; ++j)
                {
                   unsigned int tmp = *dp & (0xf0f >> (4 - dshift));
                   tmp |= v << dshift;
@@ -3700,14 +3700,14 @@ png_do_read_interlace(png_row_infop row_info, png_bytep row, int pass,
             int jstop = png_pass_inc[pass];
             png_uint_32 i;
 
-            for (i = 0; i < row_info->width; i++)
+            for (i = 0; i < row_info->width; ++i)
             {
                png_byte v[8]; /* SAFE; pixel_depth does not exceed 64 */
                int j;
 
                memcpy(v, sp, pixel_bytes);
 
-               for (j = 0; j < jstop; j++)
+               for (j = 0; j < jstop; ++j)
                {
                   memcpy(dp, v, pixel_bytes);
                   dp -= pixel_bytes;
@@ -3739,7 +3739,7 @@ png_read_filter_row_sub(png_row_infop row_info, png_bytep row,
 
    PNG_UNUSED(prev_row)
 
-   for (i = bpp; i < istop; i++)
+   for (i = bpp; i < istop; ++i)
    {
       *rp = (png_byte)(((int)(*rp) + (int)(*(rp-bpp))) & 0xff);
       rp++;
@@ -3755,7 +3755,7 @@ png_read_filter_row_up(png_row_infop row_info, png_bytep row,
    png_bytep rp = row;
    png_const_bytep pp = prev_row;
 
-   for (i = 0; i < istop; i++)
+   for (i = 0; i < istop; ++i)
    {
       *rp = (png_byte)(((int)(*rp) + (int)(*pp++)) & 0xff);
       rp++;
@@ -3772,7 +3772,7 @@ png_read_filter_row_avg(png_row_infop row_info, png_bytep row,
    unsigned int bpp = (row_info->pixel_depth + 7) >> 3;
    png_size_t istop = row_info->rowbytes - bpp;
 
-   for (i = 0; i < bpp; i++)
+   for (i = 0; i < bpp; ++i)
    {
       *rp = (png_byte)(((int)(*rp) +
          ((int)(*pp++) / 2 )) & 0xff);
@@ -3780,7 +3780,7 @@ png_read_filter_row_avg(png_row_infop row_info, png_bytep row,
       rp++;
    }
 
-   for (i = 0; i < istop; i++)
+   for (i = 0; i < istop; ++i)
    {
       *rp = (png_byte)(((int)(*rp) +
          (int)(*pp++ + *(rp-bpp)) / 2 ) & 0xff);

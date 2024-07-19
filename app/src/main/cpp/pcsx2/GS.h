@@ -317,58 +317,65 @@ struct MTGS_MemoryScreenshotData
 // --------------------------------------------------------------------------------------
 //  SysMtgsThread
 // --------------------------------------------------------------------------------------
-class SysMtgsThread : public SysThreadBase
+class SysMtgsThread
 {
-	typedef SysThreadBase _parent;
-
 public:
-	using AsyncCallType = std::function<void()>;
+    using AsyncCallType = std::function<void()>;
 
-	// note: when m_ReadPos == m_WritePos, the fifo is empty
-	// Threading info: m_ReadPos is updated by the MTGS thread. m_WritePos is updated by the EE thread
-	std::atomic<unsigned int> m_ReadPos;  // cur pos gs is reading from
-	std::atomic<unsigned int> m_WritePos; // cur pos ee thread is writing to
+    // note: when m_ReadPos == m_WritePos, the fifo is empty
+    // Threading info: m_ReadPos is updated by the MTGS thread. m_WritePos is updated by the EE thread
+    std::atomic<unsigned int> m_ReadPos;  // cur pos gs is reading from
+    std::atomic<unsigned int> m_WritePos; // cur pos ee thread is writing to
 
-	std::atomic<bool>	m_RingBufferIsBusy;
-	std::atomic<bool>	m_SignalRingEnable;
-	std::atomic<int>	m_SignalRingPosition;
+    std::atomic<bool> m_SignalRingEnable;
+    std::atomic<int> m_SignalRingPosition;
 
-	std::atomic<int>	m_QueuedFrameCount;
-	std::atomic<bool>	m_VsyncSignalListener;
+    std::atomic<int> m_QueuedFrameCount;
+    std::atomic<bool> m_VsyncSignalListener;
 
-	Mutex			m_mtx_RingBufferBusy;  // Is obtained while processing ring-buffer data
-	Mutex			m_mtx_RingBufferBusy2; // This one gets released on semaXGkick waiting...
-	Mutex			m_mtx_WaitGS;
-	Semaphore		m_sem_OnRingReset;
-	Semaphore		m_sem_Vsync;
+    std::mutex m_mtx_RingBufferBusy2; // Gets released on semaXGkick waiting...
+    std::mutex m_mtx_WaitGS;
+    Threading::WorkSema m_sem_event;
+    Threading::KernelSemaphore m_sem_OnRingReset;
+    Threading::KernelSemaphore m_sem_Vsync;
 
-	// used to keep multiple threads from sending packets to the ringbuffer concurrently.
-	// (currently not used or implemented -- is a planned feature for a future threaded VU1)
-	//MutexLockRecursive m_PacketLocker;
+    // used to keep multiple threads from sending packets to the ringbuffer concurrently.
+    // (currently not used or implemented -- is a planned feature for a future threaded VU1)
+    //MutexLockRecursive m_PacketLocker;
 
-	// Used to delay the sending of events.  Performance is better if the ringbuffer
-	// has more than one command in it when the thread is kicked.
-	int				m_CopyDataTally;
+    // Used to delay the sending of events.  Performance is better if the ringbuffer
+    // has more than one command in it when the thread is kicked.
+    int m_CopyDataTally;
 
-	Semaphore			m_sem_OpenDone;
-	std::atomic<bool>	m_Opened;
+    // These vars maintain instance data for sending Data Packets.
+    // Only one data packet can be constructed and uploaded at a time.
 
-	// These vars maintain instance data for sending Data Packets.
-	// Only one data packet can be constructed and uploaded at a time.
-
-	uint			m_packet_startpos;	// size of the packet (data only, ie. not including the 16 byte command!)
-	uint			m_packet_size;		// size of the packet (data only, ie. not including the 16 byte command!)
-	uint			m_packet_writepos;	// index of the data location in the ringbuffer.
+    uint m_packet_startpos; // size of the packet (data only, ie. not including the 16 byte command!)
+    uint m_packet_size; // size of the packet (data only, ie. not including the 16 byte command!)
+    uint m_packet_writepos; // index of the data location in the ringbuffer.
 
 #ifdef RINGBUF_DEBUG_STACK
-	Threading::Mutex m_lock_Stack;
+    std::mutex m_lock_Stack;
 #endif
 
-	u64 m_affinity = 0;
+    std::thread m_thread;
+    Threading::ThreadHandle m_thread_handle;
+    std::atomic_bool m_open_flag{false};
+    std::atomic_bool m_shutdown_flag{false};
+    Threading::KernelSemaphore m_open_or_close_done;
 
 public:
 	SysMtgsThread();
 	virtual ~SysMtgsThread();
+
+    __fi const Threading::ThreadHandle& GetThreadHandle() const { return m_thread_handle; }
+    __fi bool IsOpen() const { return m_open_flag.load(std::memory_order_acquire); }
+
+    /// Starts the thread, if it hasn't already been started.
+    void StartThread();
+
+    /// Fully stops the thread, closing in the process if needed.
+    void ShutdownThread();
 
 	// Waits for the GS to empty out the entire ring buffer contents.
 	void WaitGS(bool syncRegs=true, bool weakWait=false, bool isMTVU=false);
@@ -378,7 +385,8 @@ public:
 	void PrepDataPacket( GIF_PATH pathidx, u32 size );
 	void SendDataPacket();
 	void SendGameCRC( u32 crc );
-	void WaitForOpen();
+    bool WaitForOpen();
+    void WaitForClose();
 	void Freeze( FreezeAction mode, MTGS_FreezeData& data );
 
 	void SendSimpleGSPacket( MTGS_RingCommand type, u32 offset, u32 size, GIF_PATH path );
@@ -387,37 +395,29 @@ public:
 
 	u8* GetDataPacketPtr() const;
 	void SetEvent();
-	void PostVsyncStart();
-
-	bool IsGSOpened() const { return m_Opened; }
+	void PostVsyncStart(bool registers_written);
 
 	void RunOnGSThread(AsyncCallType func);
 	void ApplySettings();
 	void ResizeDisplayWindow(int width, int height, float scale);
 	void UpdateDisplayWindow();
-	void SetVSync(VsyncMode mode, float present_fps_limit);
+	void SetVSync(VsyncMode mode);
 	void SwitchRenderer(GSRendererType renderer);
 	void SetSoftwareRendering(bool software);
 	void ToggleSoftwareRendering();
 	bool SaveMemorySnapshot(u32 width, u32 height, std::vector<u32>* pixels);
 
 protected:
-	void OpenGS();
+	bool OpenGS();
 	void CloseGS();
 
-	void OnStart() override;
-	void OnResumeReady() override;
+    void ThreadEntryPoint();
+    void MainLoop();
 
-	void OnSuspendInThread() override;
-	void OnPauseInThread(SystemsMask systemsToTearDown) override {}
-	void OnResumeInThread(SystemsMask systemsToReinstate) override;
-	void OnCleanupInThread() override;
+    void GenericStall(uint size);
 
-	void GenericStall( uint size );
-
-	// Used internally by SendSimplePacket type functions
-	void _FinishSimplePacket();
-	void ExecuteTaskInThread() override;
+    // Used internally by SendSimplePacket type functions
+    void _FinishSimplePacket();
 };
 
 // GetMTGS() is a required external implementation. This function is *NOT* provided
@@ -430,18 +430,12 @@ extern SysMtgsThread& GetMTGS();
 /////////////////////////////////////////////////////////////////////////////
 // Generalized GS Functions and Stuff
 
-extern s32 gsOpen();
-extern void gsClose();
 extern void gsReset();
 extern void gsSetVideoMode(GS_VideoMode mode);
-extern void gsResetFrameSkip();
 extern void gsPostVsyncStart();
-extern void gsFrameSkip();
-extern bool gsIsSkippingCurrentFrame();
-extern void gsUpdateFrequency(Pcsx2Config& config);
+extern void gsUpdateFrequency(Pcsx2Config2& config);
 
 // Some functions shared by both the GS and MTGS
-extern void _gs_ResetFrameskip();
 
 extern void gsWrite8(u32 mem, u8 value);
 extern void gsWrite16(u32 mem, u16 value);

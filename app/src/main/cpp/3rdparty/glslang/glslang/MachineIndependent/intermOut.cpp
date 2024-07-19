@@ -1230,7 +1230,7 @@ static void OutputConstantUnion(TInfoSink& out, const TIntermTyped* node, const 
 {
     int size = node->getType().computeNumComponents();
 
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < size; ++i) {
         OutputTreeText(out, node, depth);
         switch (constUnion[i].getType()) {
         case EbtBool:

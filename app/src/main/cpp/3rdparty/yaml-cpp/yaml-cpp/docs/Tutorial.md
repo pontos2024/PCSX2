@@ -32,7 +32,7 @@ Collection nodes (sequences and maps) act somewhat like STL vectors and maps:
 
 ```cpp
 YAML::Node primes = YAML::Load("[2, 3, 5, 7, 11]");
-for (std::size_t i=0;i<primes.size();i++) {
+for (std::size_t i=0;i<primes.size();++i) {
   std::cout << primes[i].as<int>() << "\n";
 }
 // or:

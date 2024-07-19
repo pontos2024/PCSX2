@@ -71,7 +71,7 @@ static void cpuinfo_x86_count_objects(
 	uint32_t last_core_id = UINT32_MAX, last_cluster_id = UINT32_MAX, last_package_id = UINT32_MAX;
 	uint32_t last_l1i_id = UINT32_MAX, last_l1d_id = UINT32_MAX;
 	uint32_t last_l2_id = UINT32_MAX, last_l3_id = UINT32_MAX, last_l4_id = UINT32_MAX;
-	for (uint32_t i = 0; i < linux_processors_count; i++) {
+	for (uint32_t i = 0; i < linux_processors_count; ++i) {
 		if (bitmask_all(linux_processors[i].flags, valid_processor_mask)) {
 			const uint32_t apic_id = linux_processors[i].apic_id;
 			cpuinfo_log_debug("APID ID %"PRIu32": system processor %"PRIu32, apic_id, linux_processors[i].linux_id);
@@ -206,7 +206,7 @@ void cpuinfo_x86_linux_init(void) {
 		return;
 	}
 
-	for (uint32_t i = 0; i < x86_linux_processors_count; i++) {
+	for (uint32_t i = 0; i < x86_linux_processors_count; ++i) {
 		if (bitmask_all(x86_linux_processors[i].flags, valid_processor_mask)) {
 			x86_linux_processors[i].flags |= CPUINFO_LINUX_FLAG_VALID;
 		}
@@ -219,7 +219,7 @@ void cpuinfo_x86_linux_init(void) {
 	cpuinfo_x86_normalize_brand_string(x86_processor.brand_string, brand_string);
 
 	uint32_t processors_count = 0;
-	for (uint32_t i = 0; i < x86_linux_processors_count; i++) {
+	for (uint32_t i = 0; i < x86_linux_processors_count; ++i) {
 		if (bitmask_all(x86_linux_processors[i].flags, CPUINFO_LINUX_FLAG_VALID)) {
 			x86_linux_processors[i].linux_id = i;
 			processors_count++;
@@ -352,7 +352,7 @@ void cpuinfo_x86_linux_init(void) {
 	uint32_t last_apic_core_id = UINT32_MAX, last_apic_cluster_id = UINT32_MAX, last_apic_package_id = UINT32_MAX;
 	uint32_t last_l1i_id = UINT32_MAX, last_l1d_id = UINT32_MAX;
 	uint32_t last_l2_id = UINT32_MAX, last_l3_id = UINT32_MAX, last_l4_id = UINT32_MAX;
-	for (uint32_t i = 0; i < x86_linux_processors_count; i++) {
+	for (uint32_t i = 0; i < x86_linux_processors_count; ++i) {
 		if (bitmask_all(x86_linux_processors[i].flags, CPUINFO_LINUX_FLAG_VALID)) {
 			const uint32_t apic_id = x86_linux_processors[i].apic_id;
 			processor_index++;

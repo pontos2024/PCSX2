@@ -564,7 +564,7 @@ wxPNGHandler::LoadFile(wxImage *image,
     if ( !lines )
         goto error;
 
-    for (i = 0; i < height; i++)
+    for (i = 0; i < height; ++i)
     {
         if ((lines[i] = (unsigned char *)malloc( (size_t)(width * 4))) == NULL)
             goto error;
@@ -585,7 +585,7 @@ wxPNGHandler::LoadFile(wxImage *image,
         unsigned char* g = new unsigned char[numPalette];
         unsigned char* b = new unsigned char[numPalette];
 
-        for (int j = 0; j < numPalette; j++)
+        for (int j = 0; j < numPalette; ++j)
         {
             r[j] = palette[j].red;
             g[j] = palette[j].green;
@@ -817,9 +817,9 @@ bool wxPNGHandler::SaveFile( wxImage *image, wxOutputStream& stream, bool verbos
             PaletteAdd(&palette, mask);
         }
 
-        for (int y = 0; y < iHeight; y++)
+        for (int y = 0; y < iHeight; ++y)
         {
-            for (int x = 0; x < iWidth; x++)
+            for (int x = 0; x < iWidth; ++x)
             {
                 png_color_8 rgba;
 
@@ -991,7 +991,7 @@ bool wxPNGHandler::SaveFile( wxImage *image, wxOutputStream& stream, bool verbos
     for (int y = 0; y != iHeight; ++y)
     {
         unsigned char *pData = data;
-        for (int x = 0; x != iWidth; x++)
+        for (int x = 0; x != iWidth; ++x)
         {
             png_color_8 clr;
             clr.red   = *pColors++;

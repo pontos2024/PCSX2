@@ -196,7 +196,7 @@ png_set_hIST(png_const_structrp png_ptr, png_inforp info_ptr,
 
    info_ptr->free_me |= PNG_FREE_HIST;
 
-   for (i = 0; i < info_ptr->num_palette; i++)
+   for (i = 0; i < info_ptr->num_palette; ++i)
       info_ptr->hist[i] = hist[i];
 
    info_ptr->valid |= PNG_INFO_hIST;
@@ -342,7 +342,7 @@ png_set_pCAL(png_const_structrp png_ptr, png_inforp info_ptr,
 
    memset(info_ptr->pcal_params, 0, (nparams + 1) * (sizeof (png_charp)));
 
-   for (i = 0; i < nparams; i++)
+   for (i = 0; i < nparams; ++i)
    {
       length = strlen(params[i]) + 1;
       png_debug2(3, "allocating parameter %d for info (%lu bytes)", i,
@@ -766,7 +766,7 @@ png_set_text_2(png_const_structrp png_ptr, png_inforp info_ptr,
       png_debug1(3, "allocated %d entries for info_ptr->text", max_text);
    }
 
-   for (i = 0; i < num_text; i++)
+   for (i = 0; i < num_text; ++i)
    {
       size_t text_length, key_len;
       size_t lang_len, lang_key_len;

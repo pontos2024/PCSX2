@@ -296,7 +296,7 @@ bool wxBMPHandler::SaveDib(wxImage *image,
         unsigned char r, g, b;
         rgbquad = new wxUint8 [palette_size*4];
 
-        for (i = 0; i < palette_size; i++)
+        for (i = 0; i < palette_size; ++i)
         {
 #if wxUSE_PALETTE
             if ( !palette->GetRGB(i, &r, &g, &b) )
@@ -374,7 +374,7 @@ bool wxBMPHandler::SaveDib(wxImage *image,
         else if ((format == wxBMP_8BPP) ||       // 1 byte per pixel in color
                  (format == wxBMP_8BPP_PALETTE))
         {
-            for (x = 0; x < width; x++)
+            for (x = 0; x < width; ++x)
             {
                 pixel = 3*(y*width + x);
 #if wxUSE_PALETTE
@@ -389,7 +389,7 @@ bool wxBMPHandler::SaveDib(wxImage *image,
         }
         else if ( format == wxBMP_8BPP_GREY ) // 1 byte per pix, rgb ave to grey
         {
-            for (x = 0; x < width; x++)
+            for (x = 0; x < width; ++x)
             {
                 pixel = 3*(y*width + x);
                 buffer[x] = (wxUint8)(.299*data[pixel] +
@@ -399,7 +399,7 @@ bool wxBMPHandler::SaveDib(wxImage *image,
         }
         else if ( format == wxBMP_8BPP_RED ) // 1 byte per pixel, red as greys
         {
-            for (x = 0; x < width; x++)
+            for (x = 0; x < width; ++x)
             {
                 buffer[x] = (wxUint8)data[3*(y*width + x)];
             }
@@ -582,7 +582,7 @@ bool wxBMPHandler::DoLoadDib(wxImage * image, int width, int height,
         unsigned char* r = new unsigned char[ncolors];
         unsigned char* g = new unsigned char[ncolors];
         unsigned char* b = new unsigned char[ncolors];
-        for (int j = 0; j < ncolors; j++)
+        for (int j = 0; j < ncolors; ++j)
         {
             if (hasPalette)
             {
@@ -700,7 +700,7 @@ bool wxBMPHandler::DoLoadDib(wxImage * image, int width, int height,
     /* set the whole image to the background color */
     if ( bpp < 16 && (comp == BI_RLE4 || comp == BI_RLE8) )
     {
-        for (int i = 0; i < width * height; i++)
+        for (int i = 0; i < width * height; ++i)
         {
             *ptr++ = cmap[0].r;
             *ptr++ = cmap[0].g;
@@ -1259,9 +1259,9 @@ bool wxICOHandler::SaveFile(wxImage *image,
             {
                 // Go round and apply black to the masked bits:
                 int i, j;
-                for (i = 0; i < mask.GetWidth(); i++)
+                for (i = 0; i < mask.GetWidth(); ++i)
                 {
-                    for (j = 0; j < mask.GetHeight(); j++)
+                    for (j = 0; j < mask.GetHeight(); ++j)
                     {
                         if ((r == mask.GetRed(i, j)) &&
                             (g == mask.GetGreen(i, j))&&
@@ -1276,8 +1276,8 @@ bool wxICOHandler::SaveFile(wxImage *image,
             // just make a black mask all over:
             mask = image->Copy();
             int i, j;
-            for (i = 0; i < mask.GetWidth(); i++)
-                for (j = 0; j < mask.GetHeight(); j++)
+            for (i = 0; i < mask.GetWidth(); ++i)
+                for (j = 0; j < mask.GetHeight(); ++j)
                     mask.SetRGB(i, j, 0, 0, 0 );
         }
         // Set the formats for image and mask

@@ -14,31 +14,31 @@
  */
 
 #include "PrecompiledHeader.h"
+#include "GS.h"
+#include "GSExtra.h"
 #include "GSUtil.h"
-#include <locale>
-#include <codecvt>
+#include "common/StringUtil.h"
 
 #ifdef _WIN32
 #include <VersionHelpers.h>
 #include "svnrev.h"
+#include "Renderers/DX11/D3D.h"
 #include <wil/com.h>
 #else
 #define SVN_REV 0
 #define SVN_MODS 0
 #endif
 
-#if defined(_M_X86_32) || defined(_M_X86_64)
 Xbyak::util::Cpu g_cpu;
-#endif
 
 static class GSUtilMaps
 {
 public:
-	uint8 PrimClassField[8];
-	uint8 VertexCountField[8];
-	uint8 ClassVertexCountField[4];
-	uint32 CompatibleBitsField[64][2];
-	uint32 SharedBitsField[64][2];
+	u8 PrimClassField[8];
+	u8 VertexCountField[8];
+	u8 ClassVertexCountField[4];
+	u32 CompatibleBitsField[64][2];
+	u32 SharedBitsField[64][2];
 
 	// Defer init to avoid AVX2 illegal instructions
 	void Init()
@@ -68,7 +68,7 @@ public:
 
 		memset(CompatibleBitsField, 0, sizeof(CompatibleBitsField));
 
-		for (int i = 0; i < 64; i++)
+		for (int i = 0; i < 64; ++i)
 		{
 			CompatibleBitsField[i][i >> 5] |= 1 << (i & 0x1f);
 		}
@@ -107,42 +107,42 @@ void GSUtil::Init()
 	s_maps.Init();
 }
 
-GS_PRIM_CLASS GSUtil::GetPrimClass(uint32 prim)
+GS_PRIM_CLASS GSUtil::GetPrimClass(u32 prim)
 {
 	return (GS_PRIM_CLASS)s_maps.PrimClassField[prim];
 }
 
-int GSUtil::GetVertexCount(uint32 prim)
+int GSUtil::GetVertexCount(u32 prim)
 {
 	return s_maps.VertexCountField[prim];
 }
 
-int GSUtil::GetClassVertexCount(uint32 primclass)
+int GSUtil::GetClassVertexCount(u32 primclass)
 {
 	return s_maps.ClassVertexCountField[primclass];
 }
 
-const uint32* GSUtil::HasSharedBitsPtr(uint32 dpsm)
+const u32* GSUtil::HasSharedBitsPtr(u32 dpsm)
 {
 	return s_maps.SharedBitsField[dpsm];
 }
 
-bool GSUtil::HasSharedBits(uint32 spsm, const uint32* RESTRICT ptr)
+bool GSUtil::HasSharedBits(u32 spsm, const u32* RESTRICT ptr)
 {
 	return (ptr[spsm >> 5] & (1 << (spsm & 0x1f))) == 0;
 }
 
-bool GSUtil::HasSharedBits(uint32 spsm, uint32 dpsm)
+bool GSUtil::HasSharedBits(u32 spsm, u32 dpsm)
 {
 	return (s_maps.SharedBitsField[dpsm][spsm >> 5] & (1 << (spsm & 0x1f))) == 0;
 }
 
-bool GSUtil::HasSharedBits(uint32 sbp, uint32 spsm, uint32 dbp, uint32 dpsm)
+bool GSUtil::HasSharedBits(u32 sbp, u32 spsm, u32 dbp, u32 dpsm)
 {
 	return ((sbp ^ dbp) | (s_maps.SharedBitsField[dpsm][spsm >> 5] & (1 << (spsm & 0x1f)))) == 0;
 }
 
-bool GSUtil::HasCompatibleBits(uint32 spsm, uint32 dpsm)
+bool GSUtil::HasCompatibleBits(u32 spsm, u32 dpsm)
 {
 	return (s_maps.CompatibleBitsField[spsm][dpsm >> 5] & (1 << (dpsm & 0x1f))) != 0;
 }
@@ -150,7 +150,6 @@ bool GSUtil::HasCompatibleBits(uint32 spsm, uint32 dpsm)
 bool GSUtil::CheckSSE()
 {
 	bool status = true;
-
 #if defined(_M_X86_32) || defined(_M_X86_64)
 	struct ISA
 	{
@@ -170,42 +169,49 @@ bool GSUtil::CheckSSE()
 #endif
 	};
 
-	for (size_t i = 0; i < countof(checks); i++)
+	for (const ISA& check : checks)
 	{
-		if (!g_cpu.has(checks[i].type))
+		if (!g_cpu.has(check.type))
 		{
-			fprintf(stderr, "This CPU does not support %s\n", checks[i].name);
+			fprintf(stderr, "This CPU does not support %s\n", check.name);
 
 			status = false;
 		}
 	}
 #endif
-
 	return status;
 }
 
 CRCHackLevel GSUtil::GetRecommendedCRCHackLevel(GSRendererType type)
 {
-	return type == GSRendererType::OGL ? CRCHackLevel::Partial : CRCHackLevel::Full;
+	return (type == GSRendererType::DX11) ? CRCHackLevel::Full : CRCHackLevel::Partial;
 }
 
-#ifdef _WIN32
-
-#include "GS/Renderers/DX11/D3D.h"
-
-GSRendererType GSGetBestRenderer()
+GSRendererType GSUtil::GetPreferredRenderer()
 {
-	return D3D::ShouldPreferD3D() ? GSRendererType::DX11 : GSRendererType::OGL;
-}
-
-#else
-
-GSRendererType GSGetBestRenderer()
-{
-	return GSRendererType::OGL;
-}
-
+#if defined(__APPLE__)
+	// Mac: Prefer Metal hardware.
+	return GSRendererType::Metal;
+#elif defined(_WIN32)
+	if (D3D::ShouldPreferRenderer() == D3D::Renderer::Vulkan)
+		return GSRendererType::VK;
+#if defined(ENABLE_OPENGL)
+	else if (D3D::ShouldPreferRenderer() == D3D::Renderer::OpenGL)
+		return GSRendererType::OGL;
 #endif
+	else
+		return GSRendererType::DX11;
+#else
+	// Linux: Prefer GL/Vulkan, whatever is available.
+#if defined(ENABLE_OPENGL)
+	return GSRendererType::OGL;
+#elif defined(ENABLE_VULKAN)
+	return GSRendererType::Vulkan;
+#else
+	return GSRendererType::SW;
+#endif
+#endif
+}
 
 #ifdef _WIN32
 void GSmkdir(const wchar_t* dir)
@@ -232,7 +238,7 @@ std::string GStempdir()
 #ifdef _WIN32
 	wchar_t path[MAX_PATH + 1];
 	GetTempPath(MAX_PATH, path);
-	return convert_utf16_to_utf8(path);
+	return StringUtil::WideStringToUTF8String(path);
 #else
 	return "/tmp";
 #endif

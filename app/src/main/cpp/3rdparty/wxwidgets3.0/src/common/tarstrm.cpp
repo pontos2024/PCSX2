@@ -193,7 +193,7 @@ void wxTarHeaderBlock::check()
 bool wxTarHeaderBlock::IsAllZeros() const
 {
     const char *p = data;
-    for (size_t i = 0; i < sizeof(data); i++)
+    for (size_t i = 0; i < sizeof(data); ++i)
         if (p[i])
             return false;
     return true;
@@ -207,10 +207,10 @@ wxUint32 wxTarHeaderBlock::Sum(bool SignedSum /*=false*/)
     wxUint32 n = 0;
 
     if (SignedSum)
-        for (size_t i = 0; i < sizeof(data); i++)
+        for (size_t i = 0; i < sizeof(data); ++i)
             n += (signed char)p[i];
     else
-        for (size_t i = 0; i < sizeof(data); i++)
+        for (size_t i = 0; i < sizeof(data); ++i)
             n += (unsigned char)p[i];
 
     return n;
@@ -289,7 +289,7 @@ bool wxTarHeaderBlock::SetPath(const wxString& name, wxMBConv& conv)
         badconv = true;
         size_t len = name.length();
         wxCharBuffer approx(len);
-        for (size_t i = 0; i < len; i++)
+        for (size_t i = 0; i < len; ++i)
         {
             wxChar c = name[i];
             approx.data()[i] = c & ~0x7F ? '_' : c;
@@ -539,7 +539,7 @@ wxString wxTarEntry::GetName(wxPathFormat format /*=wxPATH_NATIVE*/) const
         case wxPATH_DOS:
         {
             wxString name(isDir ? m_Name + wxT("\\") : m_Name);
-            for (size_t i = 0; i < name.length(); i++)
+            for (size_t i = 0; i < name.length(); ++i)
                 if (name[i] == wxT('/'))
                     name[i] = wxT('\\');
             return name;

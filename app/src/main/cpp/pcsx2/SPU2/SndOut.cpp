@@ -271,23 +271,23 @@ void SndBuffer::ReadSamples(T* bData, int nSamples)
 		if (AdvancedVolumeControl)
 		{
 			// First part
-			for (int i = 0; i < b1; i++)
+			for (int i = 0; i < b1; ++i)
 				bData[i].AdjustFrom(m_buffer[i + m_rpos]);
 
 			// Second part
 			int b2 = nSamples - b1;
-			for (int i = 0; i < b2; i++)
+			for (int i = 0; i < b2; ++i)
 				bData[i + b1].AdjustFrom(m_buffer[i]);
 		}
 		else
 		{
 			// First part
-			for (int i = 0; i < b1; i++)
+			for (int i = 0; i < b1; ++i)
 				bData[i].ResampleFrom(m_buffer[i + m_rpos]);
 
 			// Second part
 			int b2 = nSamples - b1;
-			for (int i = 0; i < b2; i++)
+			for (int i = 0; i < b2; ++i)
 				bData[i + b1].ResampleFrom(m_buffer[i]);
 		}
 

@@ -27,6 +27,7 @@ using namespace Threading;
 using namespace R5900;
 
 __aligned16 u8 g_RealGSMem[Ps2MemSize::GSregs];
+static bool s_GSRegistersWritten = false;
 
 void gsSetVideoMode(GS_VideoMode mode)
 {
@@ -46,7 +47,7 @@ void gsReset()
 	GSIMR.reset();
 }
 
-void gsUpdateFrequency(Pcsx2Config& config)
+void gsUpdateFrequency(Pcsx2Config2& config)
 {
 	if (config.GS.FrameLimitEnable)
 	{
@@ -79,7 +80,9 @@ void gsUpdateFrequency(Pcsx2Config& config)
 static __fi void gsCSRwrite( const tGS_CSR& csr )
 {
 	if (csr.RESET) {
+#ifdef PCSX2_DEBUG
 		GUNIT_WARN("GUNIT_WARN: csr.RESET");
+#endif
 		//Console.Warning( "csr.RESET" );
 		//gifUnit.Reset(true); // Don't think gif should be reset...
 		gifUnit.gsSIGNAL.queued = false;
@@ -99,7 +102,9 @@ static __fi void gsCSRwrite( const tGS_CSR& csr )
 	{
 		// SIGNAL : What's not known here is whether or not the SIGID register should be updated
 		//  here or when the IMR is cleared (below).
+#ifdef PCSX2_DEBUG
 		GUNIT_LOG("csr.SIGNAL");
+#endif
 		if (gifUnit.gsSIGNAL.queued) {
 			//DevCon.Warning("Firing pending signal");
 			GSSIGLBLID.SIGID = (GSSIGLBLID.SIGID & ~gifUnit.gsSIGNAL.data[1])
@@ -124,8 +129,9 @@ static __fi void gsCSRwrite( const tGS_CSR& csr )
 
 static __fi void IMRwrite(u32 value)
 {
+#ifdef PCSX2_DEBUG
 	GUNIT_LOG("IMRwrite()");
-
+#endif
 	if (CSRreg.GetInterruptMask() & (~value & GSIMR._u32) >> 8)
 		gsIrq();
 
@@ -157,7 +163,9 @@ __fi void gsWrite8(u32 mem, u8 value)
 			*PS2GS_BASE(mem) = value;
 		break;
 	}
+#ifdef PCSX2_DEBUG
 	GIF_LOG("GS write 8 at %8.8lx with data %8.8lx", mem, value);
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -165,8 +173,9 @@ __fi void gsWrite8(u32 mem, u8 value)
 
 __fi void gsWrite16(u32 mem, u16 value)
 {
+#ifdef PCSX2_DEBUG
 	GIF_LOG("GS write 16 at %8.8lx with data %8.8lx", mem, value);
-
+#endif
 	switch (mem)
 	{
 		// See note above about CSR 8 bit writes, and handling them as zero'd bits
@@ -194,8 +203,9 @@ __fi void gsWrite16(u32 mem, u16 value)
 __fi void gsWrite32(u32 mem, u32 value)
 {
 	pxAssume( (mem & 3) == 0 );
+#ifdef PCSX2_DEBUG
 	GIF_LOG("GS write 32 at %8.8lx with data %8.8lx", mem, value);
-
+#endif
 	switch (mem)
 	{
 		case GS_CSR:
@@ -215,21 +225,25 @@ __fi void gsWrite32(u32 mem, u32 value)
 
 void __fastcall gsWrite64_generic( u32 mem, const mem64_t* value )
 {
+#ifdef PCSX2_DEBUG
 	const u32* const srcval32 = (u32*)value;
 	GIF_LOG("GS Write64 at %8.8lx with data %8.8x_%8.8x", mem, srcval32[1], srcval32[0]);
-
+#endif
 	*(u64*)PS2GS_BASE(mem) = *value;
 }
 
 void __fastcall gsWrite64_page_00( u32 mem, const mem64_t* value )
 {
+    s_GSRegistersWritten |= (mem == GS_DISPFB1 || mem == GS_DISPFB2 || mem == GS_PMODE);
+
 	gsWrite64_generic( mem, value );
 }
 
 void __fastcall gsWrite64_page_01( u32 mem, const mem64_t* value )
 {
+#ifdef PCSX2_DEBUG
 	GIF_LOG("GS Write64 at %8.8lx with data %8.8x_%8.8x", mem, (u32*)value[1], (u32*)value[0]);
-
+#endif
 	switch( mem )
 	{
 		case GS_BUSDIR:
@@ -238,10 +252,14 @@ void __fastcall gsWrite64_page_01( u32 mem, const mem64_t* value )
 			if (gifUnit.stat.DIR) {      // Assume will do local->host transfer
 				gifUnit.stat.OPH = true; // Should we set OPH here?
 				gifUnit.FlushToMTGS();   // Send any pending GS Primitives to the GS
+#ifdef PCSX2_DEBUG
 				GUNIT_LOG("Busdir - GS->EE Download");
+#endif
 			}
 			else {
+#ifdef PCSX2_DEBUG
 				GUNIT_LOG("Busdir - EE->GS Upload");
+#endif
 			}
 
 			//=========================================================================
@@ -295,18 +313,19 @@ void __fastcall gsWrite128_page_01( u32 mem, const mem128_t* value )
 
 void __fastcall gsWrite128_generic( u32 mem, const mem128_t* value )
 {
+#ifdef PCSX2_DEBUG
 	const u32* const srcval32 = (u32*)value;
-
 	GIF_LOG("GS Write128 at %8.8lx with data %8.8x_%8.8x_%8.8x_%8.8x", mem,
 		srcval32[3], srcval32[2], srcval32[1], srcval32[0]);
-
+#endif
 	CopyQWC(PS2GS_BASE(mem), value);
 }
 
 __fi u8 gsRead8(u32 mem)
 {
+#ifdef PCSX2_DEBUG
 	GIF_LOG("GS read 8 from %8.8lx  value: %8.8lx", mem, *(u8*)PS2GS_BASE(mem));
-
+#endif
 	switch (mem & ~0xF)
 	{
 		case GS_SIGLBLID:
@@ -318,7 +337,9 @@ __fi u8 gsRead8(u32 mem)
 
 __fi u16 gsRead16(u32 mem)
 {
+#ifdef PCSX2_DEBUG
 	GIF_LOG("GS read 16 from %8.8lx  value: %8.8lx", mem, *(u16*)PS2GS_BASE(mem));
+#endif
 	switch (mem & ~0xF)
 	{
 		case GS_SIGLBLID:
@@ -330,7 +351,9 @@ __fi u16 gsRead16(u32 mem)
 
 __fi u32 gsRead32(u32 mem)
 {
+#ifdef PCSX2_DEBUG
 	GIF_LOG("GS read 32 from %8.8lx  value: %8.8lx", mem, *(u32*)PS2GS_BASE(mem));
+#endif
 	switch (mem & ~0xF)
 	{
 		case GS_SIGLBLID:
@@ -343,7 +366,9 @@ __fi u32 gsRead32(u32 mem)
 __fi u64 gsRead64(u32 mem)
 {
 	// fixme - PS2GS_BASE(mem+4) = (g_RealGSMem+(mem + 4 & 0x13ff))
+#ifdef PCSX2_DEBUG
 	GIF_LOG("GS read 64 from %8.8lx  value: %8.8lx_%8.8lx", mem, *(u32*)PS2GS_BASE(mem+4), *(u32*)PS2GS_BASE(mem) );
+#endif
 	switch (mem & ~0xF)
 	{
 		case GS_SIGLBLID:
@@ -362,94 +387,20 @@ void gsIrq() {
 	hwIntcIrq(INTC_GS);
 }
 
-// --------------------------------------------------------------------------------------
-//  gsFrameSkip
-// --------------------------------------------------------------------------------------
-// This function regulates the frameskipping status of the GS.  Our new frameskipper for
-// 0.9.7 is a very simple logic pattern compared to the old mess.  The goal now is to provide
-// the most compatible and efficient frameskip, instead of doing the adaptive logic of
-// 0.9.6.  This is almost a necessity because of how many games treat the GS: they upload
-// great amounts of data while rendering 2 frames at a time (using double buffering), and
-// then use a simple pageswap to display the contents of the second frame for that vsync.
-//  (this approach is mostly seen on interlace games; progressive games less so)
-// The result is that any skip pattern besides a fully consistent 2on,2off would reuslt in
-// tons of missing geometry, rendering frameskip useless.
-//
-// So instead we use a simple "always skipping" or "never skipping" logic.
-//
-// EE vs MTGS:
-//   This function does not regulate frame limiting, meaning it does no stalling. Stalling
-//   functions are performed by the EE, which itself uses thread sleep logic to avoid spin
-//   waiting as much as possible (maximizes CPU resource availability for the GS).
-static bool s_isSkippingCurrentFrame = false;
-
-__fi void gsFrameSkip()
-{
-	static int consec_skipped = 0;
-	static int consec_drawn = 0;
-
-	if( !EmuConfig.GS.FrameSkipEnable )
-	{
-		if( s_isSkippingCurrentFrame )
-		{
-			// Frameskipping disabled on-the-fly .. make sure the GS is restored to non-skip
-			// behavior.
-			GSsetFrameSkip( false );
-			s_isSkippingCurrentFrame = false;
-		}
-		return;
-	}
-
-	GSsetFrameSkip( s_isSkippingCurrentFrame );
-
-	if( s_isSkippingCurrentFrame )
-	{
-		++consec_skipped;
-		if( consec_skipped >= EmuConfig.GS.FramesToSkip )
-		{
-			consec_skipped = 0;
-			s_isSkippingCurrentFrame = false;
-		}
-	}
-	else
-	{
-		++consec_drawn;
-		if( consec_drawn >= EmuConfig.GS.FramesToDraw )
-		{
-			consec_drawn = 0;
-			s_isSkippingCurrentFrame = true;
-		}
-	}
-}
-
-extern bool gsIsSkippingCurrentFrame()
-{
-	return s_isSkippingCurrentFrame;
-}
-
 //These are done at VSync Start.  Drawing is done when VSync is off, then output the screen when Vsync is on
 //The GS needs to be told at the start of a vsync else it loses half of its picture (could be responsible for some halfscreen issues)
 //We got away with it before i think due to our awful GS timing, but now we have it right (ish)
 void gsPostVsyncStart()
 {
-	//gifUnit.FlushToMTGS();  // Needed for some (broken?) homebrew game loaders
-	
-	GetMTGS().PostVsyncStart();
-}
+    //gifUnit.FlushToMTGS();  // Needed for some (broken?) homebrew game loaders
 
-void _gs_ResetFrameskip()
-{
-	GSsetFrameSkip( 0 );
-}
-
-// Disables the GS Frameskip at runtime without any racy mess...
-void gsResetFrameSkip()
-{
-	GetMTGS().SendSimplePacket(GS_RINGTYPE_FRAMESKIP, 0, 0, 0);
+    const bool registers_written = s_GSRegistersWritten;
+    s_GSRegistersWritten = false;
+    GetMTGS().PostVsyncStart(registers_written);
 }
 
 void SaveStateBase::gsFreeze()
 {
-	FreezeMem(PS2MEM_GS, 0x2000);
-	Freeze(gsVideoMode);
+    FreezeMem(PS2MEM_GS, 0x2000);
+    Freeze(gsVideoMode);
 }

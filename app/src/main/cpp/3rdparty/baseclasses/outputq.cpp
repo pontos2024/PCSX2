@@ -617,7 +617,7 @@ HRESULT COutputQueue::ReceiveMultiple (
 
             //  We're supposed to Release() them anyway!
             *nSamplesProcessed = 0;
-            for (int i = 0; i < nSamples; i++) {
+            for (int i = 0; i < nSamples; ++i) {
                 DbgLog((LOG_TRACE, 3, TEXT("COutputQueue (direct) : Discarding %d samples code 0x%8.8X"),
                         nSamples, m_hr));
                 ppSamples[i]->Release();
@@ -661,7 +661,7 @@ HRESULT COutputQueue::ReceiveMultiple (
                     nDone = 0;
                 }
                 iLost += m_nBatched - nDone;
-                for (LONG i = 0; i < m_nBatched; i++) {
+                for (LONG i = 0; i < m_nBatched; ++i) {
                     m_ppSamples[i]->Release();
                 }
                 m_nBatched = 0;
@@ -679,13 +679,13 @@ HRESULT COutputQueue::ReceiveMultiple (
             *nSamplesProcessed = 0;
             DbgLog((LOG_TRACE, 3, TEXT("COutputQueue (queued) : Discarding %d samples code 0x%8.8X"),
                     nSamples, m_hr));
-            for (int i = 0; i < nSamples; i++) {
+            for (int i = 0; i < nSamples; ++i) {
                 ppSamples[i]->Release();
             }
             return m_hr;
         }
         m_bFlushed = FALSE;
-        for (long i = 0; i < nSamples; i++) {
+        for (long i = 0; i < nSamples; ++i) {
             QueueSample(ppSamples[i]);
         }
         *nSamplesProcessed = nSamples;
@@ -747,7 +747,7 @@ void COutputQueue::FreeSamples()
             }
         }
     }
-    for (int i = 0; i < m_nBatched; i++) {
+    for (int i = 0; i < m_nBatched; ++i) {
         m_ppSamples[i]->Release();
     }
     m_nBatched = 0;

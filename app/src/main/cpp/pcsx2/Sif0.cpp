@@ -26,7 +26,9 @@ static bool done = false;
 
 static __fi void Sif0Init()
 {
+#ifdef PCSX2_DEBUG
 	SIF_LOG("SIF0 DMA start...");
+#endif
 	done = false;
 	sif0.ee.cycles = 0;
 	sif0.iop.cycles = 0;
@@ -38,14 +40,16 @@ static __fi bool WriteFifoToEE()
 	const int readSize = std::min((s32)sif0ch.qwc, sif0.fifo.size >> 2);
 
 	tDMA_TAG *ptag;
-
+#ifdef PCSX2_DEBUG
 	//SIF_LOG(" EE SIF doing transfer %04Xqw to %08X", readSize, sif0ch.madr);
 	SIF_LOG("Write Fifo to EE: ----------- %lX of %lX", readSize << 2, sif0ch.qwc << 2);
-
+#endif
 	ptag = sif0ch.getAddr(sif0ch.madr, DMAC_SIF0, true);
 	if (ptag == NULL)
 	{
+#ifdef PCSX2_DEBUG
 		DevCon.Warning("Write Fifo to EE: ptag == NULL");
+#endif
 		return false;
 	}
 
@@ -73,9 +77,9 @@ static __fi bool WriteIOPtoFifo()
 {
 	// There's some data ready to transfer into the fifo..
 	const int writeSize = std::min(sif0.iop.counter, sif0.fifo.sif_free());
-
+#ifdef PCSX2_DEBUG
 	SIF_LOG("Write IOP to Fifo: +++++++++++ %lX of %lX", writeSize, sif0.iop.counter);
-
+#endif
 	sif0.fifo.write((u32*)iopPhysMem(hw_dma9.madr), writeSize);
 	hw_dma9.madr += writeSize << 2;
 
@@ -94,14 +98,15 @@ static __fi bool ProcessEETag()
 	tDMA_TAG& ptag(*(tDMA_TAG*)tag);
 
 	sif0.fifo.read((u32*)&tag[0], 2); // Tag
+#ifdef PCSX2_DEBUG
 	SIF_LOG("SIF0 EE read tag: %x %x %x %x", tag[0], tag[1], tag[2], tag[3]);
-
+#endif
 	sif0ch.unsafeTransfer(&ptag);
 	sif0ch.madr = tag[1];
-
+#ifdef PCSX2_DEBUG
 	SIF_LOG("SIF0 EE dest chain tag madr:%08X qwc:%04X id:%X irq:%d(%08X_%08X)",
 		sif0ch.madr, sif0ch.qwc, ptag.ID, ptag.IRQ, tag[1], tag[0]);
-
+#endif
 	if (sif0ch.chcr.TIE && ptag.IRQ)
 	{
 		//Console.WriteLn("SIF0 TIE");
@@ -142,27 +147,34 @@ static __fi bool ProcessIOPTag()
 
 	// We're only copying the first 24 bits.  Bits 30 and 31 (checked below) are Stop/IRQ bits.
 	hw_dma9.madr = sif0data & 0xFFFFFF;
+#ifdef PCSX2_DEBUG
 	if (sif0words > 0xFFFFF) DevCon.Warning("SIF0 Overrun %x", sif0words);
+#endif
 	//Maximum transfer amount 1mb-16 also masking out top part which is a "Mode" cache stuff, we don't care :)
 	sif0.iop.counter = sif0words & 0xFFFFF;
 
 	sif0.iop.writeJunk = (sif0.iop.counter & 0x3) ? (4 - sif0.iop.counter & 0x3) : 0;
 	// IOP tags have an IRQ bit and an End of Transfer bit:
 	if (sif0tag.IRQ  || (sif0tag.ID & 4)) sif0.iop.end = true;
+#ifdef PCSX2_DEBUG
 	SIF_LOG("SIF0 IOP Tag: madr=%lx, tadr=%lx, counter=%lx (%08X_%08X) Junk %d", hw_dma9.madr, hw_dma9.tadr, sif0.iop.counter, sif0words, sif0data, sif0.iop.writeJunk);
-
+#endif
 	return true;
 }
 
 // Stop transferring ee, and signal an interrupt.
 static __fi void EndEE()
 {
+#ifdef PCSX2_DEBUG
 	SIF_LOG("Sif0: End EE");
+#endif
 	sif0.ee.end = false;
 	sif0.ee.busy = false;
 	if (sif0.ee.cycles == 0)
 	{
+#ifdef PCSX2_DEBUG
 		SIF_LOG("SIF0 EE: cycles = 0");
+#endif
 		sif0.ee.cycles = 1;
 	}
 
@@ -172,14 +184,18 @@ static __fi void EndEE()
 // Stop transferring iop, and signal an interrupt.
 static __fi void EndIOP()
 {
+#ifdef PCSX2_DEBUG
 	SIF_LOG("Sif0: End IOP");
+#endif
 	sif0data = 0;
 	sif0.iop.end = false;
 	sif0.iop.busy = false;
 
 	if (sif0.iop.cycles == 0)
 	{
+#ifdef PCSX2_DEBUG
 		DevCon.Warning("SIF0 IOP: cycles = 0");
+#endif
 		sif0.iop.cycles = 1;
 	}
 	// Hack alert
@@ -296,8 +312,9 @@ static __fi void Sif0End()
 {
 	psHu32(SBUS_F240) &= ~0x20;
 	psHu32(SBUS_F240) &= ~0x2000;
-
+#ifdef PCSX2_DEBUG
 	DMA_LOG("SIF0 DMA End");
+#endif
 }
 
 // Transfer IOP to EE, putting data in the fifo as an intermediate step.
@@ -313,7 +330,9 @@ __fi void SIF0Dma()
 
 		if (sif0.iop.counter == 0 && sif0.iop.writeJunk && sif0.fifo.sif_free() >= sif0.iop.writeJunk)
 		{
+#ifdef PCSX2_DEBUG
 			SIF_LOG("Writing Junk %d", sif0.iop.writeJunk);
+#endif
 			sif0.fifo.writeJunk(sif0.iop.writeJunk);
 			sif0.iop.writeJunk = 0;
 		}
@@ -353,12 +372,14 @@ __fi void  EEsif0Interrupt()
 
 __fi void dmaSIF0()
 {
+#ifdef PCSX2_DEBUG
 	SIF_LOG(wxString(L"dmaSIF0" + sif0ch.cmqt_to_str()).To8BitData());
 
 	if (sif0.fifo.readPos != sif0.fifo.writePos)
 	{
 		SIF_LOG("warning, sif0.fifoReadPos != sif0.fifoWritePos");
 	}
+#endif
 
 	//if(sif0ch.chcr.MOD == CHAIN_MODE && sif0ch.qwc > 0) DevCon.Warning(L"SIF0 QWC on Chain CHCR " + sif0ch.chcr.desc());
 	psHu32(SBUS_F240) |= 0x2000;

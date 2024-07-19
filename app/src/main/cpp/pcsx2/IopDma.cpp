@@ -59,7 +59,9 @@ static void __fastcall psxDmaGeneric(u32 madr, u32 bcr, u32 chcr, u32 spuCore)
 	switch (chcr)
 	{
 		case 0x01000201: //cpu to spu2 transfer
+#ifdef PCSX2_DEBUG
 			PSXDMA_LOG("*** DMA %d - mem2spu *** %x addr = %x size = %x", dmaNum, chcr, madr, bcr);
+#endif
 			if (dmaNum == 7)
 				SPU2writeDMA7Mem((u16*)iopPhysMem(madr), size * 2);
 			else if (dmaNum == 4)
@@ -67,7 +69,9 @@ static void __fastcall psxDmaGeneric(u32 madr, u32 bcr, u32 chcr, u32 spuCore)
 			break;
 
 		case 0x01000200: //spu2 to cpu transfer
+#ifdef PCSX2_DEBUG
 			PSXDMA_LOG("*** DMA %d - spu2mem *** %x addr = %x size = %x", dmaNum, chcr, madr, bcr);
+#endif
 			if (dmaNum == 7)
 				SPU2readDMA7Mem((u16*)iopPhysMem(madr), size * 2);
 			else if (dmaNum == 4)
@@ -153,9 +157,9 @@ void psxDma2(u32 madr, u32 bcr, u32 chcr) // GPU
 void psxDma6(u32 madr, u32 bcr, u32 chcr)
 {
 	u32* mem = (u32*)iopPhysMem(madr);
-
+#ifdef PCSX2_DEBUG
 	PSXDMA_LOG("*** DMA 6 - OT *** %lx addr = %lx size = %lx", chcr, madr, bcr);
-
+#endif
 	if (chcr == 0x11000002)
 	{
 		while (bcr--)
@@ -166,11 +170,14 @@ void psxDma6(u32 madr, u32 bcr, u32 chcr)
 		mem++;
 		*mem = 0xffffff;
 	}
+#ifdef PCSX2_DEBUG
 	else
 	{
 		// Unknown option
 		PSXDMA_LOG("*** DMA 6 - OT unknown *** %lx addr = %lx size = %lx", chcr, madr, bcr);
 	}
+#endif
+
 	HW_DMA6_CHCR &= ~0x01000000;
 	psxDmaInterrupt(6);
 }
@@ -183,17 +190,23 @@ void psxDma8(u32 madr, u32 bcr, u32 chcr)
 	switch (chcr & 0x01000201)
 	{
 		case 0x01000201: //cpu to dev9 transfer
+#ifdef PCSX2_DEBUG
 			PSXDMA_LOG("*** DMA 8 - DEV9 mem2dev9 *** %lx addr = %lx size = %lx", chcr, madr, bcr);
+#endif
 			DEV9writeDMA8Mem((u32*)iopPhysMem(madr), size);
 			break;
 
 		case 0x01000200: //dev9 to cpu transfer
+#ifdef PCSX2_DEBUG
 			PSXDMA_LOG("*** DMA 8 - DEV9 dev9mem *** %lx addr = %lx size = %lx", chcr, madr, bcr);
+#endif
 			DEV9readDMA8Mem((u32*)iopPhysMem(madr), size);
 			break;
 
 		default:
+#ifdef PCSX2_DEBUG
 			PSXDMA_LOG("*** DMA 8 - DEV9 unknown *** %lx addr = %lx size = %lx", chcr, madr, bcr);
+#endif
 			break;
 	}
 	HW_DMA8_CHCR &= ~0x01000000;
@@ -202,8 +215,9 @@ void psxDma8(u32 madr, u32 bcr, u32 chcr)
 
 void psxDma9(u32 madr, u32 bcr, u32 chcr)
 {
+#ifdef PCSX2_DEBUG
 	SIF_LOG("IOP: dmaSIF0 chcr = %lx, madr = %lx, bcr = %lx, tadr = %lx", chcr, madr, bcr, HW_DMA9_TADR);
-
+#endif
 	sif0.iop.busy = true;
 	sif0.iop.end = false;
 
@@ -212,8 +226,9 @@ void psxDma9(u32 madr, u32 bcr, u32 chcr)
 
 void psxDma10(u32 madr, u32 bcr, u32 chcr)
 {
+#ifdef PCSX2_DEBUG
 	SIF_LOG("IOP: dmaSIF1 chcr = %lx, madr = %lx, bcr = %lx", chcr, madr, bcr);
-
+#endif
 	sif1.iop.busy = true;
 	sif1.iop.end = false;
 

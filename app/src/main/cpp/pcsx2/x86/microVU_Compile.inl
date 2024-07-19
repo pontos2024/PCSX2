@@ -320,14 +320,14 @@ __fi void incQ(mV) { mVU.q ^= 1; }
 // so essentially '1' will be the same as '0'...
 void mVUoptimizePipeState(mV)
 {
-	for (int i = 0; i < 32; i++)
+	for (int i = 0; i < 32; ++i)
 	{
 		optimizeReg(mVUregs.VF[i].x);
 		optimizeReg(mVUregs.VF[i].y);
 		optimizeReg(mVUregs.VF[i].z);
 		optimizeReg(mVUregs.VF[i].w);
 	}
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < 16; ++i)
 	{
 		optimizeReg(mVUregs.VI[i]);
 	}
@@ -460,7 +460,7 @@ void mVUdebugPrintBlocks(microVU& mVU, bool isEndPC)
 __fi void mVUsavePipelineState(microVU& mVU)
 {
 	u32* lpS = (u32*)&mVU.prog.lpState;
-	for (size_t i = 0; i < (sizeof(microRegInfo) - 4) / 4; i++, lpS++)
+	for (size_t i = 0; i < (sizeof(microRegInfo) - 4) / 4; ++i, ++lpS)
 	{
 		xMOV(ptr32[lpS], lpS[0]);
 	}
@@ -509,7 +509,7 @@ __fi void startLoop(mV)
 // Initialize VI Constants (vi15 propagates through blocks)
 __fi void mVUinitConstValues(microVU& mVU)
 {
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < 16; ++i)
 	{
 		mVUconstReg[i].isValid  = 0;
 		mVUconstReg[i].regValue = 0;
@@ -822,7 +822,7 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 	mVUbranch = 0;
 	u32 x = 0;
 
-	for (; x < endCount; x++)
+	for (; x < endCount; ++x)
 	{
 #if 0
 		if (x == 0 || true)
@@ -870,7 +870,7 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 				// Make sure we save the current state so it can come back to it
 				u32* cpS = (u32*)&mVUregs;
 				u32* lpS = (u32*)&mVU.prog.lpState;
-				for (size_t i = 0; i < (sizeof(microRegInfo) - 4) / 4; i++, lpS++, cpS++)
+				for (size_t i = 0; i < (sizeof(microRegInfo) - 4) / 4; ++i, ++lpS, ++cpS)
 				{
 					xMOV(ptr32[lpS], cpS[0]);
 				}

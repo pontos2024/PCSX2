@@ -245,7 +245,7 @@ static ISzAlloc g_Alloc = { SzAlloc, SzFree };
 
     res = LzmaEnc_WriteProperties(enc, header, &headerSize);
     fileSize = MyGetFileLength(inFile);
-    for (i = 0; i < 8; i++)
+    for (i = 0; i < 8; ++i)
       header[headerSize++] = (Byte)(fileSize >> (8 * i));
     MyWriteFileAndCheck(outFile, header, headerSize)
 

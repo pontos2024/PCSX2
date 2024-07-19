@@ -24,7 +24,7 @@ static u32 PsxRates[160];
 
 void InitADSR() // INIT ADSR
 {
-	for (int i = 0; i < (32 + 128); i++)
+	for (int i = 0; i < (32 + 128); ++i)
 	{
 		int shift = (i - 32) >> 2;
 		s64 rate = (i & 3) + 4;

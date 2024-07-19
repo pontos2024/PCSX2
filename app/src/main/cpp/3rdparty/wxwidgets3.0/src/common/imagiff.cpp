@@ -151,7 +151,7 @@ bool wxIFFDecoder::ConvertToImage(wxImage *image) const
     // set transparent colour mask
     if (transparent != -1)
     {
-        for (i = 0; i < colors; i++)
+        for (i = 0; i < colors; ++i)
         {
             if ((pal[3 * i + 0] == 255) &&
                 (pal[3 * i + 1] == 0) &&
@@ -177,7 +177,7 @@ bool wxIFFDecoder::ConvertToImage(wxImage *image) const
         unsigned char* g = new unsigned char[colors];
         unsigned char* b = new unsigned char[colors];
 
-        for (i = 0; i < colors; i++)
+        for (i = 0; i < colors; ++i)
         {
             r[i] = pal[3*i + 0];
             g[i] = pal[3*i + 1];
@@ -425,7 +425,7 @@ int wxIFFDecoder::ReadIFF()
         }
 
         // copy colors to color map
-        for (int i=0; i < colors; i++) {
+        for (int i=0; i < colors; ++i) {
             m_image->pal[3*i + 0] = *cmapptr++;
             m_image->pal[3*i + 1] = *cmapptr++;
             m_image->pal[3*i + 2] = *cmapptr++;
@@ -521,12 +521,12 @@ int wxIFFDecoder::ReadIFF()
             return wxIFF_MEMERR;
             }
             int i;
-            for (i = 0; i < m_image->colors; i++) {
+            for (i = 0; i < m_image->colors; ++i) {
             pal[3*i + 0] = m_image->pal[3*i + 0];
             pal[3*i + 1] = m_image->pal[3*i + 1];
             pal[3*i + 2] = m_image->pal[3*i + 2];
             }
-            for (; i < colors; i++) {
+            for (; i < colors; ++i) {
             pal[3*i + 0] = 0;
             pal[3*i + 1] = 0;
             pal[3*i + 2] = 0;
@@ -536,7 +536,7 @@ int wxIFFDecoder::ReadIFF()
             m_image->colors = colors;
         }
 
-            for (int i=0; i < colors; i++) {
+            for (int i=0; i < colors; ++i) {
             m_image->pal[3*i + 0] = (m_image->pal[3*i + 0] >> 4) * 17;
             m_image->pal[3*i + 1] = (m_image->pal[3*i + 1] >> 4) * 17;
             m_image->pal[3*i + 2] = (m_image->pal[3*i + 2] >> 4) * 17;
@@ -562,7 +562,7 @@ int wxIFFDecoder::ReadIFF()
         byte *pic = picptr;
         const byte *workptr = bodyptr;
 
-        for (int i=0; i < height; i++) {
+        for (int i=0; i < height; ++i) {
             byte bitmsk = 0x80;
             const byte *workptr2 = workptr;
 
@@ -571,7 +571,7 @@ int wxIFFDecoder::ReadIFF()
             byte gval = pal[1];
             byte bval = pal[2];
 
-            for (int j=0; j < bmhd_width; j++) {
+            for (int j=0; j < bmhd_width; ++j) {
             long col = 0;
             long colbit = 1;
             const byte *workptr3 = workptr2;
@@ -642,7 +642,7 @@ int wxIFFDecoder::ReadIFF()
         if (fmt == ILBM_EHB) {
             wxLogTrace(wxT("iff"), wxT("Doubling CMAP for EHB mode"));
 
-            for (int i=0; i<32; i++) {
+            for (int i=0; i<32; ++i) {
             pal[3*(i + 32) + 0] = pal[3*i + 0] >> 1;
             pal[3*(i + 32) + 1] = pal[3*i + 1] >> 1;
             pal[3*(i + 32) + 2] = pal[3*i + 2] >> 1;
@@ -656,10 +656,10 @@ int wxIFFDecoder::ReadIFF()
             height = bmhd_height;
         }
 
-        for (int i=0; i < height; i++) {
+        for (int i=0; i < height; ++i) {
             byte bitmsk = 0x80;                 // left most bit (mask)
             const byte *workptr2 = workptr;     // work ptr to source
-            for (int j=0; j < bmhd_width; j++) {
+            for (int j=0; j < bmhd_width; ++j) {
             long col = 0;
             long colbit = 1;
             const byte *workptr3 = workptr2;  // 1st byte in 1st pln

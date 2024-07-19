@@ -54,20 +54,24 @@ only recv2 & dataout influences padman
 
 
 void sio2Reset() {
+#ifdef PCSX2_DEBUG
 	DevCon.WriteLn( "Sio2 Reset" );
+#endif
 	memzero(sio2);
 	sio2.packet.recvVal1 = 0x1D100; // Nothing is connected at start
 }
 
 u32 sio2_getRecv1() {
+#ifdef PCSX2_DEBUG
 	PAD_LOG("Reading Recv1 = %x",sio2.packet.recvVal1);
-
+#endif
 	return sio2.packet.recvVal1;
 }
 
 u32 sio2_getRecv2() {
+#ifdef PCSX2_DEBUG
 	PAD_LOG("Reading Recv2 = %x",0xF);
-
+#endif
 	return 0xf;
 }//0, 0x10, 0x20, 0x10 | 0x20; bits 4 & 5
 
@@ -75,16 +79,18 @@ u32 sio2_getRecv3() {
 	if(sio2.packet.recvVal3 == 0x8C || sio2.packet.recvVal3 == 0x8b ||
 	   sio2.packet.recvVal3 == 0x83)
 	{
+#ifdef PCSX2_DEBUG
 		PAD_LOG("Reading Recv3 = %x",sio2.packet.recvVal3);
-
+#endif
 		sio.packetsize = sio2.packet.recvVal3;
 		sio2.packet.recvVal3 = 0; // Reset
 		return sio.packetsize;
 	}
 	else
 	{
+#ifdef PCSX2_DEBUG
 		PAD_LOG("Reading Recv3 = %x",sio.packetsize << 16);
-
+#endif
 		return sio.packetsize << 16;
 	}
 }
@@ -99,11 +105,13 @@ void sio2_setSend3(u32 index, u32 value)
 //	int i;
 	sio2.packet.sendArray3[index]=value;
 //	if (index==15){
-//		for (i=0; i<4; i++){PAD_LOG("0x%08X ", sio2.packet.sendArray1[i]);}PAD_LOG("\n");
-//		for (i=0; i<4; i++){PAD_LOG("0x%08X ", sio2.packet.sendArray2[i]);}PAD_LOG("\n");
-//		for (i=0; i<8; i++){PAD_LOG("0x%08X ", sio2.packet.sendArray3[i]);}PAD_LOG("\n");
-//		for (  ; i<16; i++){PAD_LOG("0x%08X ", sio2.packet.sendArray3[i]);}PAD_LOG("\n");
+//		for (i=0; i<4; ++i){PAD_LOG("0x%08X ", sio2.packet.sendArray1[i]);}PAD_LOG("\n");
+//		for (i=0; i<4; ++i){PAD_LOG("0x%08X ", sio2.packet.sendArray2[i]);}PAD_LOG("\n");
+//		for (i=0; i<8; ++i){PAD_LOG("0x%08X ", sio2.packet.sendArray3[i]);}PAD_LOG("\n");
+//		for (  ; i<16; ++i){PAD_LOG("0x%08X ", sio2.packet.sendArray3[i]);}PAD_LOG("\n");
+#ifdef PCSX2_DEBUG
 	PAD_LOG("[%d] : 0x%08X", index,sio2.packet.sendArray3[index]);
+#endif
 //	}
 }	//0->15
 
@@ -148,8 +156,9 @@ void sio2_serialIn(u8 value){
 		ctrl |= (sio2.packet.sendArray3[sio2.cmdport] & 1) << 13;
 		//sioWriteCtrl16(SIO_RESET);
 		sioWriteCtrl16(ctrl);
+#ifdef PCSX2_DEBUG
 		PSXDMA_LOG("sio2_fifoIn: ctrl = %x, cmdlength = %x, cmdport = %d (%x)", ctrl, sio2.cmdlength, sio2.cmdport, sio2.packet.sendArray3[sio2.cmdport]);
-
+#endif
 		sio2.cmdport++;
 	}
 
@@ -175,8 +184,9 @@ void sio2_fifoIn(u8 value){
 		ctrl |= (sio2.packet.sendArray3[sio2.cmdport] & 1) << 13;
 		//sioWriteCtrl16(SIO_RESET);
 		sioWriteCtrl16(ctrl);
+#ifdef PCSX2_DEBUG
 		PSXDMA_LOG("sio2_fifoIn: ctrl = %x, cmdlength = %x, cmdport = %d (%x)", ctrl, sio2.cmdlength, sio2.cmdport, sio2.packet.sendArray3[sio2.cmdport]);
-
+#endif
 		sio2.cmdport++;
 	}
 
@@ -214,14 +224,15 @@ void SaveStateBase::sio2Freeze()
 void psxDma11(u32 madr, u32 bcr, u32 chcr) {
 	unsigned int i, j;
 	int size = (bcr >> 16) * (bcr & 0xffff);
+#ifdef PCSX2_DEBUG
 	PSXDMA_LOG("*** DMA 11 - SIO2 in *** %lx addr = %lx size = %lx", chcr, madr, bcr);
-
+#endif
 	if (chcr != 0x01000201) return;
 
-	for(i = 0; i < (bcr >> 16); i++)
+	for(i = 0; i < (bcr >> 16); ++i)
 	{
 		sio.count = 1;
-		for(j = 0; j < ((bcr & 0xFFFF) * 4); j++)
+		for(j = 0; j < ((bcr & 0xFFFF) * 4); ++j)
 		{
 			sio2_fifoIn(iopMemRead8(madr));
 			madr++;
@@ -243,8 +254,9 @@ void psxDMA11Interrupt()
 
 void psxDma12(u32 madr, u32 bcr, u32 chcr) {
 	int size = ((bcr >> 16) * (bcr & 0xFFFF)) * 4;
+#ifdef PCSX2_DEBUG
 	PSXDMA_LOG("*** DMA 12 - SIO2 out *** %lx addr = %lx size = %lx", chcr, madr, size);
-
+#endif
 	if (chcr != 0x41000200) return;
 
 	sio2.recvIndex = 0; // Set To start;    saqib

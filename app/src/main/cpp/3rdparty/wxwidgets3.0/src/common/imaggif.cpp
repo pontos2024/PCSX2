@@ -270,10 +270,10 @@ bool wxGIFHandler::DoSaveFile(const wxImage& image, wxOutputStream *stream,
     SetupCompress(stream, 8);
 
     m_pixelCount = height * width_even;
-    for (int y = 0; y < height; y++)
+    for (int y = 0; y < height; ++y)
     {
         m_pixelCount -= width_even;
-        for (int x = 0; x < width; x++)
+        for (int x = 0; x < width; ++x)
         {
             wxRGB rgb;
             rgb.red   = src[0];
@@ -307,7 +307,7 @@ bool wxGIFHandler::SaveAnimation(const wxImageArray& images,
     size_t i;
 
     wxSize size(0,0);
-    for (i = 0; (i < images.GetCount()) && ok; i++)
+    for (i = 0; (i < images.GetCount()) && ok; ++i)
     {
         const wxImage& image = images.Item(i);
         wxSize temp(image.GetWidth(), image.GetHeight());
@@ -322,7 +322,7 @@ bool wxGIFHandler::SaveAnimation(const wxImageArray& images,
         }
     }
 
-    for (i = 0; (i < images.GetCount()) && ok; i++)
+    for (i = 0; (i < images.GetCount()) && ok; ++i)
     {
         const wxImage& image = images.Item(i);
 
@@ -558,7 +558,7 @@ int wxGIFHandler_KeyItem(unsigned long item)
 int wxGIFHandler_BitSize(int n)
 {
     int i;
-    for (i = 1; i <= 8; i++)
+    for (i = 1; i <= 8; ++i)
     {
         if ((1 << i) >= n)
         {
@@ -613,7 +613,7 @@ bool wxGIFHandler_GetPalette(const wxImage& image,
 
 int wxGIFHandler_PaletteFind(const wxRGB& clr, const wxRGB *array, int count)
 {
-    for (int i = 0; i < count; i++)
+    for (int i = 0; i < count; ++i)
     {
         if (   (clr.red   == array[i].red)
             && (clr.green == array[i].green)
@@ -695,7 +695,7 @@ bool wxGIFHandler_WritePalette(wxOutputStream *stream,
     const wxRGB *array, size_t count, int bpp)
 {
     wxUint8 buf[3];
-    for (int i = 0; (i < (1 << bpp)); i++)
+    for (int i = 0; (i < (1 << bpp)); ++i)
     {
         if (i < (int)count)
         {

@@ -1246,10 +1246,10 @@ MacroExpandResult TPpContext::MacroExpand(TPpToken* ppToken, bool expandUndef, b
             return MacroExpandNotStarted;
         }
         in->args.resize(in->mac->args.size());
-        for (size_t i = 0; i < in->mac->args.size(); i++)
+        for (size_t i = 0; i < in->mac->args.size(); ++i)
             in->args[i] = new TokenStream;
         in->expandedArgs.resize(in->mac->args.size());
-        for (size_t i = 0; i < in->mac->args.size(); i++)
+        for (size_t i = 0; i < in->mac->args.size(); ++i)
             in->expandedArgs[i] = nullptr;
         size_t arg = 0;
         bool tokenRecorded = false;
@@ -1324,7 +1324,7 @@ MacroExpandResult TPpContext::MacroExpand(TPpToken* ppToken, bool expandUndef, b
 
         // We need both expanded and non-expanded forms of the argument, for whether or
         // not token pasting will be applied later when the argument is consumed next to ##.
-        for (size_t i = 0; i < in->mac->args.size(); i++)
+        for (size_t i = 0; i < in->mac->args.size(); ++i)
             in->expandedArgs[i] = PrescanMacroArg(*in->args[i], ppToken, newLineOkay);
     }
 

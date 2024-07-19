@@ -67,7 +67,7 @@ wxFSFile* wxWebViewArchiveHandler::GetFile(const wxString &uri)
 
     //We iterate through the string to see if there is a protocol description
     size_t start = wxString::npos;
-    for(size_t i = 0; i < path.length(); i++)
+    for(size_t i = 0; i < path.length(); ++i)
     {
         if(path[i] == ';' && path.substr(i, 10) == ";protocol=")
         {

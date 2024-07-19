@@ -485,7 +485,7 @@ oss_enumerate_devices(cubeb * context, cubeb_device_type type,
     goto fail;
 
   collection->count = 0;
-  for (i = 0; i < si.numaudios; i++) {
+  for (i = 0; i < si.numaudios; ++i) {
     oss_audioinfo ai;
     cubeb_device_info cdi = { 0 };
     const char *devid = NULL;
@@ -561,7 +561,7 @@ oss_device_collection_destroy(cubeb * context,
                               cubeb_device_collection * collection)
 {
   size_t i;
-  for (i = 0; i < collection->count; i++) {
+  for (i = 0; i < collection->count; ++i) {
     oss_free_cubeb_device_info_strings(&collection->device[i]);
   }
   free(collection->device);

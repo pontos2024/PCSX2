@@ -60,4 +60,6 @@ private:
 	std::array<int, MAX_KEYS> m_pad_to_sdl;
 };
 
+extern JoystickInfo* g_haptic_android;
+
 #endif

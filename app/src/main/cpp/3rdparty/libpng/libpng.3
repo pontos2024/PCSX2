@@ -1674,10 +1674,10 @@ row_pointers prior to calling png_read_png() with
    row_pointers = png_malloc(png_ptr,
        height*(sizeof (png_bytep)));
 
-   for (int i=0; i<height, i++)
+   for (int i=0; i<height, ++i)
       row_pointers[i]=NULL;  /* security precaution */
 
-   for (int i=0; i<height, i++)
+   for (int i=0; i<height, ++i)
       row_pointers[i]=png_malloc(png_ptr,
           width*pixel_size);
 

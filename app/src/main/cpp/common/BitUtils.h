@@ -139,7 +139,7 @@ template<typename T>
 static __fi constexpr int BitNumber(T value)
 {
 	static_assert(value != 0, "Has a non-zero value");
-	for (int i = 0; i < (sizeof(value) * 8); i++)
+	for (int i = 0; i < (sizeof(value) * 8); ++i)
 	{
 		if ((value & static_cast<T>((static_cast<T>(1) << i))) != 0)
 			return i;

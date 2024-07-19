@@ -204,7 +204,7 @@ static int FindDiskType(int mType)
 	}
 
 	audioTracks = dataTracks = 0;
-	for (int i = tn.strack; i <= tn.etrack; i++)
+	for (int i = tn.strack; i <= tn.etrack; ++i)
 	{
 		cdvdTD td, td2;
 

@@ -570,7 +570,7 @@ wxFont wxFont::Scaled(float x) const
 void wxNativeFontInfo::SetFaceName(const wxArrayString& facenames)
 {
 #if wxUSE_FONTENUM
-    for (size_t i=0; i < facenames.GetCount(); i++)
+    for (size_t i=0; i < facenames.GetCount(); ++i)
     {
         if (wxFontEnumerator::IsValidFacename(facenames[i]))
         {

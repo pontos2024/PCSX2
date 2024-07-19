@@ -552,7 +552,7 @@ static void usb_desc_ep_init(USBDevice* dev)
 	int i, e, pid, ep;
 
 	usb_ep_init(dev);
-	for (i = 0; i < dev->ninterfaces; i++)
+	for (i = 0; i < dev->ninterfaces; ++i)
 	{
 		iface = dev->ifaces[i];
 		if (iface == NULL)
@@ -656,11 +656,11 @@ int usb_desc_set_config(USBDevice* dev, int value)
 		}*/
 	}
 
-	for (i = 0; i < dev->ninterfaces; i++)
+	for (i = 0; i < dev->ninterfaces; ++i)
 	{
 		usb_desc_set_interface(dev, i, 0);
 	}
-	for (; i < USB_MAX_INTERFACES; i++)
+	for (; i < USB_MAX_INTERFACES; ++i)
 	{
 		dev->altsetting[i] = 0;
 		dev->ifaces[i] = NULL;

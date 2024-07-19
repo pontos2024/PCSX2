@@ -26,25 +26,27 @@ struct HostKeyEvent
 {
 	enum class Type
 	{
-		NoEvent = 0,
-		KeyPressed = 1,
-		KeyReleased = 2,
-		MousePressed = 3,
-		MouseReleased = 4,
-		MouseWheelDown = 5,
-		MouseWheelUp = 6,
-		MouseMove = 7,
+		NoEvent,
+		KeyPressed,
+		KeyReleased,
+		MousePressed,
+		MouseReleased,
+		MouseWheelDown,
+		MouseWheelUp,
+		MouseMove,
+		FocusGained,
+		FocustLost,
 	};
 
 	Type type;
 	u32 key;
-	s32 range;
+    u32 range;
 };
 
 namespace Host
 {
 	/// Reads a file from the resources directory of the application.
-	/// This may be outside of the "normally" filesystem on platforms such as Mac.
+	/// This may be outside of the "normal" filesystem on platforms such as Mac.
 	std::optional<std::vector<u8>> ReadResourceFile(const char* filename);
 
 	/// Reads a resource file file from the resources directory as a string.
@@ -58,8 +60,7 @@ namespace Host
 	void RemoveKeyedOSDMessage(std::string key);
 	void ClearOSDMessages();
 
-	/// Displays a loading screen with the logo, rendered with ImGui. Use when executing possibly-time-consuming tasks
-	/// such as compiling shaders when starting up.
-	void DisplayLoadingScreen(const char* message, int progress_min = -1, int progress_max = -1,
-		int progress_value = -1);
+	/// Displays an asynchronous error on the UI thread, i.e. doesn't block the caller.
+	void ReportErrorAsync(const std::string_view& title, const std::string_view& message);
+	void ReportFormattedErrorAsync(const std::string_view& title, const char* format, ...);
 } // namespace Host

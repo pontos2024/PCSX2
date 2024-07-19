@@ -168,7 +168,7 @@ main()
 
   awoken = 0;
 
-  for (i = 1; i <= NUMTHREADS; i++)
+  for (i = 1; i <= NUMTHREADS; ++i)
     {
       threadbag[i].started = 0;
       threadbag[i].threadnum = i;
@@ -195,7 +195,7 @@ main()
   /*
    * Give threads time to complete.
    */
-  for (i = 1; i <= NUMTHREADS; i++)
+  for (i = 1; i <= NUMTHREADS; ++i)
     {
       assert(pthread_join(t[i], NULL) == 0);
     }
@@ -215,7 +215,7 @@ main()
   /*
    * Standard check that all threads started.
    */
-  for (i = 1; i <= NUMTHREADS; i++)
+  for (i = 1; i <= NUMTHREADS; ++i)
     { 
       failed = !threadbag[i].started;
 

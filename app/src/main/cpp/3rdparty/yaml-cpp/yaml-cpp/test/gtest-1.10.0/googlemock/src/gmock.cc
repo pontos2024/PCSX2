@@ -147,7 +147,7 @@ void InitGoogleMockImpl(int* argc, CharType** argv) {
   InitGoogleTest(argc, argv);
   if (*argc <= 0) return;
 
-  for (int i = 1; i != *argc; i++) {
+  for (int i = 1; i != *argc; ++i) {
     const std::string arg_string = StreamableToString(argv[i]);
     const char* const arg = arg_string.c_str();
 
@@ -161,7 +161,7 @@ void InitGoogleMockImpl(int* argc, CharType** argv) {
       // that argv has (*argc + 1) elements, the last one always being
       // NULL.  The following loop moves the trailing NULL element as
       // well.
-      for (int j = i; j != *argc; j++) {
+      for (int j = i; j != *argc; ++j) {
         argv[j] = argv[j + 1];
       }
 

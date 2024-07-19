@@ -15,47 +15,23 @@
 
 class alignas(16) GSVector4
 {
-#if defined(_M_X86_32) || defined(_M_X86_64)
-	constexpr static __m128 cxpr_setr_ps(float x, float y, float z, float w)
+	struct cxpr_init_tag {};
+	static constexpr cxpr_init_tag cxpr_init{};
+
+	constexpr GSVector4(cxpr_init_tag, float x, float y, float z, float w)
+		: F32{x, y, z, w}
 	{
-#if defined(__GNUC__) || defined(__clang__)
-		return __m128{x, y, z, w};
-#else
-		__m128 m = {};
-		m.m128_f32[0] = x;
-		m.m128_f32[1] = y;
-		m.m128_f32[2] = z;
-		m.m128_f32[3] = w;
-		return m;
-#endif
 	}
 
-	constexpr static __m128 cxpr_setr_epi32(int x, int y, int z, int w)
+	constexpr GSVector4(cxpr_init_tag, int x, int y, int z, int w)
+		: I32{x, y, z, w}
 	{
-#if defined(__GNUC__) || defined(__clang__)
-		return (__m128)(__v4si{x, y, z, w});
-#else
-		__m128 m = {};
-		m.m128_i32[0] = x;
-		m.m128_i32[1] = y;
-		m.m128_i32[2] = z;
-		m.m128_i32[3] = w;
-		return m;
-#endif
-	}
-#else
-	constexpr static __m128 cxpr_setr_ps(float x, float y, float z, float w)
-	{
-		const float32x4_t v{ x, y, z, w };
-		return (__m128)v;
 	}
 
-	constexpr static __m128 cxpr_setr_epi32(int x, int y, int z, int w)
+	constexpr GSVector4(cxpr_init_tag, u64 x, u64 y)
+		: U64{x, y}
 	{
-		const int32x4_t v{x, y, z, w};
-		return (__m128)v;
 	}
-#endif
 
 public:
 	union
@@ -64,15 +40,16 @@ public:
 		struct { float r, g, b, a; };
 		struct { float left, top, right, bottom; };
 		float v[4];
-		float f32[4];
-		int8 i8[16];
-		int16 i16[8];
-		int32 i32[4];
-		int64 i64[2];
-		uint8 u8[16];
-		uint16 u16[8];
-		uint32 u32[4];
-		uint64 u64[2];
+		float F32[4];
+		double F64[2];
+		s8  I8[16];
+		s16 I16[8];
+		s32 I32[4];
+		s64 I64[2];
+		u8  U8[16];
+		u16 U16[8];
+		u32 U32[4];
+		u64 U64[2];
 		__m128 m;
 	};
 
@@ -84,6 +61,7 @@ public:
 	static const GSVector4 m_four;
 	static const GSVector4 m_x4b000000;
 	static const GSVector4 m_x4f800000;
+	static const GSVector4 m_xc1e00000000fffff;
 	static const GSVector4 m_max;
 	static const GSVector4 m_min;
 
@@ -93,22 +71,32 @@ public:
 
 	constexpr static GSVector4 cxpr(float x, float y, float z, float w)
 	{
-		return GSVector4(cxpr_setr_ps(x, y, z, w));
+		return GSVector4(cxpr_init, x, y, z, w);
 	}
 
 	constexpr static GSVector4 cxpr(float x)
 	{
-		return GSVector4(cxpr_setr_ps(x, x, x, x));
+		return GSVector4(cxpr_init, x, x, x, x);
 	}
 
 	constexpr static GSVector4 cxpr(int x, int y, int z, int w)
 	{
-		return GSVector4(cxpr_setr_epi32(x, y, z, w));
+		return GSVector4(cxpr_init, x, y, z, w);
 	}
 
 	constexpr static GSVector4 cxpr(int x)
 	{
-		return GSVector4(cxpr_setr_epi32(x, x, x, x));
+		return GSVector4(cxpr_init, x, x, x, x);
+	}
+
+	constexpr static GSVector4 cxpr64(u64 x, u64 y)
+	{
+		return GSVector4(cxpr_init, x, y);
+	}
+
+	constexpr static GSVector4 cxpr64(u64 x)
+	{
+		return GSVector4(cxpr_init, x, x);
 	}
 
 	__forceinline GSVector4(float x, float y, float z, float w)
@@ -148,6 +136,11 @@ public:
 	{
 	}
 
+	__forceinline explicit GSVector4(__m128d m)
+		: m(_mm_castpd_ps(m))
+	{
+	}
+
 	__forceinline explicit GSVector4(float f)
 	{
 		*this = f;
@@ -168,11 +161,11 @@ public:
 #endif
 	}
 
-	__forceinline explicit GSVector4(uint32 u)
+	__forceinline explicit GSVector4(u32 u)
 	{
 		GSVector4i v((int)u);
 
-		*this = GSVector4(v) + (m_x4f800000 & GSVector4::cast(v.sra32<31>()));
+		*this = GSVector4(v) + (m_x4f800000 & GSVector4::cast(v.sra32(31)));
 	}
 
 	__forceinline explicit GSVector4(const GSVector4i& v);
@@ -190,6 +183,11 @@ public:
 	__forceinline static GSVector4 cast(const GSVector8i& v);
 
 #endif
+
+	__forceinline static GSVector4 f64(double x, double y)
+	{
+		return GSVector4(_mm_castpd_ps(_mm_set_pd(y, x)));
+	}
 
 	__forceinline void operator=(const GSVector4& v)
 	{
@@ -230,17 +228,17 @@ public:
 		return *this;
 	}
 
-	__forceinline uint32 rgba32() const
+	__forceinline u32 rgba32() const
 	{
 		return GSVector4i(*this).rgba32();
 	}
 
-	__forceinline static GSVector4 rgba32(uint32 rgba)
+	__forceinline static GSVector4 rgba32(u32 rgba)
 	{
 		return GSVector4(GSVector4i::load((int)rgba).u8to32());
 	}
 
-	__forceinline static GSVector4 rgba32(uint32 rgba, int shift)
+	__forceinline static GSVector4 rgba32(u32 rgba, int shift)
 	{
 		return GSVector4(GSVector4i::load((int)rgba).u8to32() << shift);
 	}
@@ -648,11 +646,11 @@ GSVector.h:2973:15: error:  shadows template parm 'int i'
 		return GSVector4(_mm_load_ss(&f));
 	}
 
-	__forceinline static GSVector4 load(uint32 u)
+	__forceinline static GSVector4 load(u32 u)
 	{
 		GSVector4i v = GSVector4i::load((int)u);
 
-		return GSVector4(v) + (m_x4f800000 & GSVector4::cast(v.sra32<31>()));
+		return GSVector4(v) + (m_x4f800000 & GSVector4::cast(v.sra32(31)));
 	}
 
 	template <bool aligned>
@@ -887,6 +885,36 @@ GSVector.h:2973:15: error:  shadows template parm 'int i'
 		return GSVector4(_mm_cmple_ps(v1, v2));
 	}
 
+	__forceinline GSVector4 mul64(const GSVector4& v) const
+	{
+		return GSVector4(_mm_mul_pd(_mm_castps_pd(m), _mm_castps_pd(v.m)));
+	}
+
+	__forceinline GSVector4 add64(const GSVector4& v) const
+	{
+		return GSVector4(_mm_add_pd(_mm_castps_pd(m), _mm_castps_pd(v.m)));
+	}
+
+	__forceinline GSVector4 sub64(const GSVector4& v) const
+	{
+		return GSVector4(_mm_sub_pd(_mm_castps_pd(m), _mm_castps_pd(v.m)));
+	}
+
+	__forceinline static GSVector4 f32to64(const GSVector4& v)
+	{
+		return GSVector4(_mm_cvtps_pd(v.m));
+	}
+
+	__forceinline static GSVector4 f32to64(const void* p)
+	{
+		return GSVector4(_mm_cvtps_pd(_mm_castpd_ps(_mm_load_sd(static_cast<const double*>(p)))));
+	}
+
+	__forceinline GSVector4i f64toi32(bool truncate = true) const
+	{
+		return GSVector4i(truncate ? _mm_cvttpd_epi32(_mm_castps_pd(m)) : _mm_cvtpd_epi32(_mm_castps_pd(m)));
+	}
+
 	// clang-format off
 
 	#define VECTOR4_SHUFFLE_4(xs, xn, ys, yn, zs, zn, ws, wn) \
@@ -936,4 +964,9 @@ GSVector.h:2973:15: error:  shadows template parm 'int i'
 	}
 
 #endif
+
+	__forceinline static GSVector4 broadcast64(const void* d)
+	{
+		return GSVector4(_mm_loaddup_pd(static_cast<const double*>(d)));
+	}
 };

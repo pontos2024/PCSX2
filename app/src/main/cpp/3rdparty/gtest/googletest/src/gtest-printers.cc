@@ -69,7 +69,7 @@ GTEST_ATTRIBUTE_NO_SANITIZE_THREAD_
 void PrintByteSegmentInObjectTo(const unsigned char* obj_bytes, size_t start,
                                 size_t count, ostream* os) {
   char text[5] = "";
-  for (size_t i = 0; i != count; i++) {
+  for (size_t i = 0; i != count; ++i) {
     const size_t j = start + i;
     if (i != 0) {
       // Organizes the bytes into groups of 2 for easy parsing by
@@ -438,7 +438,7 @@ namespace {
 bool ContainsUnprintableControlCodes(const char* str, size_t length) {
   const unsigned char *s = reinterpret_cast<const unsigned char *>(str);
 
-  for (size_t i = 0; i < length; i++) {
+  for (size_t i = 0; i < length; ++i) {
     unsigned char ch = *s++;
     if (std::iscntrl(ch)) {
         switch (ch) {

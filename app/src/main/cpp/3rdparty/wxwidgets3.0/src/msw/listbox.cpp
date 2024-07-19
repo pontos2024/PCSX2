@@ -557,7 +557,7 @@ wxSize wxListBox::DoGetBestClientSize() const
     // find the widest string
     int wLine;
     int wListbox = 0;
-    for (unsigned int i = 0; i < m_noItems; i++)
+    for (unsigned int i = 0; i < m_noItems; ++i)
     {
         wxString str(GetString(i));
         GetTextExtent(str, &wLine, NULL);

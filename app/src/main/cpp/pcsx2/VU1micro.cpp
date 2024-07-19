@@ -44,11 +44,15 @@ void vu1Finish(bool add_cycles) {
 	}
 	u32 vu1cycles = VU1.cycle;
 	if(VU0.VI[REG_VPU_STAT].UL & 0x100) {
+#ifdef PCSX2_DEBUG
 		VUM_LOG("vu1ExecMicro > Stalling until current microprogram finishes");
+#endif
 		CpuVU1->Execute(vu1RunCycles);
 	}
 	if (VU0.VI[REG_VPU_STAT].UL & 0x100) {
+#ifdef PCSX2_DEBUG
 		DevCon.Warning("Force Stopping VU1, ran for too long");
+#endif
 		VU0.VI[REG_VPU_STAT].UL &= ~0x100;
 	}
 	if (add_cycles)
@@ -74,8 +78,9 @@ void __fastcall vu1ExecMicro(u32 addr)
 	}
 	static int count = 0;
 	vu1Finish(false);
-
+#ifdef PCSX2_DEBUG
 	VUM_LOG("vu1ExecMicro %x (count=%d)", addr, count++);
+#endif
 	VU1.cycle = cpuRegs.cycle;
 	VU0.VI[REG_VPU_STAT].UL &= ~0xFF00;
 	VU0.VI[REG_VPU_STAT].UL |=  0x0100;

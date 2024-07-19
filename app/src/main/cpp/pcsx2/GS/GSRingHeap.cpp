@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "GSRingHeap.h"
 #include "GS.h"
-//#include "GSExtra.h"
+#include "GSExtra.h"
 
 namespace
 {
@@ -65,11 +65,11 @@ struct GSRingHeap::Buffer
 	/// Increment usage counts (use when allocating)
 	void beginUse(uint64_t usage)
 	{
-		for (size_t i = 0; i < USAGE_ARR_SIZE; i++)
+		for (size_t i = 0; i < USAGE_ARR_SIZE; ++i)
 		{
 			size_t piece = static_cast<size_t>(usage >> (i * (64 / USAGE_ARR_SIZE)));
 			size_t prev = m_usage[i].fetch_add(piece, std::memory_order_relaxed);
-			for (size_t j = 0; j < USAGE_ARR_ELEMS_PER_ENTRY; j++)
+			for (size_t j = 0; j < USAGE_ARR_ELEMS_PER_ENTRY; ++j)
 			{
 				[[maybe_unused]] uint16_t section = prev >> (j * 16);
 				assert(section != UINT16_MAX && "Usage count overflow");
@@ -80,7 +80,7 @@ struct GSRingHeap::Buffer
 	/// Decrement usage counts (use when freeing)
 	void endUse(uint64_t usage)
 	{
-		for (size_t i = 0; i < USAGE_ARR_SIZE; i++)
+		for (size_t i = 0; i < USAGE_ARR_SIZE; ++i)
 		{
 			size_t piece = static_cast<size_t>(usage >> (i * (64 / USAGE_ARR_SIZE)));
 			m_usage[i].fetch_sub(piece, std::memory_order_release);
@@ -218,7 +218,7 @@ void* GSRingHeap::alloc_internal(size_t size, size_t align_mask, size_t prefix_s
 				size_t used = m_current_buffer->m_amt_allocated.load(std::memory_order_relaxed) - 1;
 				if (used * 4 < total)
 				{
-					fprintf(stderr, "GSRingHeap: Orphaning %dmb buffer with low usage of %d%%, check that allocations are actually being deallocated approximately in order\n", total / mb, static_cast<int>((used * 100) / total));
+					fprintf(stderr, "GSRingHeap: Orphaning %zdmb buffer with low usage of %d%%, check that allocations are actually being deallocated approximately in order\n", total / mb, static_cast<int>((used * 100) / total));
 				}
 			}
 		}

@@ -18,12 +18,9 @@ target_sources(common PRIVATE
 	Exceptions.cpp
 	FastFormatString.cpp
 	FastJmp.cpp
-	GL/Context.cpp
-	GL/Program.cpp
-	GL/ShaderCache.cpp
-	GL/StreamBuffer.cpp
 	FileSystem.cpp
 	IniInterface.cpp
+	Log.cpp
 	Mutex.cpp
 	Misc.cpp
 	MD5Digest.cpp
@@ -33,6 +30,7 @@ target_sources(common PRIVATE
 	ProgressCallback.cpp
 	pxStreams.cpp
 	pxTranslate.cpp
+	ReadbackSpinManager.cpp
 	RwMutex.cpp
 	Semaphore.cpp
 	SettingsWrapper.cpp
@@ -67,6 +65,7 @@ target_sources(common PRIVATE
 
 # x86emitter headers
 target_sources(common PRIVATE
+	sse2neon.h
 	Align.h
 	Assertions.h
 	boost_spsc_queue.hpp
@@ -77,11 +76,8 @@ target_sources(common PRIVATE
 	FastJmp.h
 	FileSystem.h
 	General.h
-	GL/Context.h
-	GL/Program.h
-	GL/ShaderCache.h
-	GL/StreamBuffer.h
 	HashCombine.h
+	Log.h
 	MemcpyFast.h
 	MemsetFast.inl
 	MD5Digest.h
@@ -92,6 +88,7 @@ target_sources(common PRIVATE
 	pxForwardDefs.h
 	pxStreams.h
 	RedtapeWindows.h
+	ReadbackSpinManager.h
 	RwMutex.h
 	SafeArray.h
 	ScopedAlloc.h
@@ -133,6 +130,50 @@ target_sources(common PRIVATE
 	emitter/x86types.h
 	)
 
+if(USE_OPENGL)
+	target_sources(common PRIVATE
+		GL/Context.cpp
+		GL/Program.cpp
+		GL/ShaderCache.cpp
+		GL/StreamBuffer.cpp
+	)
+	target_sources(common PRIVATE
+		GL/Context.h
+		GL/Program.h
+		GL/ShaderCache.h
+		GL/StreamBuffer.h
+	)
+	target_link_libraries(common PUBLIC glad)
+endif()
+
+if(USE_VULKAN)
+	target_link_libraries(common PUBLIC
+		Vulkan-Headers glslang
+	)
+	target_sources(common PRIVATE
+		Vulkan/ShaderCache.cpp
+		Vulkan/Texture.cpp
+		Vulkan/Loader.cpp
+		Vulkan/ShaderCompiler.cpp
+		Vulkan/Util.cpp
+		Vulkan/SwapChain.cpp
+		Vulkan/StreamBuffer.cpp
+		Vulkan/Context.cpp
+		Vulkan/Builders.cpp
+		Vulkan/vk_mem_alloc.cpp
+		Vulkan/Context.h
+		Vulkan/Texture.h
+		Vulkan/ShaderCompiler.h
+		Vulkan/SwapChain.h
+		Vulkan/Builders.h
+		Vulkan/StreamBuffer.h
+		Vulkan/ShaderCache.h
+		Vulkan/EntryPoints.h
+		Vulkan/Loader.h
+		Vulkan/Util.h
+	)
+endif()
+
 if(USE_VTUNE)
 	target_link_libraries(common PUBLIC Vtune::Vtune)
 endif()
@@ -162,7 +203,9 @@ elseif(ANDROID)
 			GL/ContextEGLAndroid.cpp
 			GL/ContextEGLAndroid.h
 			)
-	target_link_libraries(common PRIVATE ${EGL_LIBRARIES})
+
+	find_library(log-lib log)
+	target_link_libraries(common PRIVATE ${EGL_LIBRARIES} ${log-lib})
 else()
 	if(X11_API OR WAYLAND_API)
 		target_sources(common PRIVATE
@@ -194,7 +237,7 @@ else()
 	endif()
 endif()
 
-target_link_libraries(common PRIVATE ${LIBC_LIBRARIES} PUBLIC wxWidgets::all glad glslang)
+target_link_libraries(common PRIVATE ${LIBC_LIBRARIES} PUBLIC wxWidgets::all fmt::fmt)
 target_compile_features(common PUBLIC cxx_std_17)
 target_include_directories(common PUBLIC ../3rdparty/include ../)
 target_compile_definitions(common PUBLIC "${PCSX2_DEFS}")

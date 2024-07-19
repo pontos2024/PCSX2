@@ -101,11 +101,11 @@ public:
 		memset(&xInputVibration, 0, sizeof(xInputVibration));
 		this->index = index;
 		int i;
-		for (i = 0; i < 17; i++)
+		for (i = 0; i < 17; ++i)
 		{ // Skip empty bit
 			AddPhysicalControl(PRESSURE_BTN, i + (i > 10), 0);
 		}
-		for (; i < 21; i++)
+		for (; i < 21; ++i)
 		{
 			AddPhysicalControl(ABSAXIS, i + 2, 0);
 		}
@@ -176,7 +176,7 @@ public:
 			}
 
 			int buttons = state.Gamepad.wButtons;
-			for (int i = 0; i < 15; i++)
+			for (int i = 0; i < 15; ++i)
 			{
 				physicalControlState[i] = ((buttons >> physicalControls[i].id) & 1) << 16;
 			}
@@ -223,7 +223,7 @@ public:
 			for (int s = 0; s < 4; s++)
 			{
 				int padtype = config.padConfigs[p][s].type;
-				for (int i = 0; i < pads[p][s][padtype].numFFBindings; i++)
+				for (int i = 0; i < pads[p][s][padtype].numFFBindings; ++i)
 				{
 					// Technically should also be a *65535/BASE_SENSITIVITY, but that's close enough to 1 for me.
 					ForceFeedbackBinding* ffb = &pads[p][s][padtype].ffBindings[i];
@@ -319,7 +319,7 @@ void EnumXInputDevices()
 		}
 	}
 	pXInputEnable(1);
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 4; ++i)
 	{
 		wsprintfW(temp, L"XInput Pad %i", i);
 		dm->AddDevice(new XInputDevice(i, temp));

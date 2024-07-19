@@ -372,11 +372,11 @@ prepare_range_limit_table (j_decompress_ptr cinfo)
   /* First segment of "simple" table: limit[x] = 0 for x < 0 */
   MEMZERO(table - (MAXJSAMPLE+1), (MAXJSAMPLE+1) * SIZEOF(JSAMPLE));
   /* Main part of "simple" table: limit[x] = x */
-  for (i = 0; i <= MAXJSAMPLE; i++)
+  for (i = 0; i <= MAXJSAMPLE; ++i)
     table[i] = (JSAMPLE) i;
   table += CENTERJSAMPLE;	/* Point to where post-IDCT table starts */
   /* End of simple table, rest of first half of post-IDCT table */
-  for (i = CENTERJSAMPLE; i < 2*(MAXJSAMPLE+1); i++)
+  for (i = CENTERJSAMPLE; i < 2*(MAXJSAMPLE+1); ++i)
     table[i] = MAXJSAMPLE;
   /* Second half of post-IDCT table */
   MEMZERO(table + (2 * (MAXJSAMPLE+1)),
